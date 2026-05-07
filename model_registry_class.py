@@ -193,7 +193,6 @@ class ModelRegistry:
         def predict(fit_obj: Ridge, X_new):
             return np.asarray(fit_obj.predict(_as_2d_float(X_new)), dtype = float)
         return ModelAdapter(name = 'ridge_regressor', fit = fit, predict = predict)
-    ####
     #You may need to specify the positive class here:
     def make_ridge_classification(self):
         pc = self.positive_class
@@ -246,7 +245,9 @@ class ModelRegistry:
         def predict(fit_obj, X_new):
             probs = np.asarray(fit_obj.predict_proba(_as_2d_float(X_new)),
                 dtype = float)
-            return probs.ravel()
+            classes_outputs = fit_obj.classes_[np.argmax(probs, axis = 1)].ravel()
+            return classes_outputs
+        return ModelAdapter(name = 'multinomial_classifier', fit = fit, predict = predict)
     #making the linear model:
     def make_lm_regression(self):
         def fit(X, y, seed):
@@ -307,7 +308,7 @@ class ModelRegistry:
             return probs[:, 1].ravel()
         return ModelAdapter(name = 'mlp_classifier', fit = fit, predict = predict)
     def make_mlp_multi_classifier(self):
-        def fit(X, y, seed):
+        def fit(X, y, seed = 2026):
             s = _rng_seed(seed)
             classes, y_enc = np.unique(np.asarray(y).ravel(), return_inverse = True)
             Xs, center, scale = _standardize_cols(_as_2d_float(X))
@@ -337,7 +338,7 @@ class ModelRegistry:
             'ridge_classifier': self.make_ridge_classification(),
             'mlp_regressor': self.make_mlp_regression(),
             'mlp_classifier': self.make_mlp_classifier(),
-            'mlp_multiclassifier': self.make_mlp_multi_classifier()
+            'mlp_multi_classifier': self.make_mlp_multi_classifier()
         }
     def as_r_style_dict(self):
         mapping = self.adapters()
