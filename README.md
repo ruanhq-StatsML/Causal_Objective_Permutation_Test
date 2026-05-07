@@ -20,26 +20,17 @@ devtools::install_local("path/to/CFPerm")
 
 ## Quick example
 
-```r
-library(CFPerm)
+```python
+from RRperm import *
+rng = np.random.default_rng(2023)
+n = 400
+p = 16
+X = rng.normal(size = (n, p))
+Y = 10.0 * X[:, 0] + 2.0 * X[:, 1] + 1.0 * X[:, 2] + rng.normal(scale = 1.0, size = n)
+W = rng.binomial(1, 0.5, size = n)
+output = RRPerm(X, Y, W, n_splits = 5, model_m = 'rf_regressor', model_e = 'rf_classifier')
+output['rejected'], output['p_value'], output['statistic']
 
-set.seed(1)
-sim <- LM_generation(
-  n = 200,
-  beta_hat = c(1, -1, 0.5),
-  mean_shift = 0,
-  var_shift = 1,
-  cor = 0.3,
-  n_nuisance = 5,
-  eps = 1
-)
-
-df <- sim$df_return
-df_train <- df[1:100, c(paste0("X", 1:3), paste0("X_nuis", 1:5), "Y")]
-df_test  <- df[101:200, c(paste0("X", 1:3), paste0("X_nuis", 1:5), "Y")]
-
-res <- cfperm(df_train, df_test, n_perm = 50, num.trees = 150, seed = 123)
-res
 ```
 
 ## Development
