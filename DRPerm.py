@@ -1,116 +1,115 @@
-#DRPerm packages:
+'''
+Permutation Test for Distribution Shift via PO-risk(Pseudo-Outcome Risk) followed by the permute-then-refit procedure:
 
-
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import KFold, StratifiedKFold
-from sklearn.linear_model import LogisticRegression, Ridge
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.base import clone
-from scipy.sparse import diags, eye, csr_matrix
-from scipy.sparse.linalg import spsolve
-from sklearn.metrics import pairwise_distances
-from sklearn.neighbors import kneighbors_graph
-from sklearn.model_selection import KFold, StratifiedKFold
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional
-
-
-
-@dataclass
-class ModelSpec:
-    name: str
-    fit: Callable
-    predict: Callable
-
-
-def default_model_config():
-    return{
-      'global':{
-        'positive_class': 1,
-        'n_jobs': -1
-      },
-      'rf_regression':{
-        'n_estimators': 200,
-        'max_features': 'sqrt',
-        'min_samples_leaf': 10
-      },
-      'rf_classification':{
-        "n_estimators": 200,
-        "max_features": 'sqrt',
-        'min_samples_leaf': 1
-      },
-      'lm_regression': {},
-      'logistic_classification': {
-        'max_iter': 1000,
-        'penalty': 'l2',
-        'C': 1.0
-      },
-      'ridge_regression':{
-        'alpha': 0.01
-      },
-      'mlp_regression':{
-        'hidden_layer_sizes': (5, ),
-        'alpha': 1e-5,
-        'max_iter': 250
-      },
-      'mlp_classification':{
-        'hidden_layer_sizes': (5, ),
-        'alpha': 1e-5,
-        'max_iter': 250
-      },
-      'xgb_regression':{
-        'n_estimators': 150,
-        'max_depth': 4,
-        'gamma': 0.5,
-        'learning_rate': 0.1,
-        'n_jobs': 1
-      },
-      'xgb_classification':{
-        'n_estimators': 150,
-        'max_depth': 4,
-        'gamma': 0.5,
-        'leaerning_rate': 0.1,
-        'n_jobs': 1,
-        'eval_metrics': 'logloss'
-      },
-    }
-
-
-def make_rf_regression(params, global_param):
-    def fit(X, y, seed = None):
-        model = RandomForestRegressor(
-            **params,
-            random_state = seed,
-            n_jobs = global_param.get('n_jobs', -1)
+Hyperparameters:
+- X:               Covariates array - (n_exist + n_new, p)
+- Y:               Responses - (n_exist + n_new, )
+- W:               Treatment(Batch) Assignment - (n_exist + n_new, )
+- seed:            Random State Seeds
+- n_split:         Number of splits
+- clip_e:          Clipping value for the propensity score
+- n_perm:          Number of permutations for the test
+- alpha:           Significance Level for the test
+- model_m:         Outcome Model
+- model_e:         Propensity Score Model
+Returns the cross-fitted value (m_hat, e_hat) evaluated on the whole data
+as well as the fitted outcome model and propensity score models.
+'''
+#Specify the model registry factory so that we can fetch the model with flexibility afterwards:
+model_registry = ModelRegistry(
+  ntree = 150,
+  ridge_alpha = 0.25,
+  nthread = 1, maxit = 200, max_depth = 5,
+  gamma = 0.25, eta = 0.15, mlp_hidden_size = 4,
+  mlp_decay = 1e-5, mlp_max_iter = 500, mlp_trace = False,
+  mlp_max_coef_reg = 10000, mlp_max_coef_clf = 10000,
+  warn_xgb_labels = True, positive_class = 1
+)
+def DRPerm(
+    X: np.ndarray, Y: np.ndarray, W: np.ndarray, *,
+    seed: int = 0, n_splits: int = 5,
+    clip_e = 0.01, n_perm = 150, alpha = 0.05, return_detail = True,
+    model_m = 'rf_regression', model_e = 'rf_classification'):
+    X = np.asarray(X)
+    Y = _as_1d(Y)
+    W = _as_1d(W).astype(int)
+    n = X.shape[0]
+    rng = np.random.default_rng(seed)
+    # ----------------------------------------------------
+    # Cross-fitted nuisance estimation:
+    # ----------------------------------------------------
+    folds = make_folds(n, n_folds = n_folds, seed = seed)
+    mu_hat = np.zeros(n, dtype = float)
+    e_hat  = np.zeros(n, dtype = float)
+    for k, test_idx in enumerate(folds):
+        train_idx = np.setdiff1d(np.arange(n), test_idx)
+        X_train, X_test = X[train_idx], X[test_idx]
+        Y_train = Y[train_idx]
+        T_train = t[train_idx]
+        #specify the outcome model and return it for each of the fold:
+        model_propensity_score = model_registry[model_e]
+        model_outcome = model_registry[model_m]
+        fit_mu = model_outcome['fit'](
+          X_train, Y_train, seed = seed + k
+          )
+        mu_hat[test_idx] = model_outcome['predict'](
+          fit_mu, X_test
+          )
+        fit_e = model_propensity_score['fit'](
+          X_train, T_train, seed = seed + 100 + k
+          )
+        e_hat[test_idx] = model_propensity_score['predict'](
+          fit_e, X_test
+          )
+    e_hat = np.clip(e_hat, clip_e, 1 - clip_e)
+    # ----------------------------------------------------
+    # Calculate the Pseudo-Outcome Scores/PO-risk
+    # ----------------------------------------------------
+    residual_y = Y - mu_hat
+    residual_t = T - e_hat
+    pseudo_outcome = residual_y * residual_t
+    # ----------------------------------------------------
+    # Estimate the unpermuted PO-risk via outcome model
+    # ----------------------------------------------------
+    fit_tau = model_outcome['fit'](X, pseudo_outcome, seed = seed + 200 + k)
+    tau_score = model_outcome['predict'](fit_tau, X)
+    observed_po_risk = np.mean(tau_score ** 2)
+    # ----------------------------------------------------
+    # Permuted version of the PO-risk
+    # ----------------------------------------------------
+    permuted_po_risk = np.zeros(n_perm, dtype = float)
+    for b in range(n_perm):
+        t_perm = rng.permutation(t)
+        fit_e_perm = model_propensity_score['fit'](
+          X, t_perm, seed = seed + 300 + b
         )
-        model.fit(as_array(X), as_vector(y))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        e_perm = model_propensity_score['predict'](
+          fit_e_perm, X
+        )
+        e_perm = np.clip(e_perm, clip_e, 1 - clip_e)
+        residual_t_perm = t_perm - e_perm
+        pseudo_perm = residual_y * residual_t_perm
+        fit_tau_perm = model_outcome['fit'](
+          X, pseudo_perm, seed = seed + 400 + b
+        )
+        tau_perm = model_outcome['predict'](
+          fit_tau_perm, X
+        )
+        permuted_po_risk[b] = np.mean(tau_perm ** 2)
+    p_value = (1.0 + np.sum(permuted_po_risk >= observed_po_risk))/(n_perm + 1)
+    out = {
+      'statistic': float(observed_po_risk),
+      'p_value': float(p_value),
+      'reject': bool(p_value < alpha),
+      'alpha': float(alpha),
+      'model_outcome': model_outcome['name'],
+      'model_propensity_score': model_propensity_score['name']
+    }
+    if return_detail:
+        out.update({
+          'mu_hat': mu_hat, 'e_hat': e_hat,
+          'residual_y': residual_y, 'residual_t': residual_t,
+          'pseudo_outcome': pseudo_outcome, 'tau_score': tau_score,
+          'permuted_po_risk': permuted_po_risk
+        })
+    return out

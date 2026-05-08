@@ -1,6 +1,6 @@
-# CFPerm
+# Causal Objective Function Permutation Test
+This repository provides the implementation of "Permutation Test via Causal Inference Objective Functions". It includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This package adopts a permute-then-refit strategy and allows flexible specification of nuisance estimation models, enabling users to plug in different regressions or classification models for outcome model, propensity score model and the treatment effect estimator.
 
-Implementation for the "Permutation Test via Causal Inference Objective Function": It provides implementation for leveraging DR(doubly-robust) pseudo-outcome learner and R-learner for permutation test of testing the distribution shift. The permute-then-refit procedure is employed.
 
 
 ## Python version:
@@ -21,7 +21,6 @@ devtools::install_local("path/to/CFPerm")
 ## Quick example
 
 ```python
-from RRperm import *
 rng = np.random.default_rng(2023)
 n = 400
 p = 16
@@ -29,7 +28,10 @@ X = rng.normal(size = (n, p))
 Y = 10.0 * X[:, 0] + 2.0 * X[:, 1] + 1.0 * X[:, 2] + rng.normal(scale = 1.0, size = n)
 W = rng.binomial(1, 0.5, size = n)
 output = RRPerm(X, Y, W, n_splits = 5, model_m = 'rf_regressor', model_e = 'rf_classifier')
-output['rejected'], output['p_value'], output['statistic']
+output#FALSE
+
+output = DRPerm(X, Y, W, seed = 2026)
+output#FALSE
 
 ```
 

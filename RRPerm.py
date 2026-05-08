@@ -129,7 +129,7 @@ Y = 10.0 * X[:, 0] + 2.0 * X[:, 1] + 1.0 * X[:, 2] + rng.normal(scale = 1.0, siz
 W = rng.binomial(1, 0.5, size = n)
 output = RRPerm(X, Y, W, n_splits = 5, model_m = 'rf_regressor', model_e = 'rf_classifier')
 output
-#
+
 
 
 
