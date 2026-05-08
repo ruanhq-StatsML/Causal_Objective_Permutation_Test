@@ -1,6 +1,5 @@
 # Causal Objective Function Permutation Test
-This repository provides the implementation of "Permutation Test via Causal Inference Objective Functions". It includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This package adopts a permute-then-refit strategy and allows flexible specification of nuisance estimation models, enabling users to plug in different regressions or classification models for outcome model, propensity score model and the treatment effect estimator.
-
+This repository provides the Python \& R implementation of "Permutation Test via Causal Inference Objective Functions". It includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This package adopts a permute-then-refit strategy and allows flexible specification of nuisance estimation models, enabling users to plug in different regressions or classification models for outcome model, propensity score model and the treatment effect estimator.
 
 
 ## Python version:
