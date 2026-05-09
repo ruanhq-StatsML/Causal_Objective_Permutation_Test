@@ -1,3 +1,22 @@
+
+
+#Fitting the weighted regression with L2 penalty:
+def _fit_tau_rlearner_weighted(X, Y_tilde, W_tilde, seed: int = 0, clip_wtilde: float = 1e-3):
+    X = np.asarray(X)
+    Y_tilde = np.asarray(Y_tilde).reshape(-1)
+    W_tilde = np.asarray(W_tilde).reshape(-1)
+    mask = (np.abs(W_tilde) > clip_wtilde)
+    z = Y_tilde[mask]/W_tilde[mask]
+    weights = (W_tilde[mask] ** 2)
+    tau_model = Pipeline(
+      steps = [
+      ('scaler': StandardScaler(with_mean = True, with_std = True)),
+      ('ridge': Ridge(alpha = 1.0, random_state = seed))])
+    tau_model.fit(X[mask], z, ridge__sample_weight = weights)
+    return tau_model
+
+
+
 '''
 Permutation Test for Distribution Shift via R-risk followed by the permute-then-refit procedure:
 Hyperparameters:
@@ -75,6 +94,7 @@ def RRPerm(
     tau_hat = model_tau['predict'](
       fit_obj, X
     )
+    tau_model = _fit_tau_rlearner_weighted(X, Y_tilde, T_tilde, seed = seed, )
     observed_r_risk = np.mean((Y_tilde - tau_hat * T_tilde) ** 2)
     # ----------------------------------------------------
     # Permuted version of the PO-risk

@@ -1,6 +1,17 @@
+import numpy as np
+import random
+
+
+def make_folds(n, n_folds = 5, seed = 22):
+    random.seed(seed)
+    indices = np.arange(n)
+    random.shuffle(indices)
+    #split them into different folds with the indices here:
+    folds = np.array_split(indices, n_folds)
+    return folds
+
 '''
 Permutation Test for Distribution Shift via PO-risk(Pseudo-Outcome Risk) followed by the permute-then-refit procedure:
-
 Hyperparameters:
 - X:               Covariates array - (n_exist + n_new, p)
 - Y:               Responses - (n_exist + n_new, )
