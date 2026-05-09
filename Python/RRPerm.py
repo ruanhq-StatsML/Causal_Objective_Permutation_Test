@@ -1,6 +1,8 @@
 
 
-#Fitting the weighted regression with L2 penalty:
+"""
+#Cross-Fitting for the R-learner weighted regression:
+"""
 def _fit_tau_rlearner_weighted(X, Y_tilde, W_tilde, seed: int = 0, clip_wtilde: float = 1e-3):
     X = np.asarray(X)
     Y_tilde = np.asarray(Y_tilde).reshape(-1)
@@ -53,9 +55,9 @@ def RRPerm(
     W = _as_1d(W).astype(int)
     n = X.shape[0]
     rng = np.random.default_rng(seed)
-    # ----------------------------------------------------
-    # Cross-fitted nuisance estimation:
-    # ----------------------------------------------------
+    # --------------------------------------------------------------------
+    # Cross-fitted nuisance estimation, via the pseudo-outcome regression
+    # --------------------------------------------------------------------
     folds = make_folds(n, n_folds = n_folds, seed = seed)
     mu_hat = np.zeros(n, dtype = float)
     e_hat  = np.zeros(n, dtype = float)
@@ -80,9 +82,9 @@ def RRPerm(
           fit_e, X_test
           )
     e_hat = np.clip(e_hat, clip_e, 1 - clip_e) 
-    # --------------------------------------------------------------
-    # Calculate the R-risk followed by the weighted average tau for 
-    # --------------------------------------------------------------
+    # --------------------------------------------------------------------
+    # Calculate the R-risk followed by the weighted average tau
+    # --------------------------------------------------------------------
     Y_tilde = Y - mu_hat
     T_tilde = T - e_hat
     denom = np.where(np.abs(T_tilde) < clip_e, np.sign(T_tilde) * clip_e, T_tilde)
@@ -94,10 +96,10 @@ def RRPerm(
     tau_hat = model_tau['predict'](
       fit_obj, X
     )
-    tau_model = _fit_tau_rlearner_weighted(X, Y_tilde, T_tilde, seed = seed, )
+    tau_model = _fit_tau_rlearner_weighted(X, Y_tilde, T_tilde, seed = seed)
     observed_r_risk = np.mean((Y_tilde - tau_hat * T_tilde) ** 2)
     # ----------------------------------------------------
-    # Permuted version of the PO-risk
+    # Permuted version of the R-risk
     # ----------------------------------------------------
     permuted_r_risk = np.zeros(n_perm, dtype = float)
     for b in range(n_perm):
