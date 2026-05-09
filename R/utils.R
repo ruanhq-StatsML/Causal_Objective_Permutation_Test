@@ -1,7 +1,4 @@
-#Util functions:
 source('model_registry.R')
-
-
 #Inferring the type for the response:
 infer_type <- function(X){
   p <- ncol(X)
@@ -53,12 +50,12 @@ fit_tau_rlearner_weighted <- function(X, Y_tilde, W_tilde, ridge_lambda,
   X_design <- cbind(rep(1, nrow(X_scaled)), X_scaled)
   #Solving a Weighted Ridge Regression:
   W_weights <- sqrt(w)
-  Xw <- X_design %*% W_weights
-  yw <- z * W_weights
+  Xw <- as.matrix(X_design * W_weights)
+  yw <- Y_tilde * W_weights
   XtX <- t(Xw) %*% Xw
   Xty <- t(Xw) %*% yw
   #Solving for the beta_hat here:
-  beta <- solve(XtX + ridge_lambad * diag(c(0, rep(1, ncol(X_design)))), Xty)
+  beta <- solve(XtX + ridge_lambda * diag(c(0, rep(1, ncol(X_scaled)))), Xty)
   pred_function <- function(Xnew){
     Xnew <- as.matrix(Xnew)
     Xs_new <- sweep(sweep(Xnew, 2, mu, '-'), 2, sd, '/')
@@ -66,7 +63,11 @@ fit_tau_rlearner_weighted <- function(X, Y_tilde, W_tilde, ridge_lambda,
   }
   return(list(coef = beta, mu = mu, sd = sd, predict = pred_function))
 }
-
+pred_tau <- function(rlearn_obj, Xnew){
+  Xnew <- as.matrix(Xnew)
+  Xs_new <- sweep(sweep(Xnew, 2, rlearner_obj$mu, '-'), 2, rlearner_obj$sd, '/')
+  return(as.numeric(cbind(rep(1, nrow(Xnew)), Xnew) %*% rlearner_obj$beta))
+}
 
 
 ###########################################################################################
@@ -131,7 +132,6 @@ cross_nuisance_fit <- function(
     X, Y, T, 
     n_folds = 5, 
     n_estimator = 100,
-    binary_outcome = TRUE, 
     m_model = 'xgb_regression',
     e_model = 'rf_classification',
     clip_e = 1e-3, 
@@ -152,7 +152,7 @@ cross_nuisance_fit <- function(
     k = n_folds,
     list = TRUE,
     returnTrain = FALSE
-  )
+    )
   m_hat <- rep(0, n)
   e_hat <- rep(0, n)
   scores <- rep(0, n)
