@@ -8,6 +8,7 @@ library(grf)
 library(RandomProjectionTest)
 library(caret)
 source('model_registry.R')
+source('utils.R')
 
 ####################################################################
 #Permutation Test for Distribution Shift via the R-risk

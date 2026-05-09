@@ -1,22 +1,4 @@
-
-
-"""
-#Cross-Fitting for the R-learner weighted regression:
-"""
-def _fit_tau_rlearner_weighted(X, Y_tilde, W_tilde, seed: int = 0, clip_wtilde: float = 1e-3):
-    X = np.asarray(X)
-    Y_tilde = np.asarray(Y_tilde).reshape(-1)
-    W_tilde = np.asarray(W_tilde).reshape(-1)
-    mask = (np.abs(W_tilde) > clip_wtilde)
-    z = Y_tilde[mask]/W_tilde[mask]
-    weights = (W_tilde[mask] ** 2)
-    tau_model = Pipeline(
-      steps = [
-      ('scaler': StandardScaler(with_mean = True, with_std = True)),
-      ('ridge': Ridge(alpha = 1.0, random_state = seed))])
-    tau_model.fit(X[mask], z, ridge__sample_weight = weights)
-    return tau_model
-
+from utils import *
 
 
 '''
@@ -47,82 +29,50 @@ model_registry = default_model_registry(
 )
 def RRPerm(
     X: np.ndarray, Y: np.ndarray, W: np.ndarray, *,
-    seed: int = 0, n_splits: int = 5, binary_outcome = False,
-    clip_e = 0.01, n_perm = 150, alpha = 0.05, return_detail = True,
-    model_m = 'rf_regressor', model_e = 'rf_classifier'):
+    model_registry = model_registry,
+    model_m = 'rf_regressor', model_e = 'rf_classifier',
+    seed: int = 0, n_folds: int = 5, binary_outcome = False,
+    clip_e = 0.01, n_perm = 150, alpha = 0.05, return_detail = True):
     X = np.asarray(X)
     Y = _as_1d(Y)
     W = _as_1d(W).astype(int)
     n = X.shape[0]
     rng = np.random.default_rng(seed)
-    # --------------------------------------------------------------------
+    #---------------------------------------------------------------------
     # Cross-fitted nuisance estimation, via the pseudo-outcome regression
-    # --------------------------------------------------------------------
+    #---------------------------------------------------------------------
     folds = make_folds(n, n_folds = n_folds, seed = seed)
     mu_hat = np.zeros(n, dtype = float)
     e_hat  = np.zeros(n, dtype = float)
-    for k, test_idx in enumerate(folds):
-        train_idx = np.setdiff1d(np.arange(n), test_idx)
-        X_train, X_test = X[train_idx], X[test_idx]
-        Y_train = Y[train_idx]
-        T_train = t[train_idx]
-        #specify the outcome model and return it for each of the fold:
-        model_propensity_score = model_registry[model_e]
-        model_outcome = model_registry[model_m]
-        fit_mu = model_outcome['fit'](
-          X_train, Y_train, seed = seed + k
-          )
-        mu_hat[test_idx] = model_outcome['predict'](
-          fit_mu, X_test
-          )
-        fit_e = model_propensity_score['fit'](
-          X_train, T_train, seed = seed + 100 + k
-          )
-        e_hat[test_idx] = model_propensity_score['predict'](
-          fit_e, X_test
-          )
-    e_hat = np.clip(e_hat, clip_e, 1 - clip_e) 
-    # --------------------------------------------------------------------
-    # Calculate the R-risk followed by the weighted average tau
-    # --------------------------------------------------------------------
+    mu_hat, e_hat = cross_nuisance_fit(
+      X, Y, W, n_folds = n_folds, model_registry = model_registry,
+      model_m = model_m, model_e = model_e
+    )
+    #---------------------------------------------------------------------
+    # Calculate the R-risk followed by the weighted regression
+    #---------------------------------------------------------------------
     Y_tilde = Y - mu_hat
-    T_tilde = T - e_hat
-    denom = np.where(np.abs(T_tilde) < clip_e, np.sign(T_tilde) * clip_e, T_tilde)
-    denom = np.where(denom == 0, clip_e, denom)
-    pseudo_tau = Y_tilde/denom
-    fit_tau = model_tau['fit'](
-      X, pseudo_tau, seed = seed + 200 + k
-    )
-    tau_hat = model_tau['predict'](
-      fit_obj, X
-    )
-    tau_model = _fit_tau_rlearner_weighted(X, Y_tilde, T_tilde, seed = seed)
-    observed_r_risk = np.mean((Y_tilde - tau_hat * T_tilde) ** 2)
-    # ----------------------------------------------------
-    # Permuted version of the R-risk
-    # ----------------------------------------------------
+    W_tilde = W - e_hat
+    tau_model = _fit_tau_rlearner_weighted(X, Y_tilde, W_tilde, seed = seed)
+    tau_hat = tau_model.predict(X)
+    observed_r_risk = np.mean((Y_tilde - tau_hat * W_tilde) ** 2)
+    #---------------------------------------------------------------------
+    # Permute-then-refit for re-estimation of the R-risk
+    #---------------------------------------------------------------------
     permuted_r_risk = np.zeros(n_perm, dtype = float)
     for b in range(n_perm):
-        t_perm = rng.permutation(t)
-        fit_e_perm = model_propensity_score['fit'](
-          X, t_perm, seed = seed + 300 + b
-        )
-        e_perm = model_propensity_score['predict'](
-          fit_e_perm, X
-        )
-        e_perm = np.clip(e_perm, clip_e, 1 - clip_e)
-        T_tilde_perm = t_perm - e_perm
-        denom_perm = np.where(np.abs(T_tilde_perm) < clip_e, np.sign(T_tilde_perm) * clip_e, T_tilde_perm)
-        denom_perm = np.where(denom_perm == 0, clip_e, denom_perm)
-        pseudo_tau_perm = Y_tilde/denom_perm
-        fit_tau_perm = model_outcome['fit'](
-          X, pseudo_tau_perm, seed = seed + 400 + b
-        )
-        tau_perm = model_outcome['predict'](
-          fit_tau_perm, X
-        )
-        permuted_r_risk[b] = np.mean((Y_tilde - tau_perm * T_tilde_perm) ** 2)
-    p_value = (1.0 + np.sum(permuted_r_risk >= observed_r_risk))/(n_perm + 1)
+        W_perm = rng.permutation(W)
+        #Refit the model:
+        mu_hat_b, e_hat_b = cross_nuisance_fit(
+          X, Y, W_perm, n_folds = n_folds, model_registry = model_registry,
+          model_m = model_m, model_e = model_e
+          )
+        Y_tilde_b = Y - mu_hat_b
+        W_tilde_b = W - e_hat_b
+        tau_model_b = _fit_tau_rlearner_weighted(X, Y_tilde_b, W_tilde_b, seed = seed)
+        tau_hat_b = tau_model_b.predict(X)
+        permuted_r_risk[b] = np.mean((Y_tilde_b - tau_hat_b * W_tilde_b) ** 2)
+    p_value = (1.0 + np.sum(permuted_r_risk >= observed_r_risk))/(1.0 + n_perm)
     out = {
       'statistic': float(observed_r_risk),
       'p_value': float(p_value),
@@ -142,28 +92,16 @@ def RRPerm(
 
 
 
-#Test cases:
+#Test cases: H_{0}
 rng = np.random.default_rng(2023)
 n = 400
 p = 16
 X = rng.normal(size = (n, p))
 Y = 10.0 * X[:, 0] + 2.0 * X[:, 1] + 1.0 * X[:, 2] + rng.normal(scale = 1.0, size = n)
 W = rng.binomial(1, 0.5, size = n)
-output = RRPerm(X, Y, W, n_splits = 5, model_m = 'rf_regressor', model_e = 'rf_classifier')
+output = RRPerm(X, Y, W, n_splits = 5,
+ model_registry = model_registry, model_m = 'rf_regressor', model_e = 'rf_classifier')
 output
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
