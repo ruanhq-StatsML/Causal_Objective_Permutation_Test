@@ -6,7 +6,7 @@ import warnings
 import inspect 
 import xgboost as xgb
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union 
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
@@ -36,7 +36,8 @@ PredictFn = Callable[..., np.ndarray]
 @dataclass(frozen = True)
 class ModelAdapter:
     """ 
-    The model adapter contract aligned with: name, fit, predict
+    The model adapter contract aligned with: name, fit, predict,
+    For the entire model factory, return {'name', 'fit', 'predict'} enhanced together here.
     """
     name: str
     fit: FitFn
