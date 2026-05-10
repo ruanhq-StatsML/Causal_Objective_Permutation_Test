@@ -107,8 +107,112 @@ fit_predict_oof <- function(X, y, folds, model_spec, seed){
 }
 
 ########################################################################################
-#' Estimate the variable importance via the Pseudo-Outcome DR-learner with the LOCO and PermuCATE variable importance'
+#' Fit the outcome model and propensity score model for the pseudo-outcome learner and X-learner with two separate outcome models.
+#' Under these circumstances, you need an outcome model for both treatment group and control group.
+#' Given a matrix/data.frame with two batches where for the existing batch T = 0, new batch T = 1'
+#' Performs the following operations:
+#' Options for the propensity score model: Logistic Regression, Random Forest, XGBoost and MLP
+#' Options for the outcome model: Random Forest, XGBoost and the MLP,
+#'@param X:                   Numeric matrix/data.frame of dimension (n_exist + n_new) * (p + 2), p is the number of features, with the response column(the second last column) and the batch assignment column(the last column)
+#'                            For the batch assignment column T(p+2-th column), the first n_exist value represent batch 0 and the next n_new value represent batch 1        
+#'@param Y: 
+#'@param T: 
+#'@param outcome_model:       Type of the outcome model, on T == 1 and T == 0 respectively.
+#'@param n_folds:             Number of folds of cross-fitting
+#'@param propensity_model:    Type of the propensity score model
+#'@param n_estimator':        Number of the Trees for the outcome model and propensity score model.
+#'@param binary_outcome:      Whether the response(Y) is binary or not
+#'@return vimp_result:        Numeric vector-list of (p) for each of the feature
+#' Cross-Fitting on the Nuisance Parameters:
 #
+#' Given a matrix/data.frame with two batches where for the existing batch T = 0, new batch T = 1'
+#' Performs the following operations:
+#' Fit the propensity score model and the outcome model with the clip here.
+########################################################################################
+cross_nuisance_fit_po <- function(
+  X, Y, T, n_folds = 5,
+  n_estimator = 100, 
+  m_model = 'xgb_regression', e_model = 'rf_classification',
+  clip_e = 1e-3, seed = 2026, size = 4, maxit = 20, lambda = 0.05){
+  X <- as.matrix(X)
+  Y <- as.numeric(Y)
+  T <- as.numeric(T)
+  p <- ncol(X)
+  if(p <= 0){
+    stop(sprintf('Must include at least one covariate in X!'))
+  }
+  if(n <= 2){
+    stop(sprintf('Must include at least 1 observation per batch'))
+  }
+  #create folds:
+  folds <- caret::createFolds(
+    y = factor(T), k = n_folds, list = TRUE,
+    returnTrain = FALSE
+    )
+  m_hat <- rep(0, n)
+  e_hat <- rep(0, n)
+  scores <- rep(0, n)
+  fits_m1 <- vector('list', length(folds))
+  fits_m0 <- vector('list', length(folds))
+  fits_e <- vector('list', length(folds))
+  model_regis <- default_model_registry(
+    ntree = n_estimator,
+    size = size,
+    maxit = maxit,
+    lambda = lambda
+    )
+  if(!(m_model %in% names(model_regis))){
+    stop(
+      'm_model is not included in the default_model_registry.  Available models are: ',
+      paste(names(model_regis), collapse = ','),
+      call. = FALSE
+    )
+  }
+  if(!(e_model %in% names(model_regis))){
+    stop(
+      'e_model is not included in the default_model_registry. Available models are: ',
+      paste(names(model_regis), collapse = ','),
+      call. = FALSE
+    )
+  }
+  model_m1 <- model_regis[[m_model]]
+  model_m0 <- model_regis[[m_model]]
+  model_e <- model_regis[[e_model]]
+  Y_T0 = Y[W==0]
+  Y_T1 = Y[W==1]
+  X_T0 = X[W==0, ]
+  X_T1 = X[W==1, ]
+  m0_fit <- fit_predict_oof(
+    X = X_T0, y = Y_T0, folds = folds,
+    model_spec = model_m0, seed = seed
+    )
+  m1_fit <- fit_predict_oof(
+    X = X_T1, y = Y_T1, folds = folds,
+    model_spec = model_m1, seed = seed
+  )
+  #Fit the Propensity Score Model:
+  e_fit <- fit_predict_oof(
+    X = X, y = T, folds = folds,
+    model_spec = model_e, seed = seed
+  )
+  m0_hat = m0_fit$pred
+  m1_hat = m1_fit$pred
+  e_hat = e_fit$pred
+  e_hat = pmin(pmax(e_hat, clip_e), 1 - clip_e)
+  return(list(
+      m0_hat = m0_hat,
+      m1_hat = m1_hat,
+      e_hat = e_hat,
+      m_model_name = m_fit$model_name,
+      e_model_name = e_fit$model_name,  
+      m0_fits = m0_fit$fits,
+      m1_fits = m1_fit$fits,
+      e_fits = e_fit$fits
+  ))
+}
+
+########################################################################################
+#' Fit the outcome model and propensity score model for R-learner.
 #' Given a matrix/data.frame with two batches where for the existing batch T = 0, new batch T = 1'
 #' Performs the following operations:
 #' 
