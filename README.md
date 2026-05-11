@@ -1,4 +1,4 @@
-# Causal Objective Permutation Test
+# Causal Objective Permutation Test(DR-Perm \& R-risk Perm)
 This repository provides the Python \& R implementation of "Permutation Test via Causal Inference Objective Functions". In this project, we formulate the distribution shift detection problem as a causal inference problem(regarding the existing batch of data as control group/batch and the newly coming batch of data as treatment group/batch) via various forms of the objective functions followed by the permute-then-refit procedure. This repo includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This implementation allows flexible specification of nuisance estimation models, enabling users to flexibly choose among different versions of the propensity score model(logistic regression, tree-based learners and MLP) and the outcome model(linear regression, tree-based learners and MLP).
 
 
