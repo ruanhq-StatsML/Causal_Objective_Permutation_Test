@@ -17,7 +17,17 @@ install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS", ""))
 devtools::install_local("path/to/CFPerm")
 ```
 
-## Quick example
+## R example:
+```R
+n <- 400
+p <- 16
+X <- matrix(rnorm(n*p, 0, 1), n, p)
+Y <- 10.0 * X[, 1] + 2.0 * X[, 2] + 1.0 * X[, 3] + rnorm(n, 0, 1)
+W <- rbinom(n, 1, 0.5)
+output <- RRPerm(X, Y, W, n_splits = 5, model_m = )
+```
+
+## Python Example:
 
 ```python
 rng = np.random.default_rng(2023)
@@ -33,6 +43,8 @@ output = DRPerm(X, Y, W, seed = 2026)
 output#FALSE
 
 ```
+
+
 
 ## Development
 
