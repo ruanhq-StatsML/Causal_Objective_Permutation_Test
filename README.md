@@ -1,5 +1,5 @@
-# Causal Objective Function Permutation Test
-This repository provides the Python \& R implementation of "Permutation Test via Causal Inference Objective Functions". It includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This implementation adopts a permute-then-refit strategy and allows flexible specification of nuisance estimation models, enabling users to flexibly choose among different versions of the propensity score model and the outcome model.
+# Causal Objective Permutation Test
+This repository provides the Python \& R implementation of "Permutation Test via Causal Inference Objective Functions". In this project, we formulate the distribution shift detection problem as a causal inference problem(regarding the existing batch of data as control group/batch and the newly coming batch of data as treatment group/batch) via various forms of the objective functions followed by the permute-then-refit procedure. This reppo includes permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This implementation allows flexible specification of nuisance estimation models, enabling users to flexibly choose among different versions of the propensity score model and the outcome model.
 
 
 ## Python version:
@@ -24,7 +24,7 @@ p <- 16
 X <- matrix(rnorm(n*p, 0, 1), n, p)
 Y <- 10.0 * X[, 1] + 2.0 * X[, 2] + 1.0 * X[, 3] + rnorm(n, 0, 1)
 W <- rbinom(n, 1, 0.5)
-output <- RRPerm(X, Y, W, n_splits = 5, model_m = )
+output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf_classification')
 ```
 
 ## Python Example:
