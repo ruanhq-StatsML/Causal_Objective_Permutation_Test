@@ -21,7 +21,7 @@ output#FALSE
 ```
 
 ## R version:
-#### Installation (local)
+#### Installation
 
 ```R
 install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS"))
