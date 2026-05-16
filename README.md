@@ -6,30 +6,6 @@ This repository provides the Python \& R implementation of "Permutation Test via
 ```python
 !pip install causal_objective_perm
 from causal_objective_perm import RRPerm, DRPerm
-
-```
-
-## R version:
-#### Installation (local)
-
-```r
-install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS", ""))
-devtools::install_local("path/to/CFPerm")
-```
-
-## R example:
-```R
-n <- 400
-p <- 16
-X <- matrix(rnorm(n*p, 0, 1), n, p)
-Y <- 10.0 * X[, 1] + 2.0 * X[, 2] + 1.0 * X[, 3] + rnorm(n, 0, 1)
-W <- rbinom(n, 1, 0.5)
-output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf_classification')
-```
-
-## Python Example:
-
-```python
 rng = np.random.default_rng(2023)
 n = 400
 p = 16
@@ -43,6 +19,22 @@ output = DRPerm(X, Y, W, seed = 2026)
 output#FALSE
 
 ```
+
+## R version:
+#### Installation (local)
+
+```R
+install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS", ""))
+devtools::install_local("path/to/CFPerm")
+n <- 400
+p <- 16
+X <- matrix(rnorm(n*p, 0, 1), n, p)
+Y <- 10.0 * X[, 1] + 2.0 * X[, 2] + 1.0 * X[, 3] + rnorm(n, 0, 1)
+W <- rbinom(n, 1, 0.5)
+output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf_classification')
+```
+
+
 
 
 
