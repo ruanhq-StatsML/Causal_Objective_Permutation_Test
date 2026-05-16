@@ -24,7 +24,7 @@ output#FALSE
 #### Installation (local)
 
 ```R
-install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS", ""))
+install.packages(c("devtools", "roxygen2", "testthat", "grf", "MASS"))
 devtools::install_local("path/to/CFPerm")
 n <- 400
 p <- 16
