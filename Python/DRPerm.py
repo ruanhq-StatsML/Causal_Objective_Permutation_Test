@@ -1,7 +1,16 @@
 import numpy as np
 import random
+from dataclasses import dataclass
+import numpy as np
+import warnings
+import inspect 
+import xgboost as xgb
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union 
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from utils import *
-
+from model_registry_class import ModelRegistry
 '''
 Permutation Test for Distribution Shift via PO-risk(Pseudo-Outcome Risk) followed by the permute-then-refit procedure:
 Hyperparameters:
@@ -18,8 +27,8 @@ Hyperparameters:
 Returns the cross-fitted value (m_hat, e_hat) evaluated on the whole data
 as well as the fitted outcome model and propensity score models.
 '''
-#Specify the model registry factory so that we can fetch the model with flexibility afterwards:
-model_registry = ModelRegistry(
+#Specify the model registry factory so that we can fetch the model with flexibility afterwards
+model_registry = default_model_registry(
   ntree = 150,
   ridge_alpha = 0.25,
   nthread = 1, maxit = 200, max_depth = 5,
@@ -30,9 +39,10 @@ model_registry = ModelRegistry(
 )
 def DRPerm(
     X: np.ndarray, Y: np.ndarray, W: np.ndarray, *,
-    seed: int = 0, n_splits: int = 5,
+    seed: int = 0, n_folds: int = 5,
     clip_e = 0.01, n_perm = 150, alpha = 0.05, return_detail = True,
-    model_m = 'rf_regression', model_e = 'rf_classification'):
+    model_m = 'rf_regressor', model_e = 'rf_classifier',
+    model_registry = model_registry):
     X = np.asarray(X)
     Y = _as_1d(Y)
     W = _as_1d(W).astype(int)
@@ -48,7 +58,7 @@ def DRPerm(
         train_idx = np.setdiff1d(np.arange(n), test_idx)
         X_train, X_test = X[train_idx], X[test_idx]
         Y_train = Y[train_idx]
-        T_train = t[train_idx]
+        W_train = W[train_idx]
         #specify the outcome model and return it for each of the fold:
         model_propensity_score = model_registry[model_e]
         model_outcome = model_registry[model_m]
@@ -59,7 +69,7 @@ def DRPerm(
           fit_mu, X_test
           )
         fit_e = model_propensity_score['fit'](
-          X_train, T_train, seed = seed + 100 + k
+          X_train, W_train, seed = seed + 100 + k
           )
         e_hat[test_idx] = model_propensity_score['predict'](
           fit_e, X_test
@@ -69,7 +79,7 @@ def DRPerm(
     # Calculate the Pseudo-Outcome Scores/PO-risk
     # ----------------------------------------------------
     residual_y = Y - mu_hat
-    residual_t = T - e_hat
+    residual_t = W - e_hat
     pseudo_outcome = residual_y * residual_t
     # ----------------------------------------------------
     # Estimate the unpermuted PO-risk via outcome model
@@ -82,7 +92,7 @@ def DRPerm(
     # ----------------------------------------------------
     permuted_po_risk = np.zeros(n_perm, dtype = float)
     for b in range(n_perm):
-        t_perm = rng.permutation(t)
+        t_perm = rng.permutation(W)
         fit_e_perm = model_propensity_score['fit'](
           X, t_perm, seed = seed + 300 + b
         )
@@ -116,6 +126,11 @@ def DRPerm(
           'permuted_po_risk': permuted_po_risk
         })
     return out
+
+
+
+
+
 
 
     

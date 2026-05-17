@@ -29,28 +29,28 @@ def _fit_tau_rlearner_weighted(X, Y_tilde, W_tilde, seed: int = 0, clip_wtilde: 
     weights = (W_tilde[mask] ** 2)
     tau_model = Pipeline(
       steps = [
-      ('scaler': StandardScaler(with_mean = True, with_std = True)),
-      ('ridge': Ridge(alpha = 1.0, random_state = seed))])
+      ('scaler', StandardScaler(with_mean = True, with_std = True)),
+      ('ridge', Ridge(alpha = 1.0, random_state = seed))])
     tau_model.fit(X[mask], z, ridge__sample_weight = weights)
     return tau_model
 
 '''
 Making the folds here via the array_split:
 '''
-def make_folds(n, n_folds = n_folds, seed = seed):
-    random.seed(seed)
+def make_folds(n, n_folds = 5, seed = 2026):
+    rng = np.random.default_rng(seed)
     indices = np.arange(n)
-    random.shuffle(indices)
+    rng.shuffle(indices)
     folds = np.array_split(indices, n_folds)
     return folds
 
+
 '''
 Cross-fitting for the outcome model and the propensity score model:
-
 '''
 def cross_nuisance_fit(X, Y, W, n_folds = 5,
   n_estimators = 100, binary_outcome = True,
-  model_registry = model_registry,
+  model_registry = None,
   model_m = 'rf_regressor', model_e = 'rf_classifier',
   clip_e = 1e-3, seed = 2026):
     X = np.asarray(X)
@@ -61,6 +61,9 @@ def cross_nuisance_fit(X, Y, W, n_folds = 5,
     folds = make_folds(n, n_folds = n_folds, seed = seed)
     mu_hat = np.zeros(n, dtype = float)
     e_hat = np.zeros(n, dtype = float)
+    if model_registry is None:
+        from model_registry import ModelRegistry as default_registry
+        model_registry = default_registry
     for k, test_idx in enumerate(make_folds):
         train_idx = np.setdiff1d(np.arange(n), test_idx)
         X_train, X_test = X[train_idx], X[test_idx]
@@ -84,16 +87,6 @@ def cross_nuisance_fit(X, Y, W, n_folds = 5,
     e_hat = np.clip(e_hat, clip_e, 1 - clip_e)
     return mu_hat, e_hat
 
-
-'''
-Making the folds here via the array_split:
-'''
-def make_folds(n, n_folds = n_folds, seed = seed):
-    random.seed(seed)
-    indices = np.arange(n)
-    random.shuffle(indices)
-    folds = np.array_split(indices, n_folds)
-    return folds
 
 
     

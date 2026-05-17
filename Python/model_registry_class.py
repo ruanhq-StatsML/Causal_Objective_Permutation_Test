@@ -78,6 +78,8 @@ class ModelRegistry:
         self.warn_xgb_labels = bool(warn_xgb_labels)
         self.ridge_alpha = float(ridge_alpha)
         self.activation = activation
+        self.mlp_max_coef_reg = float(mlp_max_coef_reg)
+        self.mlp_max_coef_clf = float(mlp_max_coef_clf)
     def make_rf_regression(self):
         def fit(X, Y, seed = None):
             s = _rng_seed(seed)
@@ -349,8 +351,7 @@ class ModelRegistry:
           }
         return registry_map
 
-#Initiate this ModelRegistryFactory:
-
+#Initiate this ModelRegistryFactory to transform them to another dictionary:
 def default_model_registry(**registry_kwargs):
     mr = ModelRegistry(**registry_kwargs)
     return mr.as_r_style_dict()
