@@ -9,7 +9,7 @@ from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from utils import *
+#from utils import *
 from model_registry_class import ModelRegistry
 '''
 Permutation Test for Distribution Shift via PO-risk(Pseudo-Outcome Risk) followed by the permute-then-refit procedure:
@@ -28,7 +28,7 @@ Returns the cross-fitted value (m_hat, e_hat) evaluated on the whole data
 as well as the fitted outcome model and propensity score models.
 '''
 #Specify the model registry factory so that we can fetch the model with flexibility afterwards
-model_registry = default_model_registry(
+model_factory = ModelRegistry(
   ntree = 150,
   ridge_alpha = 0.25,
   nthread = 1, maxit = 200, max_depth = 5,
@@ -37,12 +37,14 @@ model_registry = default_model_registry(
   mlp_max_coef_reg = 10000, mlp_max_coef_clf = 10000,
   warn_xgb_labels = True, positive_class = 1
 )
+MODEL_REGISTRY = model_factory.as_r_style_dict()
+
 def DRPerm(
     X: np.ndarray, Y: np.ndarray, W: np.ndarray, *,
     seed: int = 0, n_folds: int = 5,
     clip_e = 0.01, n_perm = 150, alpha = 0.05, return_detail = True,
     model_m = 'rf_regressor', model_e = 'rf_classifier',
-    model_registry = model_registry):
+    model_registry = MODEL_REGISTRY):
     X = np.asarray(X)
     Y = _as_1d(Y)
     W = _as_1d(W).astype(int)
@@ -118,16 +120,10 @@ def DRPerm(
       'model_outcome': model_outcome['name'],
       'model_propensity_score': model_propensity_score['name']
     }
-    if return_detail:
-        out.update({
-          'mu_hat': mu_hat, 'e_hat': e_hat,
-          'residual_y': residual_y, 'residual_t': residual_t,
-          'pseudo_outcome': pseudo_outcome, 'tau_score': tau_score,
-          'permuted_po_risk': permuted_po_risk
-        })
     return out
 
-
+#output = DRPerm(X, Y, W, n_folds = 5, n_perm = 5,
+# model_registry = MODEL_REGISTRY)
 
 
 

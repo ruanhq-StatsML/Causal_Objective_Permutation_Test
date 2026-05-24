@@ -37,7 +37,7 @@ def linear_model_sensitivity(
     )
     X_noise = np.random.normal(0, 1, (n, p - n_signal))
     X_all = np.concatenate((X_design, X_noise), axis = 1)
-    df = pd.DataFrame(pd.concatenate((X_all, Y.reshape(-1, 1)), axis = 1))
+    df = pd.DataFrame(np.concatenate((X_all, Y.reshape(-1, 1)), axis = 1))
     df.columns = [f"X{i}" for i in range(p)] + ["Y"]
     return df
 

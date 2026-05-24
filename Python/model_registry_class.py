@@ -10,14 +10,13 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, Grad
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
-
 def _rng_seed(seed):
     return None if seed is None else int(seed)
 
-def _as_1d_float(y):
+def _as_1d(y):
     return np.asarray(y, dtype = float).ravel()
 
-def _as_2d_float(X):
+def _as_2d(X):
     Xa = np.asarray(X, dtype = float)
     if Xa.ndim == 1:
         return Xa.reshape(-1, 1) #(n, ) -> (n, 1)
@@ -32,7 +31,7 @@ def _standardize_cols(X):
 FitFn = Callable[..., Any]
 PredictFn = Callable[..., np.ndarray]
 
-#The model adapter class:
+#The model adapter class -- Config!
 @dataclass(frozen = True)
 class ModelAdapter:
     """ 
@@ -93,8 +92,8 @@ class ModelRegistry:
                 random_state = s,
                 n_jobs = (self.nthread if self.nthread > 1 else None)
             ).fit(Xa, Ya)
-        def predict(fit, X_new):
-            prediction = np.asarray(fit.predict(np.asarray(X_new, dtype = float)),
+        def predict(fit_obj, X_new):
+            prediction = np.asarray(fit_obj.predict(np.asarray(X_new, dtype = float)),
                 dtype = float).ravel()
             return prediction
         return ModelAdapter(name = 'rf_regressor', fit = fit, predict = predict)
@@ -186,6 +185,7 @@ class ModelRegistry:
             d = xgb.DMatrix(_as_2d_float(X_new))
             p_pos = np.asarray(booster.predict(d), dtype = float).ravel()
             return p_pos
+        #It's another config.
         return ModelAdapter(name = 'xgb_classifier', fit = fit, predict = predict) 
     #Specify the ridge regression:
     def make_ridge_regression(self):

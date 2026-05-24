@@ -264,7 +264,7 @@ class DGPConfig:
     n_ref: int = 1000
     n_new: int = 1000
     d: int = 12
-    X_dist = 'Normal'
+    X_dist = 'normal'
     t_df: int = 3
     x_shift_type = "none"
     concept_drift_type = "none"
@@ -295,8 +295,81 @@ class DGPConfig:
         return 'mixed'
 
 
-########
-#Making all of the Data-Generating Process with the Kennedy
+'''
+The configuration for generating DGP with covariate shift and concept drift only.
+'''
+def make_all_DGP_CSCD_Only(
+    n_ref = 1000,
+    n_new = 1000,
+    d = 10,
+    y_type = 'regression',
+    base_seed = 2026):
+    X_DIST = ['normal', 't_dist']
+    x_shift_type = ['mean', 'covariance', 'mixture', 'support', 'eigenshift', 'none']
+    concept_drift_type = ['none', 'linear', 'nonlinear', 'cubic', 'interaction', 'threshold']
+    delta_x_values = {
+    'none': [0.0],
+    'mean': [0.25, 0.75],
+    'covariance': [0.25, 0.75],
+    'mixture': [0.25, 0.75],
+    'support': [0.25, 0.75]
+    }
+    delta_c_values = {
+        'none': [0.0],
+        'linear': [0.25, 0.75],
+        'nonlinear': [0.25, 0.75],
+        'interaction': [0.25, 0.5, 0.75],
+        'threshold': [0.25, 0.5, 0.75],
+        'cubic': [0.25, 0.5, 0.75]
+        }
+    '''
+    Covariate Shift only and Concept Drift only
+    '''
+    configs = []
+    dgp_id = 0
+    for x_dists in X_DIST:
+        for xs in x_shift_type:
+            for dx in delta_x_values[xs]:
+                cfg = DGPConfig(
+                            dgp_id = dgp_id,
+                            n_ref = n_ref,
+                            n_new = n_new,
+                            d = d,
+                            X_dist = x_dists,
+                            x_shift_type = xs,
+                            concept_drift_type = 'none',
+                            delta_x = dx,
+                            delta_c = 0,
+                            y_type = y_type,
+                            seed = base_seed + dgp_id * 2
+                    )
+                configs.append(cfg)
+                dgp_id += 1
+    for x_dists in X_DIST:
+        for cds in concept_drift_type:
+            for dc in delta_c_values[cds]:
+                cfg = DGPConfig(
+                            dgp_id = dgp_id,
+                            n_ref = n_ref,
+                            n_new = n_new,
+                            d = d,
+                            X_dist = x_dists,
+                            x_shift_type = 'none',
+                            concept_drift_type = cds,
+                            delta_x = 0,
+                            delta_c = dc,
+                            y_type = y_type,
+                            seed = base_seed + dgp_id * 3
+                    )
+                configs.append(cfg)
+                dgp_id += 1                
+        return configs
+
+
+'''
+The configuration for generating DGP with 
+Both covariate shift and concept drift Exists.
+'''
 def make_all_DGP(
     n_ref = 1000,
     n_new = 1000,
@@ -325,27 +398,41 @@ def make_all_DGP(
     dgp_id = 0
     for x_dists in X_DIST:
         for cs in concept_drift_type:
-            for xs in x_shift_type:
-                for dc in delta_c_values[cs]:
-                    for dx in delta_x_values[xs]:
-                        cfg = DGPConfig(
-                            dgp_id = dgp_id,
-                            n_ref = n_ref,
-                            n_new = n_new,
-                            d = d,
-                            X_dist = x_dists,
-                            x_shift_type = xs,
-                            concept_drift_type = cs,
-                            delta_x = dx,
-                            delta_c = dc,
-                            y_type = y_type,
-                            seed = base_seed + dgp_id * 2
-                        )
-                        configs.append(cfg)
-                        dgp_id += 1
+            for dc in delta_c_values[cs]:
+                cfg = DGPConfig(
+                    dgp_id = dgp_id,
+                    n_ref = n_ref,
+                    n_new = n_new,
+                    d = d,
+                    X_dist = x_dists,
+                    x_shift_type = 'none',
+                    concept_drift_type = cs,
+                    delta_x = 0,
+                    delta_c = dc,
+                    y_type = y_type,
+                    seed = base_seed + dgp_id * 2
+                )
+                configs.append(cfg)
+                dgp_id += 1
+    for x_dists in X_DIST:
+        for xs in x_shift_type:
+            for dx in delta_x_values[xs]:
+                cfg = DGPConfig(
+                        dgp_id = dgp_id,
+                        n_ref = n_ref,
+                        n_new = n_new,
+                        d = d,
+                        X_dist = x_dists,
+                        x_shift_type = xs,
+                        concept_drift_type = 'none',
+                        delta_x = dx,
+                        delta_c = 0,
+                        y_type = y_type,
+                        seed = base_seed + dgp_id * 2
+                    )
+                configs.append(cfg)
+                dgp_id += 1
     return configs
-
-
 
 def generate_all_dgp(configs):
     outputs = []
@@ -366,20 +453,14 @@ def generate_all_dgp(configs):
 def main():
     configs = make_all_DGP()
     outputs, metadata_df = generate_all_dgp(configs)
-    np.save('results/DGP_whole_outputs_comprehensive_whole.npy',
+    np.save('results/DGP_whole_outputs_comprehensive_whole_onesided.npy',
     np.array(outputs, dtype = object),
     allow_pickle = True)
-    metadata_df.to_csv('results/DGP_whole_meta_comprehensive_whole.csv', index = False)
+    metadata_df.to_csv('results/DGP_whole_meta_comprehensive_whole_onesided.csv', index = False)
 
 
 
-
-
-
-
-
-
-
+#Calculate the relative performances with existing benchmarks.
 for row_idx, dgp_output in enumerate(benchmark_data[start_idx:], start=start_idx):
     X_ref, Y_ref, X_new, Y_new = (
         dgp_output.X_ref,
