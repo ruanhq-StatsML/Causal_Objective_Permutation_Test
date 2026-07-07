@@ -1,6 +1,7 @@
 #R-risk LOCO:
 import os 
-os.chdir("/Users/heqiaoruan/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub 2/Causal_Objective_Permutation_Test/Python") 
+from benchmark_root import chdir_to_script_dir
+chdir_to_script_dir() 
 import argparse
 import numpy as np
 import pandas as pd

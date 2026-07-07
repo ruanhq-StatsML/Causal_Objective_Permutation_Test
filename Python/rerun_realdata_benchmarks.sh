@@ -86,7 +86,9 @@ start_job whyshift_benchmark_run.py whyshift_benchmark_run.log
 
 echo ""
 echo "========== monitor =========="
+echo "  python monitor_benchmarks.py"
 echo "  python check_benchmark_status.py"
 echo "  tail -f video1234_benchmark.log ChronoBerg_benchmark.log"
 echo ""
 echo "Note: audio1234 skips pairs if real_data/audio*_pca30.npy is missing."
+echo "Jobs keep running after this script exits (nohup)."
