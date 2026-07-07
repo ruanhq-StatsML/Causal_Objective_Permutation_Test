@@ -12,6 +12,7 @@ EXPECTED = [
     ("time p-sweep", "time_profile_benchmark_vimpDS_by_p.csv", ["p", "rep"], 50,
      lambda: [(int(p), r) for p in [20, 50, 100, 200, 500] for r in range(10)]),
     ("video1234", "video1234_benchmark_metrics.csv", ["dataset_id", "rep"], 30, None),
+    ("audio1234", "audio1234_benchmark_metrics.csv", ["dataset_id", "rep"], 30, None),
     ("ChronoBerg cs30", "ChronoBerg_cs30_benchmark_metrics.csv", ["dataset_id"], 15, None),
     ("ChronoBerg adv", "ChronoBerg_benchmark_metrics.csv", ["dataset_id"], 115, None),
     ("FMoW", "FMoW_benchmark_metrics.csv", ["dataset_id", "shift_type"], 100, None),

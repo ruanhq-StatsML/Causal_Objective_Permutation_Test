@@ -21,6 +21,7 @@ EXPECTED_CSVS = [
     "time_profile_benchmark_vimpDS.csv",
     "time_profile_benchmark_vimpDS_by_p.csv",
     "video1234_benchmark_metrics.csv",
+    "audio1234_benchmark_metrics.csv",
     "ChronoBerg_cs30_benchmark_metrics.csv",
     "ChronoBerg_benchmark_metrics.csv",
     "FMoW_benchmark_metrics.csv",

@@ -4,6 +4,17 @@ from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, Sequence, Tuple
 import numpy as np
 import pandas as pd
+
+
+def _as_1d(y):
+    return np.asarray(y, dtype=float).ravel()
+
+
+def _as_2d(X):
+    Xa = np.asarray(X, dtype=float)
+    if Xa.ndim == 1:
+        return Xa.reshape(-1, 1)
+    return Xa
 from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
