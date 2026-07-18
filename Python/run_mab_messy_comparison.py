@@ -1,4 +1,4 @@
-"""Messy DGP (500d, 100k): Epsilon-Greedy exploration sweep vs LinUCB vs UCB vs Adaptive."""
+"""Messy DGP (d=30, 100k): Epsilon-Greedy exploration sweep vs LinUCB vs UCB vs Adaptive."""
 from __future__ import annotations
 
 import argparse
@@ -22,7 +22,7 @@ from mab_benchmark_core import (
 )
 
 SCALE_DGP = {
-    "name": "messy_d500_n100k",
+    "name": "messy_d30_n100k",
     "dgp": "nonlinear_messy",
     "shift_magnitude": 0.5,
     "shift_point_index": 50000,
@@ -325,7 +325,7 @@ def run_messy_comparison(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Messy DGP: ε-greedy vs LinUCB comparison")
     parser.add_argument("--n-repeats", type=int, default=3)
-    parser.add_argument("--feature-dim", type=int, default=500)
+    parser.add_argument("--feature-dim", type=int, default=30)
     parser.add_argument("--total-samples", type=int, default=100_000)
     parser.add_argument("--ref-samples", type=int, default=10_000)
     parser.add_argument("--batch-size", type=int, default=500)
