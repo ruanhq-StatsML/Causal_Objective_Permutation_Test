@@ -1,0 +1,65 @@
+[scale/eps] rep=1/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 46.0s total
+[scale/eps] rep=0 cfg=epsilon=0.05
+[scale/eps] rep=0 cfg=epsilon=0.1
+[scale/eps] rep=0 cfg=epsilon=0.15
+[scale/eps] rep=0 cfg=epsilon=0.2
+[scale/eps] rep=0 cfg=epsilon=0.3
+[scale/eps] rep=0 cfg=epsilon=0.4
+[scale/eps] rep=0 cfg=epsilon=0.5
+[scale/eps] rep=0 cfg=epsilon=0.6
+[scale/eps] rep=0 cfg=epsilon=0.7
+[scale/eps] rep=2/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.9s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.8s total
+[scale/eps] rep=1 cfg=epsilon=0.05
+[scale/eps] rep=1 cfg=epsilon=0.1
+[scale/eps] rep=1 cfg=epsilon=0.15
+[scale/eps] rep=1 cfg=epsilon=0.2
+[scale/eps] rep=1 cfg=epsilon=0.3
+[scale/eps] rep=1 cfg=epsilon=0.4
+[scale/eps] rep=1 cfg=epsilon=0.5
+[scale/eps] rep=1 cfg=epsilon=0.6
+[scale/eps] rep=1 cfg=epsilon=0.7
+[scale/eps] rep=3/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.7s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.9s total
+[scale/eps] rep=2 cfg=epsilon=0.05
+[scale/eps] rep=2 cfg=epsilon=0.1
+[scale/eps] rep=2 cfg=epsilon=0.15
+[scale/eps] rep=2 cfg=epsilon=0.2
+[scale/eps] rep=2 cfg=epsilon=0.3
+[scale/eps] rep=2 cfg=epsilon=0.4
+[scale/eps] rep=2 cfg=epsilon=0.5
+[scale/eps] rep=2 cfg=epsilon=0.6
+[scale/eps] rep=2 cfg=epsilon=0.7
+[scale/eps] rep=4/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.6s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.7s total
+[scale/eps] rep=3 cfg=epsilon=0.05
+[scale/eps] rep=3 cfg=epsilon=0.1
+[scale/eps] rep=3 cfg=epsilon=0.15
+[scale/eps] rep=3 cfg=epsilon=0.2
+[scale/eps] rep=3 cfg=epsilon=0.3
+[scale/eps] rep=3 cfg=epsilon=0.4
+[scale/eps] rep=3 cfg=epsilon=0.5
+[scale/eps] rep=3 cfg=epsilon=0.6
+[scale/eps] rep=3 cfg=epsilon=0.7
+[scale/eps] rep=5/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.7s total
+[scale/eps] rep=4 cfg=epsilon=0.05
+[scale/eps] rep=4 cfg=epsilon=0.1
+[scale/eps] rep=4 cfg=epsilon=0.15
+[scale/eps] rep=4 cfg=epsilon=0.2
+[scale/eps] rep=4 cfg=epsilon=0.3
+[scale/eps] rep=4 cfg=epsilon=0.4
+[scale/eps] rep=4 cfg=epsilon=0.5
+[scale/eps] rep=4 cfg=epsilon=0.6
+[scale/eps] rep=4 cfg=epsilon=0.7
+[scale/eps] saved mab_scale_d30_higheps_r5_summary.csv
+[scale/eps] saved mab_scale_d30_higheps_r5_variance_vs_explore.csv (9 rows)
+[scale/eps] saved mab_scale_d30_higheps_r5_variance_vs_explore.png
+[mab/prototype] saved mab_scale_d30_higheps_r5_confidence_bands.csv (600 rows, best config per method)
+[mab/prototype] saved mab_scale_d30_higheps_r5_confidence_bands_all_configs.csv (5400 rows, all configs)

@@ -1,0 +1,275 @@
+nohup: ignoring input
+[2026-07-18T18:58:46Z] ===== d=30 high-eps robustness pipeline begin =====
+[2026-07-18T18:58:46Z] START mab_scale_d30_higheps: run_mab_scale_eps.py --feature-dim 30 --total-samples 20000 --ref-samples 5000 --batch-size 25 --n-repeats 3 --epsilon-grid 0.05 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 --output-prefix mab_scale_d30_higheps
+[scale/eps] rep=1/3 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 46.0s total
+[scale/eps] rep=0 cfg=epsilon=0.05
+[scale/eps] rep=0 cfg=epsilon=0.1
+[scale/eps] rep=0 cfg=epsilon=0.15
+[scale/eps] rep=0 cfg=epsilon=0.2
+[scale/eps] rep=0 cfg=epsilon=0.3
+[scale/eps] rep=0 cfg=epsilon=0.4
+[scale/eps] rep=0 cfg=epsilon=0.5
+[scale/eps] rep=0 cfg=epsilon=0.6
+[scale/eps] rep=0 cfg=epsilon=0.7
+[scale/eps] rep=2/3 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.7s total
+[scale/eps] rep=1 cfg=epsilon=0.05
+[scale/eps] rep=1 cfg=epsilon=0.1
+[scale/eps] rep=1 cfg=epsilon=0.15
+[scale/eps] rep=1 cfg=epsilon=0.2
+[scale/eps] rep=1 cfg=epsilon=0.3
+[scale/eps] rep=1 cfg=epsilon=0.4
+[scale/eps] rep=1 cfg=epsilon=0.5
+[scale/eps] rep=1 cfg=epsilon=0.6
+[scale/eps] rep=1 cfg=epsilon=0.7
+[scale/eps] rep=3/3 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.5s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.6s total
+[scale/eps] rep=2 cfg=epsilon=0.05
+[scale/eps] rep=2 cfg=epsilon=0.1
+[scale/eps] rep=2 cfg=epsilon=0.15
+[scale/eps] rep=2 cfg=epsilon=0.2
+[scale/eps] rep=2 cfg=epsilon=0.3
+[scale/eps] rep=2 cfg=epsilon=0.4
+[scale/eps] rep=2 cfg=epsilon=0.5
+[scale/eps] rep=2 cfg=epsilon=0.6
+[scale/eps] rep=2 cfg=epsilon=0.7
+[scale/eps] saved mab_scale_d30_higheps_summary.csv
+[scale/eps] saved mab_scale_d30_higheps_variance_vs_explore.csv (9 rows)
+[scale/eps] saved mab_scale_d30_higheps_variance_vs_explore.png
+[mab/prototype] saved mab_scale_d30_higheps_confidence_bands.csv (600 rows, best config per method)
+[mab/prototype] saved mab_scale_d30_higheps_confidence_bands_all_configs.csv (5400 rows, all configs)
+[2026-07-18T19:01:11Z] OK mab_scale_d30_higheps
+[2026-07-18T19:01:11Z] START mab_scale_d30_higheps_r5: run_mab_scale_eps.py --feature-dim 30 --total-samples 20000 --ref-samples 5000 --batch-size 25 --n-repeats 5 --epsilon-grid 0.05 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 --output-prefix mab_scale_d30_higheps_r5
+[scale/eps] rep=1/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 46.0s total
+[scale/eps] rep=0 cfg=epsilon=0.05
+[scale/eps] rep=0 cfg=epsilon=0.1
+[scale/eps] rep=0 cfg=epsilon=0.15
+[scale/eps] rep=0 cfg=epsilon=0.2
+[scale/eps] rep=0 cfg=epsilon=0.3
+[scale/eps] rep=0 cfg=epsilon=0.4
+[scale/eps] rep=0 cfg=epsilon=0.5
+[scale/eps] rep=0 cfg=epsilon=0.6
+[scale/eps] rep=0 cfg=epsilon=0.7
+[scale/eps] rep=2/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.9s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.8s total
+[scale/eps] rep=1 cfg=epsilon=0.05
+[scale/eps] rep=1 cfg=epsilon=0.1
+[scale/eps] rep=1 cfg=epsilon=0.15
+[scale/eps] rep=1 cfg=epsilon=0.2
+[scale/eps] rep=1 cfg=epsilon=0.3
+[scale/eps] rep=1 cfg=epsilon=0.4
+[scale/eps] rep=1 cfg=epsilon=0.5
+[scale/eps] rep=1 cfg=epsilon=0.6
+[scale/eps] rep=1 cfg=epsilon=0.7
+[scale/eps] rep=3/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.7s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.9s total
+[scale/eps] rep=2 cfg=epsilon=0.05
+[scale/eps] rep=2 cfg=epsilon=0.1
+[scale/eps] rep=2 cfg=epsilon=0.15
+[scale/eps] rep=2 cfg=epsilon=0.2
+[scale/eps] rep=2 cfg=epsilon=0.3
+[scale/eps] rep=2 cfg=epsilon=0.4
+[scale/eps] rep=2 cfg=epsilon=0.5
+[scale/eps] rep=2 cfg=epsilon=0.6
+[scale/eps] rep=2 cfg=epsilon=0.7
+[scale/eps] rep=4/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.6s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.7s total
+[scale/eps] rep=3 cfg=epsilon=0.05
+[scale/eps] rep=3 cfg=epsilon=0.1
+[scale/eps] rep=3 cfg=epsilon=0.15
+[scale/eps] rep=3 cfg=epsilon=0.2
+[scale/eps] rep=3 cfg=epsilon=0.3
+[scale/eps] rep=3 cfg=epsilon=0.4
+[scale/eps] rep=3 cfg=epsilon=0.5
+[scale/eps] rep=3 cfg=epsilon=0.6
+[scale/eps] rep=3 cfg=epsilon=0.7
+[scale/eps] rep=5/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.8s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.7s total
+[scale/eps] rep=4 cfg=epsilon=0.05
+[scale/eps] rep=4 cfg=epsilon=0.1
+[scale/eps] rep=4 cfg=epsilon=0.15
+[scale/eps] rep=4 cfg=epsilon=0.2
+[scale/eps] rep=4 cfg=epsilon=0.3
+[scale/eps] rep=4 cfg=epsilon=0.4
+[scale/eps] rep=4 cfg=epsilon=0.5
+[scale/eps] rep=4 cfg=epsilon=0.6
+[scale/eps] rep=4 cfg=epsilon=0.7
+[scale/eps] saved mab_scale_d30_higheps_r5_summary.csv
+[scale/eps] saved mab_scale_d30_higheps_r5_variance_vs_explore.csv (9 rows)
+[scale/eps] saved mab_scale_d30_higheps_r5_variance_vs_explore.png
+[mab/prototype] saved mab_scale_d30_higheps_r5_confidence_bands.csv (600 rows, best config per method)
+[mab/prototype] saved mab_scale_d30_higheps_r5_confidence_bands_all_configs.csv (5400 rows, all configs)
+[2026-07-18T19:05:08Z] OK mab_scale_d30_higheps_r5
+[2026-07-18T19:05:08Z] START mab_scale_d30_dense_higheps: run_mab_scale_eps.py --feature-dim 30 --total-samples 20000 --ref-samples 5000 --batch-size 25 --n-repeats 5 --epsilon-grid 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 --output-prefix mab_scale_d30_dense_higheps
+[scale/eps] rep=1/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.7s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.6s total
+[scale/eps] rep=0 cfg=epsilon=0.3
+[scale/eps] rep=0 cfg=epsilon=0.35
+[scale/eps] rep=0 cfg=epsilon=0.4
+[scale/eps] rep=0 cfg=epsilon=0.45
+[scale/eps] rep=0 cfg=epsilon=0.5
+[scale/eps] rep=0 cfg=epsilon=0.55
+[scale/eps] rep=0 cfg=epsilon=0.6
+[scale/eps] rep=0 cfg=epsilon=0.65
+[scale/eps] rep=0 cfg=epsilon=0.7
+[scale/eps] rep=2/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.6s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 45.5s total
+[scale/eps] rep=1 cfg=epsilon=0.3
+[scale/eps] rep=1 cfg=epsilon=0.35
+[scale/eps] rep=1 cfg=epsilon=0.4
+[scale/eps] rep=1 cfg=epsilon=0.45
+[scale/eps] rep=1 cfg=epsilon=0.5
+[scale/eps] rep=1 cfg=epsilon=0.55
+[scale/eps] rep=1 cfg=epsilon=0.6
+[scale/eps] rep=1 cfg=epsilon=0.65
+[scale/eps] rep=1 cfg=epsilon=0.7
+[scale/eps] rep=3/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 22.1s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 46.5s total
+[scale/eps] rep=2 cfg=epsilon=0.3
+[scale/eps] rep=2 cfg=epsilon=0.35
+[scale/eps] rep=2 cfg=epsilon=0.4
+[scale/eps] rep=2 cfg=epsilon=0.45
+[scale/eps] rep=2 cfg=epsilon=0.5
+[scale/eps] rep=2 cfg=epsilon=0.55
+[scale/eps] rep=2 cfg=epsilon=0.6
+[scale/eps] rep=2 cfg=epsilon=0.65
+[scale/eps] rep=2 cfg=epsilon=0.7
+[scale/eps] rep=4/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 21.3s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 78.9s total
+[scale/eps] rep=3 cfg=epsilon=0.3
+[scale/eps] rep=3 cfg=epsilon=0.35
+[scale/eps] rep=3 cfg=epsilon=0.4
+[scale/eps] rep=3 cfg=epsilon=0.45
+[scale/eps] rep=3 cfg=epsilon=0.5
+[scale/eps] rep=3 cfg=epsilon=0.55
+[scale/eps] rep=3 cfg=epsilon=0.6
+[scale/eps] rep=3 cfg=epsilon=0.65
+[scale/eps] rep=3 cfg=epsilon=0.7
+[scale/eps] rep=5/5 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 184.5s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 229.6s total
+[scale/eps] rep=4 cfg=epsilon=0.3
+[scale/eps] rep=4 cfg=epsilon=0.35
+[scale/eps] rep=4 cfg=epsilon=0.4
+[scale/eps] rep=4 cfg=epsilon=0.45
+[scale/eps] rep=4 cfg=epsilon=0.5
+[scale/eps] rep=4 cfg=epsilon=0.55
+[scale/eps] rep=4 cfg=epsilon=0.6
+[scale/eps] rep=4 cfg=epsilon=0.65
+[scale/eps] rep=4 cfg=epsilon=0.7
+[scale/eps] saved mab_scale_d30_dense_higheps_summary.csv
+[scale/eps] saved mab_scale_d30_dense_higheps_variance_vs_explore.csv (9 rows)
+[scale/eps] saved mab_scale_d30_dense_higheps_variance_vs_explore.png
+[mab/prototype] saved mab_scale_d30_dense_higheps_confidence_bands.csv (600 rows, best config per method)
+[mab/prototype] saved mab_scale_d30_dense_higheps_confidence_bands_all_configs.csv (5400 rows, all configs)
+[2026-07-18T19:12:42Z] OK mab_scale_d30_dense_higheps
+[2026-07-18T19:12:42Z] START mab_scale_d30_n40k_higheps: run_mab_scale_eps.py --feature-dim 30 --total-samples 40000 --ref-samples 8000 --batch-size 50 --n-repeats 3 --epsilon-grid 0.05 0.10 0.20 0.30 0.40 0.50 0.60 0.70 --output-prefix mab_scale_d30_n40k_higheps
+[scale/eps] rep=1/3 generating DGP (d=30, n=40000, ref=8000, batch=50)
+[scale/eps] DGP ready in 297.3s, n_batches=640, shift_batch=240
+[scale/eps] batch cache in 404.4s total
+[scale/eps] rep=0 cfg=epsilon=0.05
+[scale/eps] rep=0 cfg=epsilon=0.1
+[scale/eps] rep=0 cfg=epsilon=0.2
+[scale/eps] rep=0 cfg=epsilon=0.3
+[scale/eps] rep=0 cfg=epsilon=0.4
+[scale/eps] rep=0 cfg=epsilon=0.5
+[scale/eps] rep=0 cfg=epsilon=0.6
+[scale/eps] rep=0 cfg=epsilon=0.7
+[scale/eps] rep=2/3 generating DGP (d=30, n=40000, ref=8000, batch=50)
+[scale/eps] DGP ready in 279.9s, n_batches=640, shift_batch=240
+[scale/eps] batch cache in 383.1s total
+[scale/eps] rep=1 cfg=epsilon=0.05
+[scale/eps] rep=1 cfg=epsilon=0.1
+[scale/eps] rep=1 cfg=epsilon=0.2
+[scale/eps] rep=1 cfg=epsilon=0.3
+[scale/eps] rep=1 cfg=epsilon=0.4
+[scale/eps] rep=1 cfg=epsilon=0.5
+[scale/eps] rep=1 cfg=epsilon=0.6
+[scale/eps] rep=1 cfg=epsilon=0.7
+[scale/eps] rep=3/3 generating DGP (d=30, n=40000, ref=8000, batch=50)
+[scale/eps] DGP ready in 292.3s, n_batches=640, shift_batch=240
+[scale/eps] batch cache in 398.5s total
+[scale/eps] rep=2 cfg=epsilon=0.05
+[scale/eps] rep=2 cfg=epsilon=0.1
+[scale/eps] rep=2 cfg=epsilon=0.2
+[scale/eps] rep=2 cfg=epsilon=0.3
+[scale/eps] rep=2 cfg=epsilon=0.4
+[scale/eps] rep=2 cfg=epsilon=0.5
+[scale/eps] rep=2 cfg=epsilon=0.6
+[scale/eps] rep=2 cfg=epsilon=0.7
+[scale/eps] saved mab_scale_d30_n40k_higheps_summary.csv
+[scale/eps] saved mab_scale_d30_n40k_higheps_variance_vs_explore.csv (8 rows)
+[scale/eps] saved mab_scale_d30_n40k_higheps_variance_vs_explore.png
+[mab/prototype] saved mab_scale_d30_n40k_higheps_confidence_bands.csv (640 rows, best config per method)
+[mab/prototype] saved mab_scale_d30_n40k_higheps_confidence_bands_all_configs.csv (5120 rows, all configs)
+[2026-07-18T19:32:36Z] OK mab_scale_d30_n40k_higheps
+
+===== variance_vs_explore summaries =====
+
+--- mab_scale_d30_dense_higheps_variance_vs_explore.csv ---
+ epsilon  explore_traffic_ratio  final_regret_mean  final_regret_std  final_regret_cv  path_cumregret_std_mean  n_repeats
+    0.30                   0.30          73.462224          4.343731         0.059129                 1.899863          5
+    0.35                   0.35          73.021003          1.895604         0.025960                 0.847223          5
+    0.40                   0.40          74.052188          1.698351         0.022935                 1.127197          5
+    0.45                   0.45          74.208944          1.842756         0.024832                 0.755724          5
+    0.50                   0.50          75.293449          2.423189         0.032183                 1.054832          5
+    0.55                   0.55          77.128958          2.885970         0.037417                 1.169120          5
+    0.60                   0.60          77.862682          1.456256         0.018703                 0.874030          5
+    0.65                   0.65          76.490009          1.312980         0.017165                 1.041865          5
+    0.70                   0.70          77.570822          1.717588         0.022142                 1.208227          5
+best_mean_eps=0.35 regret=73.0210 | most_robust_high_eps(cv)=0.65 cv=0.0172
+
+--- mab_scale_d30_higheps_r5_variance_vs_explore.csv ---
+ epsilon  explore_traffic_ratio  final_regret_mean  final_regret_std  final_regret_cv  path_cumregret_std_mean  n_repeats
+    0.05                   0.05          79.867244         11.175060         0.139920                 5.534018          5
+    0.10                   0.10          74.808478          4.913525         0.065681                 3.000396          5
+    0.15                   0.15          71.661591          2.759432         0.038506                 1.460532          5
+    0.20                   0.20          69.864535          3.168271         0.045349                 1.714508          5
+    0.30                   0.30          71.356084          2.614803         0.036644                 1.368622          5
+    0.40                   0.40          72.794757          3.288455         0.045174                 1.699515          5
+    0.50                   0.50          73.446990          2.821720         0.038418                 1.174536          5
+    0.60                   0.60          76.907012          0.629474         0.008185                 0.763267          5
+    0.70                   0.70          78.270783          2.532254         0.032352                 1.362796          5
+best_mean_eps=0.2 regret=69.8645 | most_robust_high_eps(cv)=0.6 cv=0.0082
+
+--- mab_scale_d30_higheps_variance_vs_explore.csv ---
+ epsilon  explore_traffic_ratio  final_regret_mean  final_regret_std  final_regret_cv  path_cumregret_std_mean  n_repeats
+    0.05                   0.05          80.000737          7.816658         0.097707                 4.273423          3
+    0.10                   0.10          69.808080          3.061945         0.043862                 1.649410          3
+    0.15                   0.15          69.507125          2.593696         0.037316                 0.809186          3
+    0.20                   0.20          69.902810          3.503322         0.050117                 1.527119          3
+    0.30                   0.30          70.270211          1.261302         0.017949                 0.716129          3
+    0.40                   0.40          74.724601          1.560225         0.020880                 0.514152          3
+    0.50                   0.50          73.665100          1.043362         0.014164                 0.521076          3
+    0.60                   0.60          76.026320          3.961318         0.052105                 1.575351          3
+    0.70                   0.70          77.678845          1.880250         0.024205                 1.184598          3
+best_mean_eps=0.15 regret=69.5071 | most_robust_high_eps(cv)=0.5 cv=0.0142
+
+--- mab_scale_d30_n40k_higheps_variance_vs_explore.csv ---
+ epsilon  explore_traffic_ratio  final_regret_mean  final_regret_std  final_regret_cv  path_cumregret_std_mean  n_repeats
+    0.05                   0.05          46.932304          2.656331         0.056599                 1.549783          3
+    0.10                   0.10          50.813841          5.504680         0.108330                 3.396005          3
+    0.20                   0.20          47.247069          1.890056         0.040004                 1.007716          3
+    0.30                   0.30          49.217588          0.926581         0.018826                 0.592678          3
+    0.40                   0.40          50.150361          1.125421         0.022441                 0.561393          3
+    0.50                   0.50          49.440854          0.801613         0.016214                 0.404878          3
+    0.60                   0.60          53.003499          0.588541         0.011104                 0.481397          3
+    0.70                   0.70          53.592765          1.367918         0.025524                 0.915205          3
+best_mean_eps=0.05 regret=46.9323 | most_robust_high_eps(cv)=0.6 cv=0.0111
+
+DONE
+[2026-07-18T19:32:36Z] ===== pipeline complete =====
