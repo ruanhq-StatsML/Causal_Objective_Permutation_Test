@@ -78,40 +78,59 @@ def generate_dgp(
 
     X = rng.normal(0, 1, size=(total_samples, feature_dim))
     beta = np.zeros(feature_dim)
-    beta[:15] = np.arange(15) / 10.0
+    n_sig = min(15, feature_dim)
+    beta[:n_sig] = np.arange(n_sig) / 10.0
 
-    if dgp == "linear_shift":
+    def _xi(col: int) -> np.ndarray:
+        return X[:, col % feature_dim]
+
+    if dgp in ("stationary", "nonlinear_stationary"):
+        # Fully stationary: same conditional law for all t (no CD / covariate shift).
+        Y = (
+            X @ beta
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.01
+            + (5.0 / (_xi(11) ** 2 + 0.15))
+            + rng.normal(0, noise_scale * 2, size=total_samples)
+        ) / 25.0
+        shift_point = total_samples  # no post-shift regime
+    elif dgp == "linear_shift":
         Y = (X @ beta + rng.normal(0, noise_scale * 2, size=total_samples)) / 25.0
     elif dgp == "nonlinear_messy_rich":
         Y = (
             X @ beta
-            + (X[:, 1] ** 2) * 0.015
-            + np.sin(X[:, 2] ** 2) * 0.05
-            + (X[:, 7] ** 2) * 0.25
-            + (X[:, 27] ** 2) * 0.2
-            + (5.0 / (X[:, 11] ** 2 + 0.15))
-            + (X[:, 3] * X[:, 5]) * 0.1
-            + np.cos(X[:, 8] * X[:, 9]) * 0.2
-            + np.exp(X[:, 4] * 0.01) * 0.5
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.25
+            + (_xi(27) ** 2) * 0.2
+            + (5.0 / (_xi(11) ** 2 + 0.15))
+            + (_xi(3) * _xi(5)) * 0.1
+            + np.cos(_xi(8) * _xi(9)) * 0.2
+            + np.exp(_xi(4) * 0.01) * 0.5
             + rng.normal(0, noise_scale * 2, size=total_samples)
         ) / 5.0
     else:
         Y = (
             X @ beta
-            + (X[:, 1] ** 2) * 0.015
-            + np.sin(X[:, 2] ** 2) * 0.05
-            + (X[:, 7] ** 2) * 0.01
-            + (5.0 / (X[:, 11] ** 2 + 0.15))
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.01
+            + (5.0 / (_xi(11) ** 2 + 0.15))
             + rng.normal(0, noise_scale * 2, size=total_samples)
         ) / 25.0
-    beta_new = np.zeros(feature_dim)
-    beta_new[15:30] = np.arange(15) / 50.0
-    post_len = total_samples - shift_point
-    Y[shift_point:] = (
-        Y[shift_point:]
-        + (X[shift_point:] @ beta_new) * shift_magnitude
-        + rng.normal(0, noise_scale * 0.8, size=post_len)
-    )
+
+    if dgp not in ("stationary", "nonlinear_stationary"):
+        beta_new = np.zeros(feature_dim)
+        n_jump = min(15, max(0, feature_dim - n_sig))
+        if n_jump > 0:
+            beta_new[n_sig : n_sig + n_jump] = np.arange(n_jump) / 50.0
+        post_len = total_samples - shift_point
+        Y[shift_point:] = (
+            Y[shift_point:]
+            + (X[shift_point:] @ beta_new) * shift_magnitude
+            + rng.normal(0, noise_scale * 0.8, size=post_len)
+        )
     scaler = StandardScaler()
     X_ref = X[:ref_samples]
     scaler.fit(X_ref)
