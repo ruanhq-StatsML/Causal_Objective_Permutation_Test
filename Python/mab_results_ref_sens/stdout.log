@@ -1,0 +1,57 @@
+[ref-sens] n_ref=500 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=500 rep=0 ready in 9.6s n_batches=145 shift_batch=70 actual_ref=500
+[ref-sens] n_ref=500 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=500 rep=1 ready in 11.6s n_batches=145 shift_batch=70 actual_ref=500
+[ref-sens] n_ref=500 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=500 rep=2 ready in 9.1s n_batches=145 shift_batch=70 actual_ref=500
+[ref-sens] n_ref=1000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=1000 rep=0 ready in 10.8s n_batches=140 shift_batch=65 actual_ref=1000
+[ref-sens] n_ref=1000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=1000 rep=1 ready in 10.9s n_batches=140 shift_batch=65 actual_ref=1000
+[ref-sens] n_ref=1000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=1000 rep=2 ready in 10.7s n_batches=140 shift_batch=65 actual_ref=1000
+[ref-sens] n_ref=2000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=2000 rep=0 ready in 14.6s n_batches=130 shift_batch=55 actual_ref=2000
+[ref-sens] n_ref=2000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=2000 rep=1 ready in 14.6s n_batches=130 shift_batch=55 actual_ref=2000
+[ref-sens] n_ref=2000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=2000 rep=2 ready in 14.5s n_batches=130 shift_batch=55 actual_ref=2000
+[ref-sens] n_ref=3000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=3000 rep=0 ready in 18.2s n_batches=120 shift_batch=45 actual_ref=3000
+[ref-sens] n_ref=3000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=3000 rep=1 ready in 18.5s n_batches=120 shift_batch=45 actual_ref=3000
+[ref-sens] n_ref=3000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=3000 rep=2 ready in 18.7s n_batches=120 shift_batch=45 actual_ref=3000
+[ref-sens] n_ref=4000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=4000 rep=0 ready in 22.7s n_batches=110 shift_batch=35 actual_ref=4000
+[ref-sens] n_ref=4000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=4000 rep=1 ready in 22.5s n_batches=110 shift_batch=35 actual_ref=4000
+[ref-sens] n_ref=4000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=4000 rep=2 ready in 22.8s n_batches=110 shift_batch=35 actual_ref=4000
+[ref-sens] n_ref=5000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=5000 rep=0 ready in 27.1s n_batches=100 shift_batch=25 actual_ref=5000
+[ref-sens] n_ref=5000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=5000 rep=1 ready in 27.0s n_batches=100 shift_batch=25 actual_ref=5000
+[ref-sens] n_ref=5000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=5000 rep=2 ready in 27.0s n_batches=100 shift_batch=25 actual_ref=5000
+[ref-sens] n_ref=6000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=6000 rep=0 ready in 31.4s n_batches=90 shift_batch=15 actual_ref=6000
+[ref-sens] n_ref=6000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=6000 rep=1 ready in 31.2s n_batches=90 shift_batch=15 actual_ref=6000
+[ref-sens] n_ref=6000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=6000 rep=2 ready in 31.5s n_batches=90 shift_batch=15 actual_ref=6000
+[ref-sens] n_ref=8000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=8000 rep=0 ready in 39.1s n_batches=70 shift_batch=1 actual_ref=8000
+[ref-sens] n_ref=8000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=8000 rep=1 ready in 39.2s n_batches=70 shift_batch=1 actual_ref=8000
+[ref-sens] n_ref=8000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=8000 rep=2 ready in 39.3s n_batches=70 shift_batch=1 actual_ref=8000
+[ref-sens] n_ref=10000 rep=1/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=10000 rep=0 ready in 49.2s n_batches=50 shift_batch=1 actual_ref=10000
+[ref-sens] n_ref=10000 rep=2/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=10000 rep=1 ready in 49.4s n_batches=50 shift_batch=1 actual_ref=10000
+[ref-sens] n_ref=10000 rep=3/3 d=30 n=15000 batch=100 dgp=nonlinear_messy_ultra
+[ref-sens] n_ref=10000 rep=2 ready in 48.3s n_batches=50 shift_batch=1 actual_ref=10000
+[ref-sens] saved mab_eps_ref_sensitivity_summary.csv
+[ref-sens] saved mab_eps_ref_sensitivity_ref_sensitivity.csv (54 rows)
+[ref-sens] saved mab_eps_ref_sensitivity_ref_sensitivity.png
