@@ -144,6 +144,9 @@ def run_scale_eps_benchmark(
     data_cfg["total_samples"] = total_samples
     data_cfg["ref_samples"] = ref_samples
     data_cfg["batch_size"] = batch_size
+    # Keep concept drift mid-stream when n is smaller than SCALE_DGP's default shift.
+    if int(data_cfg.get("shift_point_index", 0)) >= int(total_samples):
+        data_cfg["shift_point_index"] = int(total_samples) // 2
 
     n_arms = run_config["model_pool"]["n_arms"]
     rows: List[Dict[str, Any]] = []
