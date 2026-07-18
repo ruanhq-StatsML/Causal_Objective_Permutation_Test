@@ -28,7 +28,7 @@ SCALE_DGP = {
     "shift_point_index": 50000,
 }
 
-DEFAULT_EPS = [0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.10, 0.15, 0.20, 0.30]
+DEFAULT_EPS = [0.01, 0.02, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60]
 
 MESSY_COMPARISON_POLICIES = {
     "Epsilon_Greedy": {
@@ -336,6 +336,13 @@ if __name__ == "__main__":
         default=None,
         help="subset of: Epsilon_Greedy LinUCB_Vanilla LinUCB_Momentum AdaptiveEpsilonGreedy UCB",
     )
+    parser.add_argument(
+        "--epsilon",
+        nargs="+",
+        type=float,
+        default=None,
+        help="override ε grid for Epsilon_Greedy, e.g. --epsilon 0.01 0.05 0.1",
+    )
     parser.add_argument("--quick", action="store_true", help="smaller scale smoke test")
     args = parser.parse_args()
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -351,6 +358,7 @@ if __name__ == "__main__":
         total_samples=args.total_samples,
         ref_samples=args.ref_samples,
         batch_size=args.batch_size,
+        epsilon_grid=args.epsilon,
         output_prefix=args.output_prefix,
         policy_names=args.policies,
     )
