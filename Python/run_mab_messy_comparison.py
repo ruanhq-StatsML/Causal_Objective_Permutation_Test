@@ -213,7 +213,7 @@ def plot_regret_curves(curves_df: pd.DataFrame, metrics_df: pd.DataFrame, output
 
 
 def run_messy_comparison(
-    n_repeats: int = 3,
+    n_repeats: int = 5,
     feature_dim: int = 500,
     total_samples: int = 100_000,
     ref_samples: int = 10_000,
@@ -324,7 +324,7 @@ def run_messy_comparison(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Messy DGP: ε-greedy vs LinUCB comparison")
-    parser.add_argument("--n-repeats", type=int, default=3)
+    parser.add_argument("--n-repeats", type=int, default=5)
     parser.add_argument("--feature-dim", type=int, default=30)
     parser.add_argument("--total-samples", type=int, default=100_000)
     parser.add_argument("--ref-samples", type=int, default=10_000)
