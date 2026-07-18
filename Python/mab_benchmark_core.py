@@ -583,6 +583,34 @@ class EpsilonGreedy(Policy):
         self.t += 1
 
 
+class EpsilonMomentum(Policy):
+    """ε-greedy with exponential moving-average value estimates (momentum γ)."""
+
+    def __init__(self, n_arms: int, epsilon: float = 0.05, gamma: float = 0.8, seed: int = 0):
+        super().__init__(n_arms, seed=seed)
+        self.epsilon = float(epsilon)
+        self.gamma = float(gamma)
+        self.counts = np.zeros(n_arms, dtype=float)
+        self.values = np.zeros(n_arms, dtype=float)
+        self.initialized = np.zeros(n_arms, dtype=bool)
+
+    def select_arm(self, context: Optional[np.ndarray] = None) -> int:
+        del context
+        if self.rng.random() < self.epsilon:
+            return int(self.rng.integers(0, self.n_arms))
+        return int(np.argmax(self.values))
+
+    def update(self, arm: int, reward: float, context: Optional[np.ndarray] = None) -> None:
+        del context
+        self.counts[arm] += 1
+        if not self.initialized[arm]:
+            self.values[arm] = float(reward)
+            self.initialized[arm] = True
+        else:
+            self.values[arm] = self.gamma * self.values[arm] + (1.0 - self.gamma) * float(reward)
+        self.t += 1
+
+
 class AdaptiveEpsilonGreedy(Policy):
     def __init__(
         self,
@@ -618,6 +646,54 @@ class AdaptiveEpsilonGreedy(Policy):
         self.counts[arm] += 1
         self.values[arm] += (reward - self.values[arm]) / self.counts[arm]
         self.t += 1
+
+
+class AdaptiveEpsilonGreedyEWMA(Policy):
+    """EWMA mean + drift-adaptive epsilon (cov shift + MSE anomaly via drift_delta)."""
+
+    uses_drift_delta = True
+
+    def __init__(
+        self,
+        n_arms: int,
+        base_epsilon: float = 0.025,
+        max_epsilon: float = 0.5,
+        gamma: float = 0.9,
+        anomaly_sensitivity: float = 0.5,
+        seed: int = 0,
+    ):
+        super().__init__(n_arms, seed=seed)
+        self.base_epsilon = float(base_epsilon)
+        self.max_epsilon = float(max_epsilon)
+        self.gamma = float(gamma)
+        self.anomaly_sensitivity = float(anomaly_sensitivity)
+        self.mu = np.zeros(n_arms, dtype=float)
+        self.counts = np.zeros(n_arms, dtype=float)
+
+    def select_arm(
+        self,
+        context: Optional[np.ndarray] = None,
+        drift_delta: float = 0.0,
+    ) -> int:
+        del context
+        epsilon = min(
+            self.max_epsilon,
+            self.base_epsilon + float(drift_delta) * self.anomaly_sensitivity,
+        )
+        if self.rng.random() < epsilon:
+            return int(self.rng.integers(0, self.n_arms))
+        return int(np.argmax(self.mu))
+
+    def update(self, arm: int, reward: float, context: Optional[np.ndarray] = None) -> None:
+        del context
+        self.mu[arm] = self.gamma * self.mu[arm] + (1.0 - self.gamma) * float(reward)
+        self.counts[arm] += 1
+        self.t += 1
+
+    def reset(self) -> None:
+        super().reset()
+        self.mu.fill(0.0)
+        self.counts.fill(0.0)
 
 
 class UCB(Policy):
@@ -775,8 +851,24 @@ def make_policy(name: str, n_arms: int, d_context: int, cfg: Dict[str, Any]) -> 
         return Random(n_arms, seed=seed)
     if name == "Epsilon_Greedy":
         return EpsilonGreedy(n_arms, epsilon=float(cfg.get("epsilon", 0.1)), seed=seed)
+    if name == "Epsilon_Momentum":
+        return EpsilonMomentum(
+            n_arms,
+            epsilon=float(cfg.get("epsilon", 0.05)),
+            gamma=float(cfg.get("gamma", 0.8)),
+            seed=seed,
+        )
     if name == "AdaptiveEpsilonGreedy":
         return AdaptiveEpsilonGreedy(
+            n_arms,
+            base_epsilon=float(cfg.get("base_epsilon", 0.05)),
+            max_epsilon=float(cfg.get("max_epsilon", 0.5)),
+            gamma=float(cfg.get("gamma", 0.9)),
+            anomaly_sensitivity=float(cfg.get("anomaly_sensitivity", 0.5)),
+            seed=seed,
+        )
+    if name == "AdaptiveEpsilonGreedyEWMA":
+        return AdaptiveEpsilonGreedyEWMA(
             n_arms,
             base_epsilon=float(cfg.get("base_epsilon", 0.05)),
             max_epsilon=float(cfg.get("max_epsilon", 0.5)),
@@ -911,7 +1003,9 @@ def run_experiment(
         if calm_streak >= decay_window:
             anomaly_weight = max(min_anomaly_weight, anomaly_weight * decay_rate)
 
-        if use_context and hasattr(policy, "select_arm"):
+        if getattr(policy, "uses_drift_delta", False):
+            arm = policy.select_arm(context, drift_delta=fused)
+        elif use_context and hasattr(policy, "select_arm"):
             arm = policy.select_arm(context)
         else:
             arm = policy.select_arm(None)
