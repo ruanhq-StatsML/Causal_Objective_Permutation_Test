@@ -238,8 +238,34 @@ if __name__ == "__main__":
     parser.add_argument("--feature-dim", type=int, default=30)
     parser.add_argument("--n-repeats", type=int, default=3)
     parser.add_argument("--output-prefix", default=None)
+    parser.add_argument(
+        "--policies",
+        nargs="+",
+        default=None,
+        help="subset of policy names (default: all in MULTI_POLICIES)",
+    )
+    parser.add_argument(
+        "--epsilon-grid",
+        nargs="+",
+        type=float,
+        default=None,
+        help="override Epsilon_Greedy epsilon list",
+    )
     args = parser.parse_args()
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Optional runtime overrides of the global policy grid.
+    if args.policies is not None or args.epsilon_grid is not None:
+        selected = args.policies if args.policies is not None else list(MULTI_POLICIES.keys())
+        override = {name: copy.deepcopy(MULTI_POLICIES[name]) for name in selected}
+        if args.epsilon_grid is not None:
+            if "Epsilon_Greedy" not in override:
+                override["Epsilon_Greedy"] = {}
+            override["Epsilon_Greedy"]["epsilon"] = [float(x) for x in args.epsilon_grid]
+        # Temporarily replace for this process.
+        MULTI_POLICIES.clear()
+        MULTI_POLICIES.update(override)
+
     run_multimethod(
         setting=args.setting,
         feature_dim=args.feature_dim,
