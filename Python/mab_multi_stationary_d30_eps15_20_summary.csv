@@ -1,0 +1,3 @@
+policy,config_id,final_regret_mean,final_regret_std,final_regret_best,n_repeats
+Epsilon_Greedy,epsilon=0.15,7.102334666849814,0.9745401470967773,6.336944358857718,3
+Epsilon_Greedy,epsilon=0.2,7.394585477814573,0.25211480613239284,7.1640403725360695,3
