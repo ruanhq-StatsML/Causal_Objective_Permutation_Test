@@ -1,0 +1,56 @@
+[multi] setting=stationary dgp=stationary d=30 n=20000 ref=5000 batch=25 policies_jobs=13 repeats=3
+[multi] rep=1/3 generating DGP...
+[multi] DGP ready in 296.7s n_batches=600 shift_batch=600
+[multi] rep=0 policy=Epsilon_Greedy cfg=epsilon=0.02
+[multi] rep=0 policy=Epsilon_Greedy cfg=epsilon=0.05
+[multi] rep=0 policy=Epsilon_Greedy cfg=epsilon=0.1
+[multi] rep=0 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=0 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=0 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=0 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=0 policy=UCB cfg=default
+[multi] rep=0 policy=Random cfg=default
+[multi] rep=0 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=50|use_momentum=False
+[multi] rep=0 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=100|use_momentum=False
+[multi] rep=0 policy=Thompson_Sampling cfg=prior_lambda=0.1
+[multi] rep=0 policy=Thompson_Sampling cfg=prior_lambda=0.15
+[multi] rep=2/3 generating DGP...
+[multi] DGP ready in 276.2s n_batches=600 shift_batch=600
+[multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.02
+[multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.05
+[multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.1
+[multi] rep=1 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=1 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=1 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=1 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=1 policy=UCB cfg=default
+[multi] rep=1 policy=Random cfg=default
+[multi] rep=1 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=50|use_momentum=False
+[multi] rep=1 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=100|use_momentum=False
+[multi] rep=1 policy=Thompson_Sampling cfg=prior_lambda=0.1
+[multi] rep=1 policy=Thompson_Sampling cfg=prior_lambda=0.15
+[multi] rep=3/3 generating DGP...
+[multi] DGP ready in 171.7s n_batches=600 shift_batch=600
+[multi] rep=2 policy=Epsilon_Greedy cfg=epsilon=0.02
+[multi] rep=2 policy=Epsilon_Greedy cfg=epsilon=0.05
+[multi] rep=2 policy=Epsilon_Greedy cfg=epsilon=0.1
+[multi] rep=2 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=2 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5
+[multi] rep=2 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.3|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=2 policy=AdaptiveEpsilonGreedy cfg=anomaly_sensitivity=0.5|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5
+[multi] rep=2 policy=UCB cfg=default
+[multi] rep=2 policy=Random cfg=default
+[multi] rep=2 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=50|use_momentum=False
+[multi] rep=2 policy=LinUCB_Vanilla cfg=alpha=0.1|lambda_reg=100|use_momentum=False
+[multi] rep=2 policy=Thompson_Sampling cfg=prior_lambda=0.1
+[multi] rep=2 policy=Thompson_Sampling cfg=prior_lambda=0.15
+[multi] saved mab_multi_stationary_d30_by_config.csv (13 configs)
+[multi] saved mab_multi_stationary_d30_best_by_method.csv
+               policy                                                           config_id  final_regret_mean  final_regret_std  final_regret_cv  n_repeats
+       Epsilon_Greedy                                                         epsilon=0.1           7.284436          4.533149         0.508111          3
+       LinUCB_Vanilla                          alpha=0.1|lambda_reg=50|use_momentum=False           7.829802          0.351309         0.036635          3
+AdaptiveEpsilonGreedy anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5           8.080299          0.538129         0.054377          3
+    Thompson_Sampling                                                    prior_lambda=0.1          14.925576          0.289519         0.015838          3
+                  UCB                                                             default          18.247996          0.445831         0.019948          3
+               Random                                                             default          20.152531          0.531449         0.021532          3
+[multi] saved mab_multi_stationary_d30_best_by_method.png
