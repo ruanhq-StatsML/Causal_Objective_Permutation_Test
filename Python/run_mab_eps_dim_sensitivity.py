@@ -33,6 +33,21 @@ ULTRA_DGP = {
     "covariate_drift_strength": 0.45,
 }
 
+STATIONARY_DGP = {
+    "name": "stationary_dim_sens",
+    "dgp": "stationary",
+    "shift_magnitude": 0.0,
+}
+
+
+def _dgp_spec(setting: str) -> Dict[str, Any]:
+    setting = setting.lower()
+    if setting in ("stationary", "stat"):
+        return dict(STATIONARY_DGP)
+    if setting in ("ultra", "shift", "nonlinear_messy_ultra"):
+        return dict(ULTRA_DGP)
+    raise ValueError(f"unknown setting: {setting}")
+
 
 def build_dim_sensitivity_table(metrics_df: pd.DataFrame, output_prefix: str) -> pd.DataFrame:
     rows: List[Dict[str, Any]] = []
@@ -105,10 +120,12 @@ def run_dim_sensitivity(
     batch_size: int = 100,
     n_repeats: int = 3,
     output_prefix: str = "mab_eps_dim_sensitivity",
+    setting: str = "ultra",
 ) -> pd.DataFrame:
     policies_cfg = copy.deepcopy(PROTOTYPE_EPSILON_SWEEP_POLICIES)
     policies_cfg["Epsilon_Greedy"]["epsilon"] = [float(x) for x in epsilon_grid]
     policy_jobs = _expand_policy_grid(policies_cfg)
+    dgp_spec = _dgp_spec(setting)
 
     run_config = copy.deepcopy(CONFIG)
     n_arms = run_config["model_pool"]["n_arms"]
@@ -117,19 +134,20 @@ def run_dim_sensitivity(
     for dim in dims:
         for rep in range(n_repeats):
             data_cfg = dict(run_config["data"])
-            data_cfg.update(ULTRA_DGP)
+            data_cfg.update(dgp_spec)
             data_cfg["feature_dim"] = int(dim)
             data_cfg["total_samples"] = int(total_samples)
             data_cfg["ref_samples"] = int(ref_samples)
             data_cfg["batch_size"] = int(batch_size)
-            data_cfg["shift_point_index"] = int(total_samples) // 2
+            if dgp_spec["dgp"] != "stationary":
+                data_cfg["shift_point_index"] = int(total_samples) // 2
             data_cfg["random_seed"] = int(run_config["data"]["random_seed"]) + rep * 19 + int(dim)
 
             t0 = time.time()
             print(
-                f"[dim-sens] d={dim} rep={rep + 1}/{n_repeats} "
+                f"[dim-sens] setting={setting} d={dim} rep={rep + 1}/{n_repeats} "
                 f"n={total_samples} ref={ref_samples} batch={batch_size} "
-                f"dgp=nonlinear_messy_ultra",
+                f"dgp={dgp_spec['dgp']}",
                 flush=True,
             )
             data = generate_dgp_from_config(data_cfg, n_arms=n_arms)
@@ -157,8 +175,9 @@ def run_dim_sensitivity(
                 )
                 rows.append(
                     {
-                        "dgp_name": ULTRA_DGP["name"],
-                        "dgp": "nonlinear_messy_ultra",
+                        "setting": setting,
+                        "dgp_name": dgp_spec["name"],
+                        "dgp": dgp_spec["dgp"],
                         "rep": rep,
                         "feature_dim": int(dim),
                         "total_samples": int(total_samples),
@@ -209,6 +228,12 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=100)
     parser.add_argument("--n-repeats", type=int, default=3)
     parser.add_argument("--output-prefix", default="mab_eps_dim_sensitivity")
+    parser.add_argument(
+        "--setting",
+        choices=["ultra", "shift", "stationary", "stat"],
+        default="ultra",
+        help="DGP setting: ultra/shift (messy nonstationary) or stationary",
+    )
     parser.add_argument("--analyze-only", action="store_true")
     args = parser.parse_args()
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -225,4 +250,5 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             n_repeats=args.n_repeats,
             output_prefix=args.output_prefix,
+            setting=args.setting,
         )
