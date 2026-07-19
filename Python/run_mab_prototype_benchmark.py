@@ -105,10 +105,17 @@ def plot_prototype_confidence_bands(
         "AdaptiveEpsilonGreedy": "#1F77B4",
         "UCB": "#2CA02C",
         "Random": "#7F7F7F",
+        "LinUCB_Vanilla": "#D62728",
+        "LinUCB_Momentum": "#8C564B",
+        "Thompson_Sampling": "#17BECF",
+        "Gaussian_Sampling": "#BCBD22",
     }
+    # Distinct linestyle cycle so multiple configs of the same policy stay readable.
+    style_cycle = ["-", "--", "-.", ":"]
     eps_colors = {
         0.01: "#FDBB84",
         0.02: "#FDB863",
+        0.03: "#FDAE6B",
         0.05: "#E08214",
         0.08: "#D62728",
         0.10: "#9467BD",
@@ -117,105 +124,124 @@ def plot_prototype_confidence_bands(
         0.30: "#1A0030",
     }
 
-    for cooling in sorted(band_df["cooling_preset"].unique()):
-        sub_band = band_df[band_df.cooling_preset == cooling]
-
-        # --- Figure 1: best config per policy ---
-        fig, ax = plt.subplots(figsize=(12, 7))
-        for policy in sorted(sub_band["policy"].unique()):
-            psub = sub_band[sub_band.policy == policy].sort_values("batch_index")
+    for cooling in sorted(all_band_df["cooling_preset"].unique()):
+        # --- Figure 1: ALL methods / ALL configs (primary) ---
+        sub_all = all_band_df[all_band_df.cooling_preset == cooling]
+        fig, ax = plt.subplots(figsize=(14, 8))
+        # Stable order: policy then config_id
+        keys = (
+            sub_all[["policy", "config_id"]]
+            .drop_duplicates()
+            .sort_values(["policy", "config_id"])
+        )
+        for _, key in keys.iterrows():
+            policy = key["policy"]
+            cfg_id = key["config_id"]
+            psub = sub_all[
+                (sub_all.policy == policy) & (sub_all.config_id == cfg_id)
+            ].sort_values("batch_index")
+            if psub.empty:
+                continue
+            # Index among this policy's configs → linestyle
+            cfg_list = keys.loc[keys.policy == policy, "config_id"].tolist()
+            ls = style_cycle[cfg_list.index(cfg_id) % len(style_cycle)]
             x = psub["batch_index"].to_numpy()
             mean = psub["cum_regret_mean"].to_numpy()
             std = psub["cum_regret_std"].to_numpy()
-            label = f"{policy} ({psub['config_id'].iloc[0]})"
-            ax.plot(x, mean, label=label, color=policy_colors.get(policy, None), linewidth=2.2)
-            ax.fill_between(x, mean - std, mean + std, color=policy_colors.get(policy, "gray"), alpha=0.18)
+            color = policy_colors.get(policy, None)
+            label = f"{policy} | {cfg_id}"
+            ax.plot(x, mean, label=label, color=color, linewidth=1.8, linestyle=ls, alpha=0.95)
+            ax.fill_between(x, mean - std, mean + std, color=color or "gray", alpha=0.10)
         if shift_batch_indices:
             for sb in shift_batch_indices:
                 ax.axvline(x=sb, color="red", linestyle=":", alpha=0.35, linewidth=1.2)
         ax.set_xlabel("Batch index")
         ax.set_ylabel("Cumulative regret")
-        ax.set_title(f"Best config per method — {cooling} (mean ± 1 std)")
-        ax.legend(fontsize=8, loc="upper left")
+        ax.set_title(f"All methods / all configs — {cooling} (mean ± 1 std)")
+        ax.legend(fontsize=6.5, loc="upper left", ncol=2)
         ax.grid(True, alpha=0.25)
         fig.tight_layout()
-        fig.savefig(f"{output_prefix}_{cooling}_best_methods_bands.png", dpi=180)
+        fig.savefig(f"{output_prefix}_{cooling}_all_methods_bands.png", dpi=180)
         plt.close(fig)
 
-        # --- Figure 2: all Epsilon-Greedy epsilons ---
-        eps_cfg = metrics_df.loc[
-            metrics_df.policy == "Epsilon_Greedy",
-            ["cooling_preset", "policy", "config_id"],
-        ].drop_duplicates()
-        if len(eps_cfg):
-            eps_band = build_confidence_band_table(
-                curves_df,
-                metrics_df,
-                config_ids=eps_cfg,
-            )
-            eps_band = eps_band[eps_band.cooling_preset == cooling]
-            if len(eps_band):
-                fig, ax = plt.subplots(figsize=(14, 8))
-                for cfg_id in sorted(eps_band["config_id"].unique()):
-                    csub = eps_band[eps_band.config_id == cfg_id].sort_values("batch_index")
-                    eps_val = float(cfg_id.split("=")[-1]) if "epsilon=" in cfg_id else 0.1
-                    x = csub["batch_index"].to_numpy()
-                    mean = csub["cum_regret_mean"].to_numpy()
-                    std = csub["cum_regret_std"].to_numpy()
-                    color = eps_colors.get(round(eps_val, 2), "gray")
-                    ax.plot(
-                        x,
-                        mean,
-                        label=f"ε={eps_val:.0%}",
-                        color=color,
-                        linewidth=2.5 if abs(eps_val - 0.10) < 1e-6 else 2.0,
-                        alpha=1.0 if abs(eps_val - 0.10) < 1e-6 else 0.85,
-                    )
-                    ax.fill_between(x, mean - std, mean + std, color=color, alpha=0.12)
-                if shift_batch_indices:
-                    for sb in shift_batch_indices:
-                        ax.axvline(x=sb, color="red", linestyle="--", alpha=0.45, linewidth=1.5, label="Drift" if sb == shift_batch_indices[0] else None)
-                ax.set_xlabel("Batch index")
-                ax.set_ylabel("Cumulative regret")
-                ax.set_title(f"Epsilon-Greedy sweep — {cooling} (mean ± 1 std)")
-                ax.legend(fontsize=9, loc="upper left", ncol=2)
-                ax.grid(True, alpha=0.25)
-                fig.tight_layout()
-                fig.savefig(f"{output_prefix}_{cooling}_epsilon_greedy_bands.png", dpi=180)
-                plt.close(fig)
+        # Keep a best-config overlay for quick glance (secondary).
+        sub_best = band_df[band_df.cooling_preset == cooling]
+        if len(sub_best):
+            fig, ax = plt.subplots(figsize=(12, 7))
+            for policy in sorted(sub_best["policy"].unique()):
+                psub = sub_best[sub_best.policy == policy].sort_values("batch_index")
+                x = psub["batch_index"].to_numpy()
+                mean = psub["cum_regret_mean"].to_numpy()
+                std = psub["cum_regret_std"].to_numpy()
+                label = f"{policy} ({psub['config_id'].iloc[0]})"
+                ax.plot(x, mean, label=label, color=policy_colors.get(policy, None), linewidth=2.2)
+                ax.fill_between(
+                    x, mean - std, mean + std, color=policy_colors.get(policy, "gray"), alpha=0.18
+                )
+            if shift_batch_indices:
+                for sb in shift_batch_indices:
+                    ax.axvline(x=sb, color="red", linestyle=":", alpha=0.35, linewidth=1.2)
+            ax.set_xlabel("Batch index")
+            ax.set_ylabel("Cumulative regret")
+            ax.set_title(f"Best config per method — {cooling} (mean ± 1 std)")
+            ax.legend(fontsize=8, loc="upper left")
+            ax.grid(True, alpha=0.25)
+            fig.tight_layout()
+            fig.savefig(f"{output_prefix}_{cooling}_best_methods_bands.png", dpi=180)
+            plt.close(fig)
 
-        # --- Figure 3: AdaptiveEpsilonGreedy grid ---
-        ad_cfg = metrics_df.loc[
-            metrics_df.policy == "AdaptiveEpsilonGreedy",
-            ["cooling_preset", "policy", "config_id"],
-        ].drop_duplicates()
-        if len(ad_cfg):
-            ad_band = build_confidence_band_table(
-                curves_df,
-                metrics_df,
-                config_ids=ad_cfg,
-            )
-            ad_band = ad_band[ad_band.cooling_preset == cooling]
-            if len(ad_band):
-                fig, ax = plt.subplots(figsize=(12, 7))
-                for cfg_id in sorted(ad_band["config_id"].unique()):
-                    csub = ad_band[ad_band.config_id == cfg_id].sort_values("batch_index")
-                    x = csub["batch_index"].to_numpy()
-                    mean = csub["cum_regret_mean"].to_numpy()
-                    std = csub["cum_regret_std"].to_numpy()
-                    ax.plot(x, mean, label=cfg_id.replace("|", " "), linewidth=1.8, alpha=0.9)
-                    ax.fill_between(x, mean - std, mean + std, alpha=0.08)
-                if shift_batch_indices:
-                    for sb in shift_batch_indices:
-                        ax.axvline(x=sb, color="red", linestyle=":", alpha=0.35)
-                ax.set_xlabel("Batch index")
-                ax.set_ylabel("Cumulative regret")
-                ax.set_title(f"AdaptiveEpsilonGreedy grid — {cooling} (mean ± 1 std)")
-                ax.legend(fontsize=7, loc="upper left")
-                ax.grid(True, alpha=0.25)
-                fig.tight_layout()
-                fig.savefig(f"{output_prefix}_{cooling}_adaptive_bands.png", dpi=180)
-                plt.close(fig)
+        # --- Per-policy panels: every config of that method ---
+        for policy in sorted(metrics_df["policy"].unique()):
+            pol_cfg = metrics_df.loc[
+                (metrics_df.policy == policy) & (metrics_df.cooling_preset == cooling),
+                ["cooling_preset", "policy", "config_id"],
+            ].drop_duplicates()
+            if pol_cfg.empty:
+                # cooling_preset may be absent on older metrics; fall back
+                pol_cfg = metrics_df.loc[
+                    metrics_df.policy == policy,
+                    ["cooling_preset", "policy", "config_id"],
+                ].drop_duplicates()
+            if pol_cfg.empty:
+                continue
+            pol_band = all_band_df[
+                (all_band_df.cooling_preset == cooling) & (all_band_df.policy == policy)
+            ]
+            if pol_band.empty:
+                continue
+            fig, ax = plt.subplots(figsize=(13, 7))
+            for i, cfg_id in enumerate(sorted(pol_band["config_id"].unique())):
+                csub = pol_band[pol_band.config_id == cfg_id].sort_values("batch_index")
+                x = csub["batch_index"].to_numpy()
+                mean = csub["cum_regret_mean"].to_numpy()
+                std = csub["cum_regret_std"].to_numpy()
+                if policy == "Epsilon_Greedy" and "epsilon=" in cfg_id:
+                    eps_val = float(cfg_id.split("=")[-1])
+                    color = eps_colors.get(round(eps_val, 2), policy_colors.get(policy, "gray"))
+                    label = f"ε={eps_val:g}"
+                else:
+                    color = policy_colors.get(policy, None)
+                    label = str(cfg_id).replace("|", " ")
+                ax.plot(
+                    x, mean, label=label, color=color,
+                    linewidth=2.0, linestyle=style_cycle[i % len(style_cycle)], alpha=0.95,
+                )
+                ax.fill_between(x, mean - std, mean + std, color=color or "gray", alpha=0.12)
+            if shift_batch_indices:
+                for j, sb in enumerate(shift_batch_indices):
+                    ax.axvline(
+                        x=sb, color="red", linestyle="--", alpha=0.45, linewidth=1.5,
+                        label="Drift" if j == 0 else None,
+                    )
+            ax.set_xlabel("Batch index")
+            ax.set_ylabel("Cumulative regret")
+            ax.set_title(f"{policy} — all configs — {cooling} (mean ± 1 std)")
+            ax.legend(fontsize=8, loc="upper left", ncol=2)
+            ax.grid(True, alpha=0.25)
+            fig.tight_layout()
+            safe_name = policy.replace("/", "_")
+            fig.savefig(f"{output_prefix}_{cooling}_{safe_name}_bands.png", dpi=180)
+            plt.close(fig)
 
     print(
         f"[mab/prototype] saved {band_path} ({len(band_df)} rows, best config per method)",
@@ -223,6 +249,10 @@ def plot_prototype_confidence_bands(
     )
     print(
         f"[mab/prototype] saved {all_band_path} ({len(all_band_df)} rows, all configs)",
+        flush=True,
+    )
+    print(
+        f"[mab/prototype] also wrote all-methods and per-policy band plots under {output_prefix}_*",
         flush=True,
     )
     return band_df
