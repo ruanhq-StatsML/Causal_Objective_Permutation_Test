@@ -1,0 +1,7 @@
+setting,d,n,n_ref,batch_size,n_repeats,method,config,method_label,epsilon,mean_final_regret,sd_final_regret,cv_final_regret,rank
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.15,ε-greedy (0.15),0.15,7.102334666849814,0.9745401470967772,0.1120348076239347,1
+stationary,30,20000,5000,25,3,LinUCB_Vanilla,alpha=0.1|lambda_reg=50|use_momentum=False,LinUCB (λ=50),,7.829802360027756,0.3513093186437471,0.0366347507039311,2
+stationary,30,20000,5000,25,3,AdaptiveEpsilonGreedy,anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5,"Adaptive (baseε=0.05, sens=0.3)",0.05,8.080299144984062,0.5381285497167922,0.0543767146561779,3
+stationary,30,20000,5000,25,3,Thompson_Sampling,prior_lambda=0.1,Thompson (λ=0.1),,14.925576277852835,0.289518752361099,0.0158379862202081,4
+stationary,30,20000,5000,25,3,UCB,default,UCB,,18.247995702627136,0.44583125649252,0.01994847557666,5
+stationary,30,20000,5000,25,3,Random,default,Random,,20.15253055086494,0.531449276966554,0.0215321106440937,6
