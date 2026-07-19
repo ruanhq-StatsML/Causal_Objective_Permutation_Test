@@ -1,0 +1,15 @@
+[scale/eps] rep=1/3 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 889.5s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 1178.2s total
+[scale/eps] rep=0 cfg=epsilon=0.01
+[scale/eps] rep=0 cfg=epsilon=0.02
+[scale/eps] rep=0 cfg=epsilon=0.05
+[scale/eps] rep=0 cfg=epsilon=0.1
+[scale/eps] rep=2/3 generating DGP (d=30, n=20000, ref=5000, batch=25)
+[scale/eps] DGP ready in 982.0s, n_batches=600, shift_batch=200
+[scale/eps] batch cache in 1288.1s total
+[scale/eps] rep=1 cfg=epsilon=0.01
+[scale/eps] rep=1 cfg=epsilon=0.02
+[scale/eps] rep=1 cfg=epsilon=0.05
+[scale/eps] rep=1 cfg=epsilon=0.1
+[scale/eps] rep=3/3 generating DGP (d=30, n=20000, ref=5000, batch=25)

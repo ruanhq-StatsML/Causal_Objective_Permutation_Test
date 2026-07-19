@@ -1,0 +1,5 @@
+setting,dgp_name,dgp,rep,feature_dim,total_samples,ref_samples,batch_size,n_batches,shift_batch_index,policy,config_id,final_regret,mean_reward,hp_epsilon
+stationary,stationary,stationary,0,30,20000,5000,25,600,600,Epsilon_Greedy,epsilon=0.15,6.77063374328998,-0.05386366802482086,0.15
+stationary,stationary,stationary,0,30,20000,5000,25,600,600,Epsilon_Greedy,epsilon=0.2,7.355914562598683,-0.05483913605700203,0.2
+stationary,stationary,stationary,1,30,20000,5000,25,600,600,Epsilon_Greedy,epsilon=0.15,8.199425898401746,-0.05663208211242555,0.15
+stationary,stationary,stationary,1,30,20000,5000,25,600,600,Epsilon_Greedy,epsilon=0.2,7.663801498308966,-0.05573937477893758,0.2

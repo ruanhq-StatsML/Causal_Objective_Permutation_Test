@@ -1,0 +1,13 @@
+setting,dgp_name,dgp,rep,feature_dim,total_samples,ref_samples,batch_size,n_batches,shift_batch_index,policy,config_id,final_regret,mean_reward,hp_epsilon
+stationary,stationary_dim_sens,stationary,0,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.01,5.585422146776389,-0.0990430623012751,0.01
+stationary,stationary_dim_sens,stationary,0,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.02,13.421515941175883,-0.1774040002452701,0.02
+stationary,stationary_dim_sens,stationary,0,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.03,4.451641872617487,-0.0877052595596861,0.03
+stationary,stationary_dim_sens,stationary,1,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.01,7.23592889992462,-0.11446590938186066,0.01
+stationary,stationary_dim_sens,stationary,1,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.02,11.258340114873613,-0.15469002153135059,0.02
+stationary,stationary_dim_sens,stationary,1,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.03,5.034206298039881,-0.09244868336301329,0.03
+stationary,stationary_dim_sens,stationary,2,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.01,3.9262272485676823,-0.08150735779298397,0.01
+stationary,stationary_dim_sens,stationary,2,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.02,3.956402881172928,-0.08180911411903644,0.02
+stationary,stationary_dim_sens,stationary,2,10,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.03,2.0250993124308616,-0.062496078431615774,0.03
+stationary,stationary_dim_sens,stationary,0,20,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.01,2.7684259778169875,-0.07225539286916006,0.01
+stationary,stationary_dim_sens,stationary,0,20,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.02,5.281258887959201,-0.09738372197058219,0.02
+stationary,stationary_dim_sens,stationary,0,20,15000,5000,100,100,100,Epsilon_Greedy,epsilon=0.03,5.287924784848306,-0.09745038093947322,0.03

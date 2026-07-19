@@ -1,0 +1,25 @@
+[dim-sens] d=10 rep=1/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=10 rep=0 ready in 12.5s n_batches=100 shift_batch=25
+[dim-sens] d=10 rep=2/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=10 rep=1 ready in 12.5s n_batches=100 shift_batch=25
+[dim-sens] d=10 rep=3/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=10 rep=2 ready in 12.5s n_batches=100 shift_batch=25
+[dim-sens] d=20 rep=1/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=20 rep=0 ready in 20.1s n_batches=100 shift_batch=25
+[dim-sens] d=20 rep=2/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=20 rep=1 ready in 20.1s n_batches=100 shift_batch=25
+[dim-sens] d=20 rep=3/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=20 rep=2 ready in 20.0s n_batches=100 shift_batch=25
+[dim-sens] d=30 rep=1/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=30 rep=0 ready in 26.3s n_batches=100 shift_batch=25
+[dim-sens] d=30 rep=2/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=30 rep=1 ready in 26.5s n_batches=100 shift_batch=25
+[dim-sens] d=30 rep=3/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=30 rep=2 ready in 26.6s n_batches=100 shift_batch=25
+[dim-sens] d=40 rep=1/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=40 rep=0 ready in 481.7s n_batches=100 shift_batch=25
+[dim-sens] d=40 rep=2/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=40 rep=1 ready in 1119.1s n_batches=100 shift_batch=25
+[dim-sens] d=40 rep=3/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra
+[dim-sens] d=40 rep=2 ready in 1086.7s n_batches=100 shift_batch=25
+[dim-sens] d=50 rep=1/3 n=15000 ref=5000 batch=100 dgp=nonlinear_messy_ultra

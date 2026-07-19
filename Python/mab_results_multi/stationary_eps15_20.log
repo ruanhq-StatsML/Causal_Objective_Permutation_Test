@@ -4,3 +4,7 @@
 [multi] rep=0 policy=Epsilon_Greedy cfg=epsilon=0.15
 [multi] rep=0 policy=Epsilon_Greedy cfg=epsilon=0.2
 [multi] rep=2/3 generating DGP...
+[multi] DGP ready in 1283.8s n_batches=600 shift_batch=600
+[multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.15
+[multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.2
+[multi] rep=3/3 generating DGP...

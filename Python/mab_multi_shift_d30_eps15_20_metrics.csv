@@ -1,0 +1,7 @@
+setting,dgp_name,dgp,rep,feature_dim,total_samples,ref_samples,batch_size,n_batches,shift_batch_index,policy,config_id,final_regret,mean_reward,hp_epsilon
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,0,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.15,320.6487850033277,-9.857818798969998,0.15
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,0,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.2,229.04814756785586,-8.941812424615277,0.2
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,1,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.15,238.47129881065268,-9.289583927108662,0.15
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,1,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.2,331.9262589243432,-10.224133528245567,0.2
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,2,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.15,297.9985471491404,-9.900102203364304,0.15
+shift,nonlinear_messy_ultra_multimethod,nonlinear_messy_ultra,2,30,15000,5000,100,100,25,Epsilon_Greedy,epsilon=0.2,392.682685604913,-10.84694358792203,0.2

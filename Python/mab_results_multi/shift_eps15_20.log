@@ -8,3 +8,11 @@
 [multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.15
 [multi] rep=1 policy=Epsilon_Greedy cfg=epsilon=0.2
 [multi] rep=3/3 generating DGP...
+[multi] DGP ready in 1060.1s n_batches=100 shift_batch=25
+[multi] rep=2 policy=Epsilon_Greedy cfg=epsilon=0.15
+[multi] rep=2 policy=Epsilon_Greedy cfg=epsilon=0.2
+[multi] saved mab_multi_shift_d30_eps15_20_by_config.csv (2 configs)
+[multi] saved mab_multi_shift_d30_eps15_20_best_by_method.csv
+        policy    config_id  final_regret_mean  final_regret_std  final_regret_cv  n_repeats
+Epsilon_Greedy epsilon=0.15          285.70621         42.445388         0.121301          3
+[multi] saved mab_multi_shift_d30_eps15_20_best_by_method.png
