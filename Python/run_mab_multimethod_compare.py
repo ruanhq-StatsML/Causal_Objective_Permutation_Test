@@ -24,7 +24,7 @@ from mab_benchmark_core import (
 # Modest grids: enough to pick a best config per method without exploding runtime.
 MULTI_POLICIES = {
     "Epsilon_Greedy": {
-        "epsilon": [0.05, 0.10, 0.20, 0.30, 0.50],
+        "epsilon": [0.02, 0.05, 0.10],
     },
     "AdaptiveEpsilonGreedy": {
         "base_epsilon": [0.05, 0.10],
