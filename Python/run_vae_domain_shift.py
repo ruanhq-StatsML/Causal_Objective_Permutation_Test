@@ -119,15 +119,43 @@ def make_synthetic_dataset(out_dir: Path, n_images: int = 64, seed: int = 0, col
         Image.fromarray(base).save(out_dir / f"img_{i:04d}.png")
 
 
+def evaluate_vae_loss(vae: ConvVAE, loader: DataLoader, device: torch.device) -> float:
+    vae.eval()
+    total_loss = 0.0
+    with torch.no_grad():
+        for batch_imgs, _ in loader:
+            batch_imgs = batch_imgs.to(device)
+            recon, mu, logvar = vae(batch_imgs)
+            total_loss += loss_vae(recon, batch_imgs, mu, logvar).item()
+    vae.train()
+    return total_loss / len(loader)
+
+
 def train_vae(
     vae: ConvVAE,
     loader_train: DataLoader,
     device: torch.device,
     num_epochs: int,
     model_path: Path,
-) -> None:
+    loader_val: DataLoader | None = None,
+    early_stopping: bool = False,
+    patience: int = 5,
+    min_delta: float = 1.0,
+) -> Dict[str, object]:
     optimizer = torch.optim.Adam(vae.parameters(), lr=1e-4)
     vae.train()
+    history: Dict[str, object] = {
+        "train_loss": [],
+        "val_loss": [],
+        "epochs_trained": 0,
+        "stopped_early": False,
+        "best_epoch": 0,
+        "best_val_loss": None,
+    }
+    best_val_loss = float("inf")
+    best_state: Dict[str, torch.Tensor] | None = None
+    epochs_without_improvement = 0
+
     for epoch in range(num_epochs):
         total_loss = 0.0
         for batch_imgs, _ in tqdm(loader_train, desc=f"Epoch {epoch + 1}/{num_epochs}"):
@@ -138,9 +166,46 @@ def train_vae(
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(loader_train):.6f}")
+
+        train_loss = total_loss / len(loader_train)
+        history["train_loss"].append(train_loss)
+
+        val_loss = None
+        if loader_val is not None:
+            val_loss = evaluate_vae_loss(vae, loader_val, device)
+            history["val_loss"].append(val_loss)
+
+        msg = f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {train_loss:.6f}"
+        if val_loss is not None:
+            msg += f", Val Loss: {val_loss:.6f}"
+        print(msg)
+
+        if loader_val is not None and val_loss is not None:
+            if val_loss < best_val_loss - min_delta:
+                best_val_loss = val_loss
+                best_state = {k: v.detach().cpu().clone() for k, v in vae.state_dict().items()}
+                history["best_epoch"] = epoch + 1
+                history["best_val_loss"] = best_val_loss
+                epochs_without_improvement = 0
+            elif early_stopping:
+                epochs_without_improvement += 1
+                if epochs_without_improvement >= patience:
+                    history["stopped_early"] = True
+                    print(
+                        f"Early stopping at epoch {epoch + 1} "
+                        f"(no val improvement for {patience} epochs)"
+                    )
+                    break
+
+        history["epochs_trained"] = epoch + 1
+
+    if best_state is not None:
+        vae.load_state_dict(best_state)
+        print(f"Restored best checkpoint from epoch {history['best_epoch']}")
+
     torch.save(vae.state_dict(), model_path)
     print(f"VAE saved to {model_path}")
+    return history
 
 
 def encode_dataset(loader: DataLoader, encode_func: Callable[[torch.Tensor], torch.Tensor]) -> torch.Tensor:
@@ -278,11 +343,23 @@ def run_pipeline(args: argparse.Namespace) -> None:
     vae = ConvVAE(latent_dim=args.latent_dim, img_channels=3, img_size=args.image_size).to(device)
     model_path = out_dir / "vae_model.pth"
 
+    train_history: Dict[str, object] | None = None
     if model_path.exists() and not args.retrain:
         print(f"Loading pre-trained VAE from {model_path}")
         vae.load_state_dict(torch.load(model_path, map_location=device))
     else:
-        train_vae(vae, loader_train, device, args.num_epochs, model_path)
+        val_loader = loader_eval if args.early_stopping or args.save_val_loss else None
+        train_history = train_vae(
+            vae,
+            loader_train,
+            device,
+            args.num_epochs,
+            model_path,
+            loader_val=val_loader,
+            early_stopping=args.early_stopping,
+            patience=args.early_stopping_patience,
+            min_delta=args.early_stopping_min_delta,
+        )
 
     vae.eval()
 
@@ -331,8 +408,16 @@ def run_pipeline(args: argparse.Namespace) -> None:
     torch.save(z_delta.cpu(), out_dir / "z_delta_vae.pt")
     np.save(out_dir / "importance_vae.npy", importance)
     np.save(out_dir / "vimp_rank_vae.npy", vimp_rank)
+    summary_payload: Dict[str, object] = {
+        "region_selection": {str(k): v for k, v in summary.items()},
+        "oob_score": oob_auc,
+        "num_epochs_requested": args.num_epochs,
+        "early_stopping": args.early_stopping,
+    }
+    if train_history is not None:
+        summary_payload["training"] = train_history
     with open(out_dir / "summary_vae.json", "w", encoding="utf-8") as f:
-        json.dump({str(k): v for k, v in summary.items()}, f, indent=2)
+        json.dump(summary_payload, f, indent=2)
     pd.DataFrame(
         [{"latent_dim": i, "importance": importance[i], "rank": int(np.where(vimp_rank == i)[0][0]) + 1}
          for i in range(len(importance))]
@@ -357,6 +442,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-epochs", type=int, default=50)
+    parser.add_argument(
+        "--early-stopping",
+        action="store_true",
+        help="stop when eval val loss plateaus (uses --eval-dir as validation set)",
+    )
+    parser.add_argument("--early-stopping-patience", type=int, default=5)
+    parser.add_argument("--early-stopping-min-delta", type=float, default=1.0)
+    parser.add_argument(
+        "--save-val-loss",
+        action="store_true",
+        help="track eval val loss each epoch without stopping early",
+    )
     parser.add_argument("--latent-dim", type=int, default=LATENT_DIM)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
