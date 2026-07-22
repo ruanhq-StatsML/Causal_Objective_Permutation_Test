@@ -345,12 +345,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="VAE domain-shift VIMP pipeline")
     parser.add_argument(
         "--train-dir",
-        default="/content/debris_or_rubble_processed",
+        default="/workspace/data/fmow_subset/train",
         help="training/source domain images",
     )
     parser.add_argument(
         "--eval-dir",
-        default="/content/lake_or_pond",
+        default="/workspace/data/fmow_subset/eval",
         help="evaluation/target domain images",
     )
     parser.add_argument("--output-dir", default="vae_domain_shift_outputs")
