@@ -1,0 +1,35 @@
+{
+  "agent": "bc-91559e09-3b34-4059-9df1-1c848dfcbc0b",
+  "transcript": "/tmp/cursor/cloud-agent-transcripts/2026-07-24T21-48-51Z-20d7/bc-91559e09-3b34-4059-9df1-1c848dfcbc0b/transcript.json",
+  "written": [
+    "Python/vae_fmow_epoch_sweep/epoch_sweep_summary_20260722_093208.csv",
+    "Python/vae_fmow_epoch_sweep/epoch_sweep_summary_20260722_093208.json",
+    "Python/vae_fmow_epoch_sweep/report/summary_table.csv",
+    "Python/vae_fmow_epoch_sweep/report/index.html",
+    "Python/vae_fmow_epoch_sweep/report/metric_bars.png",
+    "Python/vae_fmow_epoch_sweep/early_stop/summary_vae.json",
+    "Python/vae_fmow_epoch_sweep/ep25/summary_vae.json",
+    "Python/vae_fmow_epoch_sweep/ep50/summary_vae.json",
+    "Python/vae_fmow_epoch_sweep/ep75/summary_vae.json",
+    "Python/vae_fmow_epoch_sweep/ep100/summary_vae.json",
+    "Python/vae_fmow_epoch_sweep/report/README_MISSING_ASSETS.md"
+  ],
+  "unrecovered": [
+    "ep25/ep50/ep75/ep100 full summary_vae.json (training curves + full region_selection K-grid) \u2014 only CSV aggregate scalars recovered; stub files written",
+    "vimp_latent_dims.csv for ep25/ep50/ep75/ep100/early_stop \u2014 listed on VM (~3.5KB each) but never read into transcript",
+    "report/loss_curves.png \u2014 needs per-config training histories",
+    "report/heatmap_grid.png \u2014 needs sample_heatmap.png per config",
+    "report/vimp_top_dims_ep50.png \u2014 needs ep50/vimp_latent_dims.csv",
+    "per-config sample_heatmap.png / vae_model.pth / train_*.log / z_*.pt \u2014 binary/large artifacts not in transcript"
+  ],
+  "notes": [
+    "epoch_sweep_summary_*.json reconstructed from recovered CSV rows (identical schema to run_vae_epoch_sweep.py json.dump(results)).",
+    "index.html regenerated from recovered CSV using original report template (heatmap imgs unavailable).",
+    "metric_bars.png regenerated from recovered summary CSV (same plotting code as report script).",
+    "early_stop/summary_vae.json PARTIAL: region_selection+oob full; train_loss has 47/87 values; val_loss missing."
+  ],
+  "artifact_upload_search": {
+    "report_png_or_html_uploaded_as_artifact": false,
+    "related_git_upload_commit": "bda7545 Add files via upload \u2192 Python/R_risk_loco.py only"
+  }
+}

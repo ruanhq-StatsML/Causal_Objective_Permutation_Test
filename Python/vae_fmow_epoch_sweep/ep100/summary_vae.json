@@ -1,0 +1,26 @@
+{
+  "_recovery": {
+    "complete": false,
+    "note": "Full ep100/summary_vae.json was not present in transcript (only file listing + aggregate CSV row). Scalars below reconstructed from epoch_sweep_summary_20260722_093208.csv.",
+    "agent": "bc-91559e09-3b34-4059-9df1-1c848dfcbc0b"
+  },
+  "oob_score": 0.7999363192528126,
+  "num_epochs_requested": 100,
+  "early_stopping": false,
+  "region_selection": {
+    "10": {
+      "top10_ratio": 0.27924060821533203,
+      "gini_coeff": 0.0
+    }
+  },
+  "training": {
+    "epochs_trained": 100,
+    "stopped_early": false,
+    "best_epoch": 99,
+    "best_val_loss": 751.0307710291976,
+    "final_train_loss": 613.0928446882862,
+    "final_val_loss": 751.0269165039062,
+    "train_loss": null,
+    "val_loss": null
+  }
+}

@@ -1,0 +1,6 @@
+label,epochs_requested,early_stopping,returncode,output_dir,log_path,oob_score,epochs_trained,stopped_early,best_epoch,best_val_loss,final_train_loss,final_val_loss,top10_ratio_k10,gini_k10
+ep25,25,False,0,vae_fmow_epoch_sweep/ep25,vae_fmow_epoch_sweep/ep25/train_ep25.log,0.7999363192528126,25,False,25,887.9351279048597,813.2083398851298,887.9351279048597,0.2762722373008728,0.0
+ep50,50,False,0,vae_fmow_epoch_sweep/ep50,vae_fmow_epoch_sweep/ep50/train_ep50.log,0.7999363192528126,50,False,50,799.0960796808793,693.0026338221663,799.0960796808793,0.28402096033096313,0.0
+ep75,75,False,0,vae_fmow_epoch_sweep/ep75,vae_fmow_epoch_sweep/ep75/train_ep75.log,0.7999363192528126,75,False,74,767.5626489671611,640.1008587853383,767.7399405786547,0.2826611399650574,0.0
+ep100,100,False,0,vae_fmow_epoch_sweep/ep100,vae_fmow_epoch_sweep/ep100/train_ep100.log,0.7999363192528126,100,False,99,751.0307710291976,613.0928446882862,751.0269165039062,0.27924060821533203,0.0
+early_stop,100,True,0,vae_fmow_epoch_sweep/early_stop,vae_fmow_epoch_sweep/early_stop/train_early_stop.log,0.7999363192528126,87,True,83,758.617193706965,621.9873405068607,757.8306595107256,0.28060999512672424,0.0
