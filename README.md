@@ -16,7 +16,8 @@ We leverage the meta-learner(causal forest, doubly-robust pseudo-outcome learner
 - The overall efficiency for this procedure is highly efficient both in terms of the and the
 
 ### Motivation: Causal Objective Function and Hypothesis Testing
-The causal learner + permute-then-refit procedure can be leveraged for the hypothesis testing procedure with very solid theoretical guarantee.
+The causal learner + permute-then-refit procedure can be leveraged for the hypothesis testing procedure with very solid theoretical guarantee - enabling the tractable theoretical guarantee.
+
 
 ### Python version:
 ```python
