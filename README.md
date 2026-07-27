@@ -6,13 +6,14 @@ We leverage the meta-learner(causal forest, doubly-robust pseudo-outcome learner
 
 - For Covariate Shift(the feature selection consistency in terms of kendall's tau correlation is leveraged for efficiency of the ranking of the feature importance in the covariate shift).
 <img width="900" height="970" alt="vecshift_lambda_cor06_polished" src="https://github.com/user-attachments/assets/0275705c-7a57-4edb-9832-6356cc2c541b" />
+
 - For Concept Drift(the feature selection consistency in terms of kendall's tau correlation is leveraged for efficiency of the ranking of the feature importance in the concept drift).
 <img width="900" height="970" alt="uq_vimpood_cd_on_cs_allmethods_polished" src="https://github.com/user-attachments/assets/65925cae-d308-4651-8ba1-979d122e5dae" />
 
 - This framework is highly flexible that can be extended into multiple versions of the variable importances as well as different notions of the causal learners.
 <img width="1700" height="950" alt="cfperm__diagram" src="https://github.com/user-attachments/assets/43332ee7-3877-421f-86ba-b66f11a9fbb2" />
 
-- 
+- The overall efficiency for this procedure is highly efficient both in terms of the and the
 
 ### Motivation: Causal Objective Function and Hypothesis Testing
 The causal learner + permute-then-refit procedure can be leveraged for the hypothesis testing procedure with very solid theoretical guarantee.
