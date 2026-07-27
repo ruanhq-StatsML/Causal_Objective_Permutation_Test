@@ -1,8 +1,16 @@
 # Causal Objective Permutation Test via Doubly Robust Pseudo-Outcome Learner and R-Learner
 This repository provides the Python \& R implementation of "Permutation Test via Causal Inference Objective Functions". In this project, we formulate the distribution shift detection problem as a causal inference problem(regarding the existing batch of data as control group/batch and the newly coming batch of data as treatment group/batch) via various forms of the objective functions followed by the permute-then-refit procedure. This repo include permutation-based distribution-shift testing procedures built on doubly robust pseudo-outcome learners(PO-risk) and R-learners(R-risk). This implementation allows flexible specification of nuisance estimation models, enabling users to flexibly choose among different versions of the propensity score model(logistic regression, tree-based learners - Random Forest, XGBoost, CatBoost and MLP) and the outcome model(linear regression, tree-based learners - Random Forest, XGBoost, CatBoost  and MLP).
 
+### Motivation: Meta-Learner and Distribution Shift
+We leverage the meta-learner(causal forest, doubly-robust pseudo-outcome learner and the R-learner) to quantify the distance between the two batches of datasets, then the variable importance for this version of meta-learner is a proxy for the distribution shift - from another aspect, so called OOD Variable Importance. The illustration of the feature selection as the validity of this proposed framework in both Covariate Shift(P(X) shift) and Concept Drift(P(Y|X) shift).
 
-## Python version:
+- For Covariate Shift(the feature selection consistency in terms of kendall's tau correlation is leveraged for efficiency of the ranking of the feature importance in the covariate shift).
+<img width="900" height="970" alt="vecshift_lambda_cor06_polished" src="https://github.com/user-attachments/assets/0275705c-7a57-4edb-9832-6356cc2c541b" />
+- For Concept Drift(the feature selection consistency in terms of kendall's tau correlation is leveraged for efficiency of the ranking of the feature importance in the concept drift).
+<img width="3750" height="4140" alt="uq_vimpood_cd_on_cs_allmethods_polished" src="https://github.com/user-attachments/assets/65925cae-d308-4651-8ba1-979d122e5dae" />
+
+
+### Python version:
 ```python
 !pip install causal_objective_perm
 from causal_objective_perm import RRPerm, DRPerm
@@ -20,7 +28,7 @@ output#FALSE
 
 ```
 
-## R version:
+### R version:
 #### Installation
 
 ```R
