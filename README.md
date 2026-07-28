@@ -11,7 +11,7 @@ We leverage the meta-learner(causal forest, doubly-robust pseudo-outcome learner
 <img width="900" height="970" alt="uq_vimpood_cd_on_cs_allmethods_polished" src="https://github.com/user-attachments/assets/65925cae-d308-4651-8ba1-979d122e5dae" />
 
 - This framework is highly flexible that can be extended into multiple versions of the variable importances as well as different notions of the causal learners.
-<img width="1900" height="950" alt="cfperm__diagram" src="https://github.com/user-attachments/assets/43332ee7-3877-421f-86ba-b66f11a9fbb2" />
+<img width="1900" height="1050" alt="cfperm__diagram" src="https://github.com/user-attachments/assets/43332ee7-3877-421f-86ba-b66f11a9fbb2" />
 
 - The overall efficiency for this procedure is highly efficient both in terms of the and the
 
