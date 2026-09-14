@@ -81,13 +81,22 @@ def _random_merchant_names(n, seed=0):
 
 
 def generate_relational_data(n_merchants=250, n_users=4000, n_orders=20000,
-                             items_per_merchant=10, seed=2026):
+                             items_per_merchant=10, seed=2026,
+                             cov_shift=0.0, cov_shift_attrs=None):
     """Build users / items / merchants / orders and return them as DataFrames.
 
-    Order-level attributes are drawn from the SAME distribution for both batches
-    (no covariate shift); the existing-vs-new difference is injected later as a
-    concept drift in the merchant outcome (see ``build_merchant_dataset``).
+    By default order-level attributes are drawn from the SAME distribution for
+    both batches (no covariate shift); the existing-vs-new difference is then
+    injected as a concept drift in the merchant outcome (see
+    ``build_merchant_dataset``, used by the PO-risk path).
+
+    Set ``cov_shift`` > 0 to instead inject a genuine **covariate shift**: for
+    new-batch (W = 1) merchants the raw ``cov_shift_attrs`` are shifted at the
+    order level, which propagates into every aggregation of those attributes.
+    This is the regime the LOGO-MMD path targets.
     """
+    if cov_shift_attrs is None:
+        cov_shift_attrs = ["gmv", "user_rating"]
     rng = np.random.default_rng(seed)
 
     # --- merchants (with batch label W and English names) ---
@@ -131,6 +140,20 @@ def generate_relational_data(n_merchants=250, n_users=4000, n_orders=20000,
     orders["delivery_mins"] = rng.gamma(4.0, 8.0, n)
     orders["user_rating"] = np.clip(rng.normal(4.2, 0.7, n), 1, 5)
     orders["basket_size"] = rng.poisson(3.0, n) + 1
+
+    # --- optional covariate shift on new-batch (W=1) merchants' orders ---
+    if cov_shift > 0:
+        new_mask = orders["W"].values == 1
+        if "gmv" in cov_shift_attrs:
+            orders.loc[new_mask, "gmv"] *= np.exp(cov_shift * 0.35)
+        if "user_rating" in cov_shift_attrs:
+            orders.loc[new_mask, "user_rating"] = np.clip(
+                orders.loc[new_mask, "user_rating"].values - cov_shift * 0.6, 1, 5)
+        for a in cov_shift_attrs:
+            if a in ("gmv", "user_rating"):
+                continue
+            orders.loc[new_mask, a] = orders.loc[new_mask, a].values * (
+                1.0 + cov_shift * 0.25)
 
     return users_df(user_ids), items, merchants, orders
 
