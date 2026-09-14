@@ -110,6 +110,44 @@ def group_selection(feat_std, W, groups, alpha=0.05, n_perm=500, seed=2026):
     return pg
 
 
+def two_level_feature_selection(feat_std, W, groups, q1=0.1, q2=0.1,
+                                n_perm_group=500, n_perm_feat=300, seed=2026):
+    """Two-level FS with hierarchical FDR control (Benjamini & Bogomolov, 2014).
+
+    Level 1 (families/groups): BH over the group MMD p-values at level ``q1``
+    selects R1 of the m1 raw-attribute families.
+
+    Level 2 (features within a selected family): BH over that family's per-feature
+    MMD p-values at the *adjusted* level ``q2 * R1 / m1``.  The R1/m1 deflation is
+    the Benjamini-Bogomolov correction that controls the FDR on the discovered
+    features over the whole tree at ~``q2`` -- so the second level is a genuine
+    selection with error control, not just a ranked printout.
+    """
+    m1 = len(groups)
+    pg = per_group_mmd(feat_std, W, groups, n_perm=n_perm_group, seed=seed)
+    bh1 = multipletests(pg["p_value"].values, alpha=q1, method="fdr_bh")
+    pg = pg.assign(p_bh=bh1[1], selected=bh1[0])
+    selected_groups = list(pg.loc[pg["selected"], "attribute"])
+    R1 = len(selected_groups)
+    q2_eff = q2 * R1 / m1 if R1 > 0 else 0.0
+
+    feat_rows = []
+    for gi, g in enumerate(selected_groups):
+        members = groups[g]
+        sub = {m: [m] for m in members}
+        fpg = per_group_mmd(feat_std, W, sub, n_perm=n_perm_feat, seed=seed + 11 + gi)
+        rej = multipletests(fpg["p_value"].values, alpha=q2_eff, method="fdr_bh")
+        fpg = fpg.assign(group=g, p_bh_within=rej[1], selected=rej[0])
+        fpg = fpg.rename(columns={"attribute": "feature"})
+        feat_rows.append(fpg)
+    feat_df = (pd.concat(feat_rows, ignore_index=True)
+               if feat_rows else pd.DataFrame())
+    return {"group_table": pg, "selected_groups": selected_groups,
+            "q2_eff": q2_eff, "feature_table": feat_df,
+            "selected_features": list(feat_df.loc[feat_df["selected"], "feature"])
+            if len(feat_df) else []}
+
+
 # --------------------------------------------------------------------------- #
 # Driver
 # --------------------------------------------------------------------------- #
@@ -188,12 +226,33 @@ def main():
         print(f"    [{g}] top features: {tops}")
     print()
 
+    # ---- (D) two-level feature selection with hierarchical FDR ----
+    print("[D] Two-level FS with Benjamini-Bogomolov hierarchical FDR "
+          f"(q1={args.alpha}, q2={args.alpha}):")
+    tl = two_level_feature_selection(feat_std, W, groups, q1=args.alpha,
+                                     q2=args.alpha, n_perm_group=args.n_perm,
+                                     n_perm_feat=300, seed=args.seed)
+    print(f"    level-1 selected groups: {sorted(tl['selected_groups'])}  "
+          f"-> level-2 effective FDR q2_eff={tl['q2_eff']:.4f}")
+    fdf = tl["feature_table"]
+    for g in sorted(tl["selected_groups"]):
+        sel = fdf[(fdf["group"] == g) & (fdf["selected"])]
+        names = ", ".join(sel.sort_values("group_mmd2", ascending=False)["feature"])
+        print(f"      [{g}] selected {len(sel)}/{len(groups[g])} features: {names}")
+    n_sel = len(tl["selected_features"])
+    leak = [f for f in tl["selected_features"] if raw_attr_of(f) not in COV_SHIFT_ATTRS]
+    print(f"    total selected features: {n_sel}  (false discoveries from "
+          f"non-shifted groups: {len(leak)})")
+    print()
+
     # ---- validation ----
     truth = set(COV_SHIFT_ATTRS)
-    ok = (holm_set == truth) and (stable_set == truth)
-    print(f"[D] RESULT: {'PASS' if ok else 'CHECK'}  "
+    ok = (holm_set == truth) and (stable_set == truth) \
+        and set(tl["selected_groups"]) == truth and len(leak) == 0 and n_sel > 0
+    print(f"[E] RESULT: {'PASS' if ok else 'CHECK'}  "
           f"(Holm={sorted(holm_set)}, stability={sorted(stable_set)}, "
-          f"truth={sorted(truth)})")
+          f"two-level groups={sorted(tl['selected_groups'])}, "
+          f"feature false-discoveries={len(leak)})")
 
     if args.plot:
         _make_plot(vimp, pg, args.pi_thr, args.plot)
