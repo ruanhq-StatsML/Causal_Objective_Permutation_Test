@@ -15,8 +15,9 @@ Design choices (per review):
   frequency (stratified resampling with jitter to break RBF-MMD ties).
 * **Selection without BH.** Groups are selected by a permutation p-value plus a
   bootstrap stability frequency (BH is impractical with few, correlated group
-  tests); features within a selected group are selected by a Westfall-Young
-  step-down max-T permutation (FWER, correlation-robust).
+  tests); features within a selected group are selected by a per-feature
+  permutation p-value threshold (simple two-level attribution, no multiplicity
+  adjustment).
 
 Per feature the registry records: selection verdict, group LOGO importance +
 bootstrap CI/frequency, group & feature p (raw and adjusted), and the
@@ -31,7 +32,7 @@ import pandas as pd
 
 from fsds_merchant_prototype import raw_attr_of
 from fsds_logo_mmd import _median_gamma, mmd2_unbiased, mmd_permutation_test
-from fsds_localization_tree import agg_family, _batch_summary, _best_split, _wy_children
+from fsds_localization_tree import agg_family, _batch_summary, _best_split, _perm_select
 from fsds_two_dimensional import generate_two_dim_data, aggregate_to_entity, DIMENSIONS
 
 
@@ -101,11 +102,11 @@ def build_axis_registry(orders, dim, q=0.1, n_perm=400, n_boot=150, seed=2026):
     sel_groups = [g for g in g_names if (grp_p[g] < q and logo_drops[g] > 0
                                          and boot[g]["sel_freq"] >= 0.9)]
 
-    # ---- feature level within selected groups: Westfall-Young max-T (FWER) ----
+    # ---- feature level within selected groups: per-feature permutation p ----
     feat_selected, feat_p, feat_padj = set(), {}, {}
     for g in sel_groups:
         members = groups[g]
-        _, padj, sel, _ = _wy_children(feat_std, W, [[f] for f in members],
+        _, padj, sel, _ = _perm_select(feat_std, W, [[f] for f in members],
                                        n_perm, q, seed + 17)
         for i, f in enumerate(members):
             feat_p[f], feat_padj[f] = float(padj[i]), float(padj[i])
@@ -137,7 +138,7 @@ def build_axis_registry(orders, dim, q=0.1, n_perm=400, n_boot=150, seed=2026):
             "n_features": len(names), "global_mmd2": global_test["mmd2"],
             "global_p": global_test["p_value"], "selected_groups": sel_groups,
             "selection": "permutation p + bootstrap stability (groups); "
-                         "Westfall-Young maxT (features)"}
+                         "per-feature permutation p (features)"}
     return reg, meta
 
 

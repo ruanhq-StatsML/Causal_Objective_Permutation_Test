@@ -3,11 +3,10 @@
 
 Once the global MMD test rejects H0: P0(X) = P1(X), this module drills the
 attribution down through a hierarchy of nested feature subsets, re-testing MMD
-on each subset. Selection at each split uses a Westfall-Young step-down max-T
-permutation procedure (shared permutations -> a max-null that controls the
-family-wise error rate exactly and is robust to the correlation between child
-subsets); the tree is gated, so a node is entered only if its parent was
-selected. No BH / independence assumption is used.
+on each subset. Selection at each split is a simple per-subset permutation
+p-value threshold (no multiplicity adjustment); the tree is gated, so a node is
+entered only if its parent was selected. The point is a two-level attribution
+that produces structured insights, not a family-wise error guarantee.
 
 Layers
 ------
@@ -157,14 +156,13 @@ def _mmd_from_K(K, W):
             + (Kyy.sum() - np.trace(Kyy)) / (n * (n - 1)) - 2.0 * Kxy.mean())
 
 
-def _wy_children(feat_std, W, child_cols, n_perm, alpha, seed):
-    """Westfall-Young step-down max-T permutation over a node's children.
-
-    Shared label permutations across children give a max-null that controls the
-    family-wise error rate exactly and is robust to the correlation between the
-    child subsets -- no BH / independence assumption. Returns observed MMD^2,
-    FWER-adjusted p, selection flags, and the per-child permutation mean.
-    """
+def _perm_select(feat_std, W, child_cols, n_perm, alpha, seed):
+    """Per-subset permutation selection for a node's children (no multiplicity
+    adjustment). Each child gets its own MMD permutation p-value (exact under
+    exchangeability); a child is selected if p <= alpha. This is a deliberately
+    simple two-level attribution -- the goal is structured insights, not a
+    family-wise guarantee. Returns observed MMD^2, p, selection flags, and the
+    per-child permutation mean."""
     kernels = []
     for cols in child_cols:
         Z = feat_std[cols].values
@@ -178,10 +176,9 @@ def _wy_children(feat_std, W, child_cols, n_perm, alpha, seed):
         Wp = rng.permutation(W)
         for c in range(C):
             null[b, c] = _mmd_from_K(kernels[c], Wp)
-    max_null = null.max(axis=1)                       # step-down max-T null
-    padj = np.array([(1.0 + np.sum(max_null >= obs[c])) / (1.0 + n_perm)
+    pval = np.array([(1.0 + np.sum(null[:, c] >= obs[c])) / (1.0 + n_perm)
                      for c in range(C)])
-    return obs, padj, padj <= alpha, null.mean(axis=0)
+    return obs, pval, pval <= alpha, null.mean(axis=0)
 
 
 def expand(node, kind, cols, alpha, W, feat_std, feat_raw, order_stats,
@@ -193,7 +190,7 @@ def expand(node, kind, cols, alpha, W, feat_std, feat_raw, order_stats,
         return
     names = list(part)
     child_cols = [part[cn] for cn in names]
-    obs, padj, sel, perm_mean = _wy_children(feat_std, W, child_cols, n_perm,
+    obs, padj, sel, perm_mean = _perm_select(feat_std, W, child_cols, n_perm,
                                              alpha, seed)
     for i in np.argsort(padj):
         cn = names[i]
@@ -223,10 +220,9 @@ def build_localization_tree(feat_std, feat_raw, W, orders, q=0.1, n_perm=400,
     return {
         "relation_path": ["merchant", "item", "order"],
         "aggregation": "order -> item -> merchant (rich + rolling)",
-        "method": "multi-layer subset post-hoc localization; MMD permutation "
-                  "test per subset; Westfall-Young step-down maxT (FWER) with "
-                  "hierarchical gatekeeping",
-        "alpha_fwer": q,
+        "method": "two-level subset post-hoc localization; per-subset MMD "
+                  "permutation test (no multiplicity adjustment); gated tree",
+        "alpha": q,
         "global_test": global_test,
         "root": root,
     }

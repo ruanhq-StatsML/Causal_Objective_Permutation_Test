@@ -28,7 +28,7 @@ On synthetic data with known ground truth, every module recovers exactly the inj
 - **Root-causing metric moves.** When GMV or rating dips for the new cohort, the localization tree points at the exact aggregated features (e.g. `gmv__mean`, `user_rating__median`) and the raw signal behind them, instead of a dashboard full of undifferentiated drift alarms.
 - **Supply vs demand attribution.** The two-dimensional structure separates a *merchant-side* change (new sellers behaving differently) from a *buyer-side* change (new shopper cohort), which usually imply different actions.
 - **Actionable thresholds.** Each leaf carries a KS-optimal split (`gmv__mean > 27.8` cleanly separates new vs existing merchants) and quantile grids — ready for rules, monitors, or segment definitions.
-- **Trustworthy alerts.** Error control (permutation validity + Westfall–Young FWER + stability selection) means selected features are defensible, not just the top of a noisy ranking — fewer false alarms for on-call.
+- **Trustworthy alerts.** Permutation validity + a stability threshold + priority ranking mean the surfaced drivers are defensible and ranked, not just the top of a noisy list — fewer false alarms for on-call.
 - **Retraining / reweighting triggers.** Knowing *what kind* of shift (covariate vs concept) and *which features* tells you whether to reweight, retrain, or ignore.
 - **Reusable.** Adding an axis (item, category, region) or a new raw attribute is a config change; the output is machine-readable JSON for downstream UIs.
 
@@ -77,11 +77,11 @@ For every raw attribute, orders are aggregated to the entity with **rich** and *
 
 - **LOGO-MMD (leave-one-group-out).** Drop all aggregations of a raw attribute, recompute MMD; a large fall in MMD ⇒ that attribute carried the shift. Robust to the within-group correlation that dilutes single-feature importance.
 - **Stability selection.** Stratified subsampling gives each group's importance a bootstrap/percentile CI and a **selection frequency**; a group is kept only if its CI excludes 0 and it is selected in ≥ π of resamples (Meinshausen & Bühlmann, 2010).
-- **Two-level / multi-layer FS by permutation (no BH).** The attribution drills through nested subsets: `root → raw attribute → aggregation family → feature`. BH is impractical here (few, strongly correlated group tests), so at each split the children are selected by a **Westfall–Young step-down max-T permutation** (shared permutations → a max-null that controls the family-wise error rate exactly and adapts to correlation); groups additionally require a bootstrap stability threshold. The tree is gated — non-selected families are never entered — a power gain with no leakage.
+- **Two-level / multi-layer FS by permutation (simple; no BH, no FWER).** The attribution drills through nested subsets: `root → raw attribute → aggregation family → feature`. At each split, children are selected by their own MMD **permutation p-value** (exact under exchangeability); groups additionally require a bootstrap **stability** threshold. The tree is gated — a node is entered only if its parent was selected. This is deliberately simple (the goal is structured insights, not a multiple-testing guarantee); without multiplicity control a few weak non-driver groups may appear, but they rank low by priority/stability and the true drivers are always recovered.
 
 ### 5.3 Statistical justification
 
-The two-level attribution is an honest **post-hoc localization** conditional on a significant global test — nothing more is claimed. Its validity rests on: (i) permutation exactness of MMD under exchangeability; (ii) **Westfall–Young step-down max-T** control of each family (exact FWER, correlation-robust, no independence assumption); (iii) hierarchical gatekeeping (a node is entered only if its parent was selected); (iv) subsampling stability selection for finite-sample selection control.
+The two-level attribution is an honest **post-hoc localization** conditional on a significant global test — nothing more is claimed. Its validity rests on: (i) permutation exactness of MMD under exchangeability; (ii) hierarchical gatekeeping (a node is entered only if its parent was selected); (iii) subsampling stability selection to suppress flukes; (iv) priority ranking so any weak, uncorrected extra selections fall below the true drivers. It deliberately omits family-wise/BH multiplicity control — the aim is structured insights, not a multiple-testing guarantee.
 
 ### 5.4 Per-node characterization
 
@@ -225,7 +225,7 @@ On the aggregated marketplace data both axes are (near-)separable (AUC≈1.0), s
 
 ## 8. Limitations & assumptions
 
-- Results shown are on synthetic data with known ground truth; production validation requires labelled shift episodes or a **null-calibration study** (permute the batch label, confirm empirical FDR/FWER control).
+- Results shown are on synthetic data with known ground truth; production validation requires labelled shift episodes or a **null-calibration study** (permute the batch label, confirm the empirical false-selection rate).
 - MMD is `O(N²)` per evaluation; fine for entity counts in the hundreds/thousands, but large axes need a linear-time MMD or subsampling.
 - Detection is split by shift type: MMD for covariate shift, PO-risk for concept drift. A single node currently does not decompose a mixture into the two components.
 - The batch label must be well-defined on each axis; the two axes are assumed to have independent labels.

@@ -5,7 +5,7 @@ One command runs the whole flow on the two-axis marketplace data and prints an
 executive summary plus the machine-readable structured insights:
 
     generate -> global detection -> Shapley-MMD ranking
-             -> two-stage Westfall-Young localization -> retrain decision
+             -> two-level permutation localization -> retrain decision
              -> fsds-insight/1.0 objects
 
 It reuses the individual modules (no logic duplicated): the localization +

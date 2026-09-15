@@ -41,8 +41,8 @@ insight carrying a \emph{retrain decision}. Detection uses an exact
 permutation Maximum Mean Discrepancy (MMD) test for covariate shift and a
 pseudo-outcome / $R$-risk test for concept drift. Localization combines
 leave-one-group-out (LOGO) and exact Shapley attribution over the group power
-set with a Westfall--Young step-down max-T permutation procedure (family-wise
-error control, robust to correlation) and subsampling stability selection. The decision layer estimates covariate and
+set with a simple two-level per-subset permutation selection and subsampling
+stability selection. The decision layer estimates covariate and
 concept impact on a downstream loss via propensity-based importance weighting,
 gated by a batch-separability (AUC) overlap diagnostic. We give definitions,
 estimators, validity statements, algorithms, and the structured-insight schema.
@@ -186,48 +186,41 @@ The same ablation principle instantiated on $\MMD$ (marginal, covariate) and on
 risk (conditional, outcome) covers the two shift types.
 \end{remark}
 
-\section{Two-stage selection by permutation and stability}
+\section{Two-level selection by permutation and stability}
 
-We deliberately avoid the Benjamini--Hochberg (BH) family. In this problem the
-number of group hypotheses is small ($K\!\approx\!7$) and the group statistics
-are strongly correlated (aggregations of the same raw attribute, and correlated
-raw attributes); BH's independence/PRDS assumptions are dubious and, with so few
-hypotheses, BH is simultaneously under-powered and poorly calibrated in
-practice. We use permutation-based control instead, which is exact under
-exchangeability and correlation-robust.
+We keep the selection deliberately simple: a two-level attribution whose purpose
+is to produce structured insights, not a formal multiple-testing guarantee. We
+avoid the Benjamini--Hochberg (BH) family (few, strongly correlated group tests
+where its independence/PRDS assumptions are dubious and it is under-powered) and
+also do \emph{not} impose family-wise (e.g.\ Westfall--Young) control; each
+subset is judged on its own permutation $p$-value.
 
 \paragraph{Stage 1 (groups).} Rank groups by Shapley-MMD; select
-$\Gcal^\star=\{g: p_g<\alpha_1 \text{ and } \hat\pi_g\ge\pi_{\mathrm{thr}}\}$,
-where $p_g$ is the group's permutation $p$-value and $\hat\pi_g$ its subsampling
-selection frequency (Section~\ref{sec:stability}). Combining a permutation test
-with a stability threshold is both practical and finite-sample controlled.
+$\Gcal^\star=\{g: p_g<\alpha \text{ and } \hat\pi_g\ge\pi_{\mathrm{thr}}\}$,
+where $p_g$ is the group's MMD permutation $p$-value (exact under exchangeability)
+and $\hat\pi_g$ its subsampling selection frequency (Section~\ref{sec:stability}).
+The stability threshold suppresses flukes without a global correction.
 
 \paragraph{Stage 2 (features within a selected group).}
-Within each $g\in\Gcal^\star$ apply a \emph{Westfall--Young step-down max-T}
-permutation procedure. Let $T_j=\widehat{\MMD}^2_u(\{j\})$ for feature $j\in g$.
-Draw $B$ label permutations \emph{shared across the features of $g$}; from each
-permutation $b$ form the maximum $M_b=\max_{j\in g}T_j^{(b)}$. The adjusted
-$p$-value is
-\begin{equation}
-\tilde p_j=\frac{1+\sum_{b=1}^{B}\mathbb{1}\{M_b\ge T_j\}}{1+B},
-\end{equation}
-and feature $j$ is selected if $\tilde p_j\le\alpha_2$.
+Within each $g\in\Gcal^\star$, compute a per-feature MMD permutation $p$-value
+$p_j$ for $j\in g$ and select $\{j: p_j\le\alpha\}$. No multiplicity adjustment
+is applied.
 
-\begin{proposition}[Exact FWER control]
-Under the family null and exchangeability, using the shared-permutation max
-statistic gives $\PR(\exists j\ \text{null}: \tilde p_j\le\alpha_2)\le\alpha_2$,
-exactly and without independence assumptions; because the null is built from the
-same permutations for all features, the procedure adapts to their correlation.
-\end{proposition}
+The same rule applies at every split of the multi-resolution tree
+$\text{root}\to\text{attribute}\to\text{aggregation family}\to\text{feature}$,
+and the tree is \emph{gated}---a node is entered only if its parent was
+selected. Each node is re-tested on its own feature subset (marginal at the
+root, increasingly conditional deeper down): \emph{subset post-hoc localization}
+conditional on a significant global test.
 
-The same construction applies at every split of the multi-resolution tree
-$\text{root}\to\text{attribute}\to\text{aggregation family}\to\text{feature}$:
-each node's children are tested by shared-permutation max-T, and the tree is
-\emph{gated}---a node is entered only if its parent was selected---so the
-family-wise guarantees compose down a hierarchical, correlation-robust,
-BH-free procedure. Each node is re-tested on its own feature subset (marginal at
-the root, increasingly conditional deeper down): \emph{subset post-hoc
-localization} conditional on a significant global test.
+\begin{remark}[Cost of dropping multiplicity control]
+Without a family-wise correction the per-comparison Type-I error is not pooled,
+so a few weak non-driver groups/features may be selected. In practice they carry
+low priority ($=\text{exposure}\times\text{impact}$) and stability, so the
+structured insights rank them well below the true drivers; empirically the true
+drivers are always recovered (recall $=1$) with only occasional low-ranked
+extras.
+\end{remark}
 
 \section{Stability selection and the MMD bootstrap}
 \label{sec:stability}
@@ -328,9 +321,9 @@ drives dashboards, alert routing, and feature-store governance.
 \item Aggregate orders to the entity axis: $x_j=\Phi(O_j)$.
 \item Global detection: MMD permutation test (covariate); PO-/$R$-risk (concept).
 \item Stage 1: Shapley/LOGO ranking; group permutation $p_g$ and stability
-      $\hat\pi_g$ $\to$ $\Gcal^\star=\{p_g<\alpha_1,\ \hat\pi_g\ge\pi_{\mathrm{thr}}\}$.
-\item Stage 2: within each $g\in\Gcal^\star$, Westfall--Young max-T permutation
-      at $\alpha_2$ $\to$ selected features.
+      $\hat\pi_g$ $\to$ $\Gcal^\star=\{p_g<\alpha,\ \hat\pi_g\ge\pi_{\mathrm{thr}}\}$.
+\item Stage 2: within each $g\in\Gcal^\star$, per-feature permutation $p_j$
+      $\to$ selected features $\{p_j\le\alpha\}$ (no multiplicity adjustment).
 \item Characterize each selected feature ($d$, quantiles, KS split, rule).
 \item Decision: train downstream model on old batch; compute
       $L_{\mathrm{old}},L_{\mathrm{iw}},L_{\mathrm{new}}$, ESS, AUC $\to$ decision.
