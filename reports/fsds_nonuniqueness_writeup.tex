@@ -104,14 +104,17 @@ hierarchy.
 While ``how much'' is not identifiable, ``which subset carries the shift'' is: the
 total is order-invariant, and the selection of the responsible group is stable
 across attribution conventions and across resamples. We therefore localize
-recursively, applying the same two-stage selection at each level (a per-subset
-permutation test plus a bootstrap stability threshold, gated), and never report
-proportions:
+recursively, and never report proportions. The selection deliberately uses a
+single global detection plus a leave-one-group-out ablation and a stability
+check --- \emph{no multiple-testing machinery}, which keeps the procedure simple
+and easy to trust:
 
 \begin{enumerate}[leftmargin=2em]
-\item \textbf{Detect} the shift globally (MMD / $R$-risk permutation test).
-\item \textbf{Localize (level 1)} to a responsible attribute-group subset on the
-current axis.
+\item \textbf{Detect} the shift globally with one MMD / $R$-risk permutation
+test (order-invariant total).
+\item \textbf{Localize (level 1)} to the responsible attribute-group subset by
+\emph{leave-one-group-out (LOGO) ablation} --- the groups whose removal collapses
+the shift --- kept only if stable across bootstrap resamples.
 \item \textbf{Drill (level 2)} by \emph{restricting the order table to the
 entities selected at level 1} (a conditional drill-down: keep only the flagged
 subset's rows), then re-running the same selection on the next aggregation key
@@ -122,6 +125,48 @@ not the whole population.
 rule (a KS-optimal split threshold), a decision (monitor / reweight / retrain /
 collect labels), and a trend status computed by diffing against the previous run.
 \end{enumerate}
+
+\section{Why LOGO, why these modalities, and why the subset is the unit}
+
+\paragraph{Why LOGO.} We rank and select groups by the leave-one-group-out
+ablation $\phi_g = T(\text{all}) - T(\text{all}\setminus g)$, the drop in the
+shift metric when a group's features are removed. It is the right primitive here
+for three reasons. (i) It answers the operational question directly --- ``if we
+ignore or repair this group, does the detected shift disappear?'' --- which is
+how an owner reasons and what makes the output actionable. (ii) It is a
+\emph{conditional} importance (given all other features present), so a group is
+credited only for what the rest does not already explain: it flags
+\emph{non-redundant} drivers rather than everything merely correlated with the
+shift. (iii) It is cheap ($K{+}1$ metric evaluations), its sign is meaningful
+(removing a true driver lowers the metric; removing noise does not), and it needs
+no attribution convention. Applied at the raw-attribute \emph{group} level it is
+immune to the within-group correlation that would otherwise dilute every single
+aggregation to near zero.
+
+\paragraph{Why the subset --- not the feature --- is the effective unit.} By the
+non-uniqueness result the total is order-invariant but the per-feature split is
+not; the object that \emph{is} invariant and estimable is the contribution of a
+whole subset (include or exclude the group as a unit). Empirically the
+group-level answer is also stable across attribution conventions (standalone,
+LOGO, and Shapley agree on \emph{which} groups) and across resamples, while the
+per-feature answer is not. The grouping is not arbitrary: a real shift typically
+enters through a raw signal --- a collection/definition change in GMV, a pricing
+change, a new buyer cohort --- which moves \emph{all} of that signal's
+aggregations together, so the raw-attribute group is the natural causal and
+operational unit. Selecting that unit is therefore both statistically well-posed
+(invariant, stable) and operationally meaningful (it maps to an owner, a rule,
+and an action).
+
+\paragraph{Why these modalities (MMD and PO-/R-risk).} A characteristic-kernel
+MMD is zero iff the two batches share the same $P(X)$, and its LOGO drop is a
+genuine reduction in a distributional distance that is sensitive to shifts in any
+moment (mean, scale, tails), so it does not miss non-linear covariate shifts. The
+PO-/R-risk targets the orthogonal, outcome-relevant question --- has $P(Y\mid X)$
+changed --- and is insensitive to pure covariate shift, so the two modalities
+cover the two failure modes without double-counting. Both are permutation-exact
+and assumption-light, which is what makes a LOGO drop built on them a
+trustworthy, convention-free number --- in contrast to Shapley, which becomes
+unique only by averaging over an arbitrary set of orders.
 
 \section{A worked business example}
 
