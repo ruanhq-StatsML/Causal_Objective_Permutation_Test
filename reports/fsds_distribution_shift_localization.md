@@ -134,8 +134,9 @@ Example leaf (`gmv__mean`, merchant axis): split @ 27.8 (KS = 1.0, batch0 100 % 
 | Module | Role |
 | --- | --- |
 | `Python/fsds_merchant_prototype.py` | relational data + merchant-dimension aggregation; PO-risk + LOCO (concept drift) |
+| `Python/fsds_metalearner_fs.py` | CFPerm-style: meta-learner (R-risk) testing as feature selection → post-hoc localization |
 | `Python/fsds_logo_mmd.py` | LOGO-MMD covariate-shift detection + per-group MMD |
-| `Python/fsds_vimp_inference.py` | multiple-testing comparison (Holm/BH/BB) + stability selection — kept for reference; the production path uses permutation/WY instead |
+| `Python/fsds_vimp_inference.py` | multiple-testing comparison (Holm/BH/BB) + stability selection — kept for reference; the production path uses simple per-subset permutation |
 | `Python/fsds_localization_tree.py` | multi-layer subset post-hoc localization tree → JSON |
 | `Python/fsds_two_dimensional.py` | two-dimensional FSDS (merchant + buyer axes) |
 
