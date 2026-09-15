@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import numpy as np
+from scipy.stats import ks_2samp
 from statsmodels.stats.multitest import multipletests
 
 from fsds_merchant_prototype import (
@@ -83,8 +84,31 @@ def _batch_summary(values, W):
     }
 
 
+def _quantiles(values, W, qs=(0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95)):
+    a, b = values[W == 0], values[W == 1]
+    return {"q": list(qs),
+            "batch0": [float(np.quantile(a, q)) for q in qs],
+            "batch1": [float(np.quantile(b, q)) for q in qs]}
+
+
+def _best_split(values, W):
+    """KS-optimal 1-D split threshold separating the two batches on this feature."""
+    a, b = values[W == 0], values[W == 1]
+    r = ks_2samp(b, a)
+    t = float(getattr(r, "statistic_location", np.median(values)))
+    return {"threshold": t, "ks_stat": float(r.statistic),
+            "ks_pvalue": float(r.pvalue),
+            "batch0_frac_below": float(np.mean(a <= t)),
+            "batch1_frac_below": float(np.mean(b <= t)),
+            "direction": "new_batch_higher" if np.median(b) > np.median(a)
+            else "new_batch_lower"}
+
+
 def _feature_obs_stats(fname, feat_raw, W, order_stats):
-    obs = {"merchant_level": _batch_summary(feat_raw[fname].values, W)}
+    vals = feat_raw[fname].values
+    obs = {"entity_level": _batch_summary(vals, W),
+           "quantiles": _quantiles(vals, W),
+           "split": _best_split(vals, W)}
     ra = raw_attr_of(fname)
     if ra in order_stats:
         obs["order_level_raw_attr"] = {"attribute": ra, **order_stats[ra]}
@@ -181,8 +205,10 @@ def print_tree(node, prefix=""):
     padj = "" if node["p_adjusted"] is None else f" padj={node['p_adjusted']:.4f}"
     d = ""
     if "observation_level" in node:
-        c = node["observation_level"]["merchant_level"]["cohen_d"]
-        d = f" cohen_d={c:+.2f}"
+        ol = node["observation_level"]
+        c = ol["entity_level"]["cohen_d"]
+        t = ol["split"]["threshold"]
+        d = f" cohen_d={c:+.2f} split@{t:.3g}"
     print(f"{prefix}[{tag}] {node['name']:22s} "
           f"MMD2={node['stats']['mmd2']:+.4f} p={node['stats']['p_value']:.4f}"
           f"{padj}{d}")
