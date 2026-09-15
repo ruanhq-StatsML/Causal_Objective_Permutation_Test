@@ -191,6 +191,26 @@ Rendered headline example:
 
 A run yields 4 group-level + 40 feature-level insights across the two axes (`--json` writes the structured list).
 
+### 7.2 Retrain-decision layer (`fsds_decision.py`)
+
+Localization says *where* the shift is; the decision layer makes the *so-what* a measurable number by attaching a downstream task and evaluating impact:
+
+- **covariate impact** `= L_iw − L_old` — the degradation the covariate shift explains, estimated label-free via the propensity density ratio `w(x)=e(x)/(1−e(x))`;
+- **concept impact** `= L_new − L_iw` — the excess reweighting cannot explain (concept drift; needs labels);
+- **overlap gate** — the propensity **AUC** (batch separability). When AUC≈1 the batches barely overlap, so importance weighting and the covariate/concept split are invalid (a clip-inflated ESS can look fine — AUC is the robust guard).
+
+Decision rule per axis: `AUC high → retrain / collect labels (unidentifiable)`; else `concept CI>0 → retrain`; else `covariate impact large → reweight`; else `monitor`. Each insight also gets `model_exposure` (downstream importance of the shifted features) and a `priority = exposure × impact`, plus `owner` (supply/demand) for routing.
+
+Controlled self-check (`--validate`, with support overlap) confirms the three branches fire correctly:
+
+| scenario | AUC | covariate | concept | decision |
+| --- | --- | --- | --- | --- |
+| covariate-only | 0.77 | +0.27 (20%) | ~0 | **reweight** |
+| concept drift | 0.51 | ~0 | +7.33 | **retrain** |
+| shift on unused features | 0.92 | — | — | **monitor** |
+
+On the aggregated marketplace data both axes are (near-)separable (AUC≈1.0), so the layer honestly returns "loss degraded; covariate/concept unidentifiable without labels → retrain / collect labels" — a real property of entity-level aggregation (a detectable shift usually separates the batches), with the localization pointing at *what* to collect labels for.
+
 ---
 
 ## 8. Limitations & assumptions
