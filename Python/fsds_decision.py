@@ -25,7 +25,9 @@ shift_type / exposure / impact / decision / priority / owner + evidence.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+from datetime import datetime, timezone
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -33,9 +35,52 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold, cross_val_predict
 
 from fsds_two_dimensional import generate_two_dim_data, run_dimension, DIMENSIONS
+from fsds_logo_mmd import _median_gamma, mmd2_unbiased
 
 AXIS_ENTITY = {"merchant": "merchants", "user": "buyers"}
 OWNER = {"merchant": "supply", "user": "demand"}
+SCHEMA_VERSION = "fsds-insight/1.0"
+
+
+def _iid(dedup_key):
+    return hashlib.sha1(dedup_key.encode()).hexdigest()[:12]
+
+
+def _candidate_rule(feature, split):
+    op = ">" if split["direction"] == "new_batch_higher" else "<"
+    return {"feature": feature, "op": op,
+            "threshold": round(float(split["threshold"]), 4),
+            "implies": "new_batch", "ks": round(float(split["ks_stat"]), 3)}
+
+
+def _trend(dedup_key, priority, prev):
+    if prev is None:
+        return {"status": "unknown", "delta_priority": None, "first_seen": None}
+    if dedup_key not in prev:
+        return {"status": "new", "delta_priority": None, "first_seen": "this_run"}
+    prev_p = prev[dedup_key].get("priority")
+    first = prev[dedup_key].get("trend", {}).get("first_seen") or "previous_run"
+    if prev_p is None or priority is None:
+        return {"status": "continuing", "delta_priority": None, "first_seen": first}
+    delta = priority - prev_p
+    rel = delta / prev_p if prev_p > 1e-9 else 0.0
+    status = ("worsening" if rel > 0.1 else "improving" if rel < -0.1 else "stable")
+    return {"status": status, "delta_priority": float(delta), "first_seen": first}
+
+
+def _group_stability(feat_std, W, members, n_boot=60, seed=0):
+    """Bootstrap fraction of resamples with a positive group MMD (real number)."""
+    Z = feat_std[members].values
+    rng = np.random.default_rng(seed)
+    i0, i1 = np.where(W == 0)[0], np.where(W == 1)[0]
+    pos = 0
+    for _ in range(n_boot):
+        bi = np.concatenate([rng.choice(i0, i0.size, True), rng.choice(i1, i1.size, True)])
+        Zb = Z[bi] + rng.normal(0, 1e-3, Z[bi].shape)
+        Wb = W[bi]
+        if mmd2_unbiased(Zb[Wb == 0], Zb[Wb == 1], _median_gamma(Zb)) > 0:
+            pos += 1
+    return pos / n_boot
 
 
 def _safe_d(d):
@@ -160,7 +205,8 @@ def _selected_groups(root):
     return out
 
 
-def build(orders, q=0.1, n_perm=200, seed=2026):
+def build(orders, q=0.1, n_perm=200, seed=2026, prev=None):
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     insights = []
     for axis in ("merchant", "user"):
         res = run_dimension(orders, axis, q, n_perm, seed)
@@ -181,53 +227,71 @@ def build(orders, q=0.1, n_perm=200, seed=2026):
         total_imp = sum(imp.values()) or 1.0
 
         gt = tree["global_test"]
-        if ev["propensity_auc"] > 0.9:
+        auc = ev["propensity_auc"]
+        if auc > 0.9:
             shift_type = "unidentifiable_separable"
         elif ev["concept_ci"][0] > 0:
             shift_type = "concept"
         else:
             shift_type = "covariate"
+        dk = f"{axis}:axis"
+        pr_axis = abs(ev["l_new"] - ev["l_old"]) / max(ev["l_old"], 1e-9)
         insights.append({
-            "axis": axis, "scope": "axis", "owner": OWNER[axis],
+            "schema_version": SCHEMA_VERSION, "insight_id": _iid(dk), "dedup_key": dk,
+            "generated_at": now, "axis": axis, "scope": "axis", "owner": OWNER[axis],
+            "finding": "distribution_shift", "shift_type": shift_type,
             "global_mmd2": gt["mmd2"], "global_p": gt["p_value"],
-            "shift_type": shift_type,
             "impact": {"l_old": ev["l_old"], "l_iw": ev["l_iw"], "l_new": ev["l_new"],
                        "covariate_impact": ev["covariate_impact"],
                        "covariate_ci": ev["covariate_ci"],
                        "concept_impact": ev["concept_impact"],
                        "concept_ci": ev["concept_ci"],
                        "weight_ess_frac": ev["weight_ess_frac"]},
-            "decision": decision, "reason": reason,
+            "confidence": {"significance_p": gt["p_value"],
+                           "identifiability_auc": auc,
+                           "label_free_identifiable": bool(auc <= 0.9)},
+            "priority": float(pr_axis), "decision": decision, "reason": reason,
+            "trend": _trend(dk, pr_axis, prev),
             "text": f"[{axis}] {OWNER[axis]}-side shift; "
                     f"loss {ev['l_old']:.3f}->{ev['l_new']:.3f} "
                     f"(covariate {ev['covariate_impact']:+.3f}, "
                     f"concept {ev['concept_impact']:+.3f}, "
-                    f"AUC={ev['propensity_auc']:.2f}) -> DECISION: {decision} "
-                    f"({reason}).",
+                    f"AUC={auc:.2f}) -> DECISION: {decision} ({reason}).",
         })
 
         for attr, leaves in _selected_groups(tree["root"]):
             g = attr["name"]
-            exposure = sum(imp.get(f, 0.0) for f in [ln["name"] for ln in leaves]) / total_imp
-            strongest = max(leaves, key=lambda n: n["stats"]["mmd2"])  # mmd2 avoids
+            names_g = [ln["name"] for ln in leaves]
+            exposure = sum(imp.get(f, 0.0) for f in names_g) / total_imp
+            strongest = max(leaves, key=lambda n: n["stats"]["mmd2"])
             d = _safe_d(strongest["observation_level"]["entity_level"]["cohen_d"])
             priority = exposure * abs(ev["concept_impact"] if shift_type == "concept"
                                       else ev["covariate_impact"])
+            stab = _group_stability(feat, W, names_g, seed=seed + 3)
+            dk = f"{axis}:group:{g}"
             insights.append({
+                "schema_version": SCHEMA_VERSION, "insight_id": _iid(dk),
+                "dedup_key": dk, "generated_at": now,
                 "axis": axis, "scope": "group", "target": g, "owner": OWNER[axis],
-                "shift_type": shift_type, "n_features": len(leaves),
-                "model_exposure": float(exposure), "priority": float(priority),
-                "decision": decision, "group_adj_p": attr.get("p_adjusted"),
+                "finding": "distribution_shift", "shift_type": shift_type,
+                "n_features": len(leaves), "model_exposure": float(exposure),
+                "priority": float(priority), "decision": decision,
+                "confidence": {"significance_p": attr.get("p_adjusted"),
+                               "stability_freq": float(stab),
+                               "identifiability_auc": auc},
+                "trend": _trend(dk, float(priority), prev),
                 "text": f"  [{axis}] `{g}` shifted ({len(leaves)} feats, "
                         f"strongest {strongest['name']} d={d:+.2f}); "
-                        f"model_exposure={exposure:.2f}, priority={priority:.3f} "
-                        f"-> {decision}.",
+                        f"exposure={exposure:.2f}, priority={priority:.3f}, "
+                        f"stability={stab:.2f} -> {decision}.",
                 "features": [{
                     "feature": ln["name"],
                     "cohen_d": ln["observation_level"]["entity_level"]["cohen_d"],
                     "split": ln["observation_level"]["split"]["threshold"],
                     "direction": ln["observation_level"]["split"]["direction"],
                     "model_importance_share": imp.get(ln["name"], 0.0) / total_imp,
+                    "candidate_rule": _candidate_rule(
+                        ln["name"], ln["observation_level"]["split"]),
                 } for ln in sorted(leaves, key=lambda n: -imp.get(n["name"], 0.0))],
             })
     return insights
@@ -277,14 +341,21 @@ def main():
     ap.add_argument("--n-perm", type=int, default=200)
     ap.add_argument("--seed", type=int, default=2026)
     ap.add_argument("--json", type=str, default="")
+    ap.add_argument("--prev", type=str, default="",
+                    help="previous insights JSON to diff for trend fields")
     args = ap.parse_args()
 
     if args.validate:
         validate()
         return 0
 
+    prev = None
+    if args.prev:
+        with open(args.prev) as fh:
+            prev = {i["dedup_key"]: i for i in json.load(fh)}
+
     _, _, _, orders = generate_two_dim_data(cov_shift=args.cov_shift, seed=args.seed)
-    insights = build(orders, q=args.q, n_perm=args.n_perm, seed=args.seed)
+    insights = build(orders, q=args.q, n_perm=args.n_perm, seed=args.seed, prev=prev)
 
     for ins in insights:
         if ins["scope"] == "axis":

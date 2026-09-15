@@ -191,6 +191,16 @@ Rendered headline example:
 
 A run yields 4 group-level + 40 feature-level insights across the two axes (`--json` writes the structured list).
 
+**Hardened insight contract (`fsds-insight/1.0`, emitted by `fsds_decision.py`).** Each insight is a typed object with a stable identity and lifecycle, not free text:
+
+- identity: `schema_version`, `insight_id` (stable hash of `dedup_key`), `dedup_key` (`axis:scope:target`), `generated_at` — so downstream **upserts** instead of duplicating;
+- three orthogonal confidence axes: `confidence = { significance_p, stability_freq (bootstrap), identifiability_auc }`;
+- `trend` (real diff vs a previous run via `--prev`): `status ∈ {new, worsening, improving, stable, resolved}`, `delta_priority`, `first_seen`;
+- `candidate_rule` per feature: the KS split materialized into an executable rule, e.g. `gmv__roll5_mean_avg > 30.28 ⇒ new_batch (ks=1.0)`;
+- routing/ranking: `owner`, `priority = exposure × impact`, `decision`.
+
+This is what makes the same JSON consumable three ways with no rework: a dashboard renders group cards (headline + `decision` + `confidence`) with feature drill-downs (quantiles as sparklines, `split` as a threshold line); an alert router pages by `owner + severity` and dedups by `insight_id`; feature-store governance joins on `target` and turns `candidate_rule` into a monitor.
+
 ### 7.2 Retrain-decision layer (`fsds_decision.py`)
 
 Localization says *where* the shift is; the decision layer makes the *so-what* a measurable number by attaching a downstream task and evaluating impact:
