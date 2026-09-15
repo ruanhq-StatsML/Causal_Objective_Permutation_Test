@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+
+\title{\textbf{Understanding how $Y\mid X$ shifts with PO-risk\\
+\large a minimal prototype (one model per target metric)}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Idea}
+
+HSIC gives a \emph{symmetric association} between two metrics. But to understand
+whether the \emph{relationship} between a target metric $Y$ (say GMV) and the
+other metrics $X$ has \emph{changed} between an existing and a new batch, we need
+a target-oriented, conditional object, not a pairwise one. We use the
+pseudo-outcome (PO-)risk with the batch label $W$ as a ``treatment'': it detects
+a change in $P(Y\mid X)$ (concept drift), and a leave-one-out (LOCO) tells us
+\emph{which} $X$ the change loads on. This is \textbf{one model per target $Y$}
+--- the learner takes all of $X$ jointly --- so it costs $O(\#\text{targets})$
+models, not $O(p^2)$ models for every $X$--$Y$ pair.
+
+\section{PO-risk}
+
+With cross-fitted nuisances $\mu(x)=\E[Y\mid x]$ and $e(x)=\Pr(W{=}1\mid x)$,
+form the pseudo-outcome $\psi=(Y-\mu(X))\,(W-e(X))$ and fit
+$\tau=\argmin_f \E[(\psi-f(X))^2]$. The statistic is
+\begin{equation}
+\mathrm{PO\text{-}risk}=\E\big[\tau(X)^2\big],
+\end{equation}
+which is large when $\tau(X)=\E[Y\mid X,W{=}1]-\E[Y\mid X,W{=}0]\neq0$, i.e.\ when
+$P(Y\mid X)$ differs across batches, and $\approx 0$ under pure covariate shift.
+A permute-then-refit $p$-value (shuffle $W$) tests significance.
+
+\paragraph{LOCO.} The importance of metric $x_j$ is the drop in PO-risk when it
+is removed, $\phi_j=\mathrm{PO\text{-}risk}(X)-\mathrm{PO\text{-}risk}(X_{-j})$:
+removing the metric that carries the $Y\mid X$ change collapses the detected
+drift.
+
+\section{Method}
+
+Choose a target $Y$; let $X$ be the other metrics and $W$ the batch. (1) Run the
+PO-risk permutation test to decide whether $P(Y\mid X)$ shifted. (2) If so, rank
+the $X$ by LOCO to localize where the change sits. One fit of the meta-learner
+covers all $X$ jointly.
+
+\section{Result}
+
+Synthetic metrics are drawn i.i.d.\ (no covariate shift); the target $Y=$ GMV
+keeps a stable mapping but, \emph{for the new batch only}, gains a dependence on
+\texttt{rating} (the rating\,$\to$\,GMV relationship strengthens) --- a concept
+drift localized to \texttt{rating}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+\multicolumn{2}{l}{\emph{PO-risk test} \;(statistic $=0.118$, permutation $p=0.010$ $\Rightarrow$ $Y\mid X$ shifted)}\\
+\midrule
+metric $x_j$ & LOCO drop $\phi_j$ \\
+\midrule
+\textbf{rating} \;(driver) & $\mathbf{+0.106}$ \\
+orders   & $+0.046$ \\
+delivery & $+0.039$ \\
+promo    & $+0.032$ \\
+tenure   & $+0.028$ \\
+\bottomrule
+\end{tabular}
+\caption{PO-risk with target $Y=$ GMV. The permutation test detects that
+$P(Y\mid X)$ shifted ($p=0.010$); the LOCO drop localizes the change to
+\texttt{rating}, whose removal collapses the PO-risk far more than any other
+metric. One PO-risk model (all $X$ jointly) suffices --- no per-pair modelling.}
+\end{table}
+
+\paragraph{Takeaway.} For a target metric, PO-risk answers the question HSIC
+cannot --- \emph{did $Y\mid X$ change, and on which $X$} --- with a single
+meta-learner per target and a LOCO read-out, avoiding an $O(p^2)$ battery of
+pairwise models.
+
+\end{document}
