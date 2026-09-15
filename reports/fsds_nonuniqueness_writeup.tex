@@ -211,14 +211,14 @@ and monitorable --- it closes the loop.
 \end{remark}
 
 \paragraph{Results of the two-level procedure.} We inject a GMV covariate shift
-concentrated in a single product vertical $c^\star$ for new merchants
-(200 merchants, 6 verticals, 24k orders) and run the procedure. Level 1
-(merchant axis) selects the \texttt{gmv} attribute group by LOGO ablation with
-full stability; the conditional Level 2 (product vertical, new-vs-existing GMV
-with merchant-block permutation) isolates exactly $c^\star$ while every other
-vertical is non-significant (Table~\ref{tab:twolevel}). No proportions are
-reported --- only the selected subsets, their ablation/gap magnitude, stability,
-and permutation $p$.
+concentrated in a \emph{single product item category} (Fresh Grocery) for new
+merchants (200 merchants, 6 categories, 24k orders) and run the procedure.
+Level 1 (merchant axis) selects the \texttt{gmv} attribute group by LOGO ablation
+with full stability; the conditional Level 2 then drills into the
+\textbf{product item category} and isolates \textbf{Fresh Grocery} exactly, while
+every other category is non-significant (Table~\ref{tab:twolevel}). No
+proportions are reported --- only the selected subsets, their ablation/gap
+magnitude, stability, and permutation $p$.
 
 \begin{table}[t]
 \centering
@@ -230,20 +230,22 @@ Level (unit) & Candidate & LOGO / gap & Stability & Perm.\ $p$ \\
 \;\; & \textbf{gmv} \;(selected) & $+0.283$ & $1.00$ & --- \\
 \;\; & quantity & $-0.277$ & $0.85$ & --- \\
 \midrule
-\multicolumn{5}{l}{\emph{Level 2 --- product vertical} \;(conditional on gmv, new vs.\ existing)}\\
-\;\; & \textbf{vertical $c^\star{=}2$} \;(selected) & $55.88$ & --- & $0.002$ \\
-\;\; & vertical 3 & $0.77$ & --- & $0.158$ \\
-\;\; & vertical 1 & $0.58$ & --- & $0.240$ \\
-\;\; & vertical 0 & $0.29$ & --- & $0.621$ \\
-\;\; & vertical 4 & $0.26$ & --- & $0.583$ \\
-\;\; & vertical 5 & $0.03$ & --- & $0.932$ \\
+\multicolumn{5}{l}{\emph{Level 2 --- product item category} \;(conditional on gmv, new vs.\ existing)}\\
+\;\; & \textbf{Fresh Grocery} \;($c^\star$, selected) & $\mathbf{55.88}$ & --- & $\mathbf{0.002}$ \\
+\;\; & Home \& Kitchen & $0.77$ & --- & $0.158$ \\
+\;\; & Apparel & $0.58$ & --- & $0.240$ \\
+\;\; & Electronics & $0.29$ & --- & $0.621$ \\
+\;\; & Beauty & $0.26$ & --- & $0.583$ \\
+\;\; & Toys & $0.03$ & --- & $0.932$ \\
 \bottomrule
 \end{tabular}
-\caption{Two-level conditional subset localization (`fsds\_cross\_level.py`).
+\caption{Two-level conditional subset localization (\texttt{fsds\_cross\_level.py}).
 Level 1 selects the \texttt{gmv} attribute subset (LOGO ablation $+$ bootstrap
-stability); the conditional Level 2 selects exactly the shifted product vertical
-$c^\star$ (gap $=$ new$-$existing mean GMV within the vertical; merchant-block
-permutation $p$). Recovers ground truth at both levels.}
+stability); the conditional Level 2 drills into the \textbf{product item
+category} and selects exactly the shifted one, \textbf{Fresh Grocery}
+(gap $=$ new$-$existing mean GMV within the category; merchant-block permutation
+$p$). The order surge is localized to a single product item category, not spread
+as proportions; ground truth is recovered at both levels.}
 \label{tab:twolevel}
 \end{table}
 
