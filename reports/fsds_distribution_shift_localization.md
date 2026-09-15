@@ -168,6 +168,29 @@ python Python/fsds_two_dimensional.py  --json two_dim.json
 
 The two-dimensional driver wraps two such trees: `{ "structure": ..., "dimensions": { "merchant": {..., "tree": <node>}, "user": {..., "tree": <node>} } }`.
 
+### 7.1 Structured insights (product output)
+
+`Python/fsds_insights.py` turns the two-level localization into **structured insights** for a dashboard / report. Each insight answers four questions — **where** (axis → attribute group → feature), **what** (direction + magnitude), **how sure** (adjusted p / severity), **so-what** (suggested action) — as a two-level structure: a group-level headline with a suggested action, and feature-level drill-downs with evidence (median migration, KS split, quantiles).
+
+Insight object (feature level):
+
+```jsonc
+{
+  "axis": "merchant", "scope": "feature", "target": "gmv__mean", "parent": "gmv",
+  "finding": "distribution_shift", "direction": "higher",
+  "magnitude": { "cohen_d": 7.96, "mean_batch0": 24.0, "mean_batch1": 41.9, "mmd2": 1.67 },
+  "confidence": { "p_adjusted": 0.0025 }, "severity": "high",
+  "characterization": { "split_threshold": 27.8, "ks_stat": 1.0, "quantiles": {...} },
+  "text": "gmv__mean: new-batch median 24.1->41.7 (higher, cohen_d=+7.96); split at 27.8 (KS=1.00)."
+}
+```
+
+Rendered headline example:
+
+> **[merchant] Shift localized to `gmv` (11 features): new merchants have higher `gmv`** (strongest `gmv__mean`, cohen_d +7.96; group adj p 0.012). *Action:* covariate shift on the supply side — monitor `gmv`; if it feeds downstream models, reweight or retrain; check the pipeline for a collection/definition change.
+
+A run yields 4 group-level + 40 feature-level insights across the two axes (`--json` writes the structured list).
+
 ---
 
 ## 8. Limitations & assumptions
