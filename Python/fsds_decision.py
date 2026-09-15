@@ -90,6 +90,14 @@ def _safe_d(d):
     return float(np.clip(d, -99.0, 99.0))
 
 
+def _arrow(direction):
+    return "\u2191" if direction == "new_batch_higher" else "\u2193"
+
+
+def _pct(old, new):
+    return 100.0 * (new - old) / abs(old) if abs(old) > 1e-9 else float("nan")
+
+
 # --------------------------------------------------------------------------- #
 # Toy downstream task (merchant axis: concept drift; user axis: covariate only)
 # --------------------------------------------------------------------------- #
@@ -236,7 +244,7 @@ def build(orders, q=0.1, n_perm=200, seed=2026, prev=None):
             shift_type = "covariate"
         dk = f"{axis}:axis"
         pr_axis = abs(ev["l_new"] - ev["l_old"]) / max(ev["l_old"], 1e-9)
-        insights.append({
+        axis_ins = {
             "schema_version": SCHEMA_VERSION, "insight_id": _iid(dk), "dedup_key": dk,
             "generated_at": now, "axis": axis, "scope": "axis", "owner": OWNER[axis],
             "finding": "distribution_shift", "shift_type": shift_type,
@@ -252,48 +260,82 @@ def build(orders, q=0.1, n_perm=200, seed=2026, prev=None):
                            "label_free_identifiable": bool(auc <= 0.9)},
             "priority": float(pr_axis), "decision": decision, "reason": reason,
             "trend": _trend(dk, pr_axis, prev),
+            "conclusion": None,          # filled after the group loop (two-level)
             "text": f"[{axis}] {OWNER[axis]}-side shift; "
                     f"loss {ev['l_old']:.3f}->{ev['l_new']:.3f} "
                     f"(covariate {ev['covariate_impact']:+.3f}, "
                     f"concept {ev['concept_impact']:+.3f}, "
                     f"AUC={auc:.2f}) -> DECISION: {decision} ({reason}).",
-        })
+        }
+        insights.append(axis_ins)
 
+        group_insights = []
         for attr, leaves in _selected_groups(tree["root"]):
             g = attr["name"]
             names_g = [ln["name"] for ln in leaves]
             exposure = sum(imp.get(f, 0.0) for f in names_g) / total_imp
             strongest = max(leaves, key=lambda n: n["stats"]["mmd2"])
-            d = _safe_d(strongest["observation_level"]["entity_level"]["cohen_d"])
+            el = strongest["observation_level"]["entity_level"]
+            d = _safe_d(el["cohen_d"])
+            direction = strongest["observation_level"]["split"]["direction"]
             priority = exposure * abs(ev["concept_impact"] if shift_type == "concept"
                                       else ev["covariate_impact"])
             stab = _group_stability(feat, W, names_g, seed=seed + 3)
             dk = f"{axis}:group:{g}"
-            insights.append({
+            feats = [{
+                "feature": ln["name"],
+                "cohen_d": ln["observation_level"]["entity_level"]["cohen_d"],
+                "median_old": ln["observation_level"]["entity_level"]["batch0"]["median"],
+                "median_new": ln["observation_level"]["entity_level"]["batch1"]["median"],
+                "pct_change": _pct(
+                    ln["observation_level"]["entity_level"]["batch0"]["median"],
+                    ln["observation_level"]["entity_level"]["batch1"]["median"]),
+                "split": ln["observation_level"]["split"]["threshold"],
+                "direction": ln["observation_level"]["split"]["direction"],
+                "model_importance_share": imp.get(ln["name"], 0.0) / total_imp,
+                "candidate_rule": _candidate_rule(
+                    ln["name"], ln["observation_level"]["split"]),
+            } for ln in sorted(leaves, key=lambda n: -imp.get(n["name"], 0.0))]
+            # Level-2 conclusion for this group
+            arrow = _arrow(direction)
+            pc = _pct(el["batch0"]["median"], el["batch1"]["median"])
+            g_concl = (f"new {AXIS_ENTITY[axis]} have {arrow} `{g}` "
+                       f"(median {el['batch0']['median']:.3g}->{el['batch1']['median']:.3g}, "
+                       f"{pc:+.0f}%; {len(leaves)} features, stability {stab:.2f}); "
+                       f"rule e.g. {feats[0]['candidate_rule']['feature']} "
+                       f"{feats[0]['candidate_rule']['op']} "
+                       f"{feats[0]['candidate_rule']['threshold']}.")
+            group_insights.append({
                 "schema_version": SCHEMA_VERSION, "insight_id": _iid(dk),
                 "dedup_key": dk, "generated_at": now,
                 "axis": axis, "scope": "group", "target": g, "owner": OWNER[axis],
                 "finding": "distribution_shift", "shift_type": shift_type,
-                "n_features": len(leaves), "model_exposure": float(exposure),
-                "priority": float(priority), "decision": decision,
+                "direction": direction, "n_features": len(leaves),
+                "model_exposure": float(exposure), "priority": float(priority),
+                "decision": decision,
                 "confidence": {"significance_p": attr.get("p_adjusted"),
                                "stability_freq": float(stab),
                                "identifiability_auc": auc},
                 "trend": _trend(dk, float(priority), prev),
+                "conclusion": g_concl,
                 "text": f"  [{axis}] `{g}` shifted ({len(leaves)} feats, "
                         f"strongest {strongest['name']} d={d:+.2f}); "
                         f"exposure={exposure:.2f}, priority={priority:.3f}, "
                         f"stability={stab:.2f} -> {decision}.",
-                "features": [{
-                    "feature": ln["name"],
-                    "cohen_d": ln["observation_level"]["entity_level"]["cohen_d"],
-                    "split": ln["observation_level"]["split"]["threshold"],
-                    "direction": ln["observation_level"]["split"]["direction"],
-                    "model_importance_share": imp.get(ln["name"], 0.0) / total_imp,
-                    "candidate_rule": _candidate_rule(
-                        ln["name"], ln["observation_level"]["split"]),
-                } for ln in sorted(leaves, key=lambda n: -imp.get(n["name"], 0.0))],
+                "features": feats,
             })
+        insights.extend(group_insights)
+
+        # ---- Level-1 (group) synthesis into an axis-level conclusion ----
+        drivers = sorted(group_insights, key=lambda gi: -gi["priority"])
+        parts = [f"`{gi['target']}` {_arrow(gi['direction'])}" for gi in drivers]
+        n_feats = sum(gi["n_features"] for gi in group_insights)
+        axis_ins["conclusion"] = (
+            f"{OWNER[axis].capitalize()}-side {shift_type} shift "
+            f"(global p={gt['p_value']:.4f}): "
+            f"level-1 localizes to {len(group_insights)} attribute group(s) "
+            f"[{', '.join(parts)}]; level-2 selects {n_feats} features. "
+            f"Decision: {decision.upper()} ({reason}).")
     return insights
 
 

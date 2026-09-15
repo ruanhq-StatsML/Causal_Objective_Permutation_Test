@@ -24,6 +24,10 @@ from fsds_shapley_mmd import shapley_axis
 SIDE = {"merchant": "supply-side", "user": "demand-side"}
 
 
+def _ar(direction):
+    return "\u2191" if direction == "new_batch_higher" else "\u2193"
+
+
 def run(orders, q=0.1, n_perm=200, seed=2026):
     insights = build_insights(orders, q=q, n_perm=n_perm, seed=seed)
     by_axis = {}
@@ -64,17 +68,25 @@ def print_summary(out):
               f"(ESS={imp['weight_ess_frac']:.2f} AUC={auc:.2f}; "
               f"cov={imp['covariate_impact']:+.3f} con={imp['concept_impact']:+.3f})")
         print(f"    reason: {g['reason']}")
-        print("  Localized groups (by priority):")
+        print(f"  CONCLUSION: {g['conclusion']}")
+        # ---- Level 1: which attribute groups ----
+        print("  Level-1 (attribute groups, by priority):")
         for grp in a["groups"]:
             c = grp["confidence"]
-            print(f"    * {grp['target']:14s} feats={grp['n_features']:2d} "
-                  f"exposure={grp['model_exposure']:.2f} stability={c['stability_freq']:.2f} "
-                  f"priority={grp['priority']:.3f} trend={grp['trend']['status']}")
-            rules = grp["features"][:2]
-            for f in rules:
+            print(f"    * {grp['target']:14s} {_ar(grp['direction'])} "
+                  f"feats={grp['n_features']:2d} exposure={grp['model_exposure']:.2f} "
+                  f"stability={c['stability_freq']:.2f} priority={grp['priority']:.3f} "
+                  f"trend={grp['trend']['status']}")
+        # ---- Level 2: which features within each selected group ----
+        print("  Level-2 (features within selected groups):")
+        for grp in a["groups"]:
+            print(f"    [{grp['target']}] {grp['conclusion']}")
+            for f in grp["features"][:3]:
                 r = f["candidate_rule"]
-                print(f"        rule: {r['feature']} {r['op']} {r['threshold']} "
-                      f"=> {r['implies']} (ks={r['ks']})")
+                print(f"        - {f['feature']:26s} {_ar(f['direction'])} "
+                      f"median {f['median_old']:.3g}->{f['median_new']:.3g} "
+                      f"({f['pct_change']:+.0f}%)  rule: {r['feature']} {r['op']} "
+                      f"{r['threshold']}")
 
 
 def main():
