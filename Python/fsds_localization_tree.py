@@ -3,9 +3,11 @@
 
 Once the global MMD test rejects H0: P0(X) = P1(X), this module drills the
 attribution down through a hierarchy of nested feature subsets, re-testing MMD
-on each subset and controlling the error with a Benjamini-Bogomolov style
-hierarchical FDR (the effective level is deflated by R/m at every split, so the
-FDR over the discovered leaves across the tree is controlled).
+on each subset. Selection at each split uses a Westfall-Young step-down max-T
+permutation procedure (shared permutations -> a max-null that controls the
+family-wise error rate exactly and is robust to the correlation between child
+subsets); the tree is gated, so a node is entered only if its parent was
+selected. No BH / independence assumption is used.
 
 Layers
 ------
@@ -24,8 +26,8 @@ from __future__ import annotations
 import argparse
 import json
 import numpy as np
+from scipy.spatial.distance import cdist
 from scipy.stats import ks_2samp
-from statsmodels.stats.multitest import multipletests
 
 from fsds_merchant_prototype import (
     RAW_ATTRS, generate_relational_data, aggregate_to_merchant, raw_attr_of,
@@ -147,30 +149,62 @@ def _node(name, kind, depth, cols, test, selected, p_adjusted,
     return node
 
 
-def expand(node, kind, cols, q_eff, W, feat_std, feat_raw, order_stats,
+def _mmd_from_K(K, W):
+    a, b = np.where(W == 0)[0], np.where(W == 1)[0]
+    m, n = a.size, b.size
+    Kxx, Kyy, Kxy = K[np.ix_(a, a)], K[np.ix_(b, b)], K[np.ix_(a, b)]
+    return ((Kxx.sum() - np.trace(Kxx)) / (m * (m - 1))
+            + (Kyy.sum() - np.trace(Kyy)) / (n * (n - 1)) - 2.0 * Kxy.mean())
+
+
+def _wy_children(feat_std, W, child_cols, n_perm, alpha, seed):
+    """Westfall-Young step-down max-T permutation over a node's children.
+
+    Shared label permutations across children give a max-null that controls the
+    family-wise error rate exactly and is robust to the correlation between the
+    child subsets -- no BH / independence assumption. Returns observed MMD^2,
+    FWER-adjusted p, selection flags, and the per-child permutation mean.
+    """
+    kernels = []
+    for cols in child_cols:
+        Z = feat_std[cols].values
+        g = _median_gamma(Z)
+        kernels.append(np.exp(-g * cdist(Z, Z, "sqeuclidean")))
+    obs = np.array([_mmd_from_K(K, W) for K in kernels])
+    rng = np.random.default_rng(seed)
+    C = len(kernels)
+    null = np.empty((n_perm, C))
+    for b in range(n_perm):
+        Wp = rng.permutation(W)
+        for c in range(C):
+            null[b, c] = _mmd_from_K(kernels[c], Wp)
+    max_null = null.max(axis=1)                       # step-down max-T null
+    padj = np.array([(1.0 + np.sum(max_null >= obs[c])) / (1.0 + n_perm)
+                     for c in range(C)])
+    return obs, padj, padj <= alpha, null.mean(axis=0)
+
+
+def expand(node, kind, cols, alpha, W, feat_std, feat_raw, order_stats,
            n_perm, seed, max_depth):
-    if node["depth"] >= max_depth or q_eff <= 0:
+    if node["depth"] >= max_depth:
         return
     part, child_kind = children_of(kind, cols)
     if not part:
         return
     names = list(part)
-    tests = [_mmd_test(part[cn], W, feat_std, n_perm, seed + 3 * i)
-             for i, cn in enumerate(names)]
-    pvals = np.array([t["p_value"] for t in tests])
-    rej, padj = multipletests(pvals, alpha=q_eff, method="fdr_bh")[:2]
-    R, m = int(rej.sum()), len(names)
-    q_child = q_eff * R / m if R > 0 else 0.0
-
-    order = np.argsort(pvals)
-    for i in order:
+    child_cols = [part[cn] for cn in names]
+    obs, padj, sel, perm_mean = _wy_children(feat_std, W, child_cols, n_perm,
+                                             alpha, seed)
+    for i in np.argsort(padj):
         cn = names[i]
         is_leaf = (child_kind == "feature")
-        child = _node(cn, child_kind, node["depth"] + 1, part[cn], tests[i],
-                      bool(rej[i]), padj[i], feat_raw, W, order_stats, is_leaf)
+        test = {"mmd2": float(obs[i]), "p_value": float(padj[i]),
+                "perm_mean": float(perm_mean[i])}
+        child = _node(cn, child_kind, node["depth"] + 1, part[cn], test,
+                      bool(sel[i]), float(padj[i]), feat_raw, W, order_stats, is_leaf)
         node["children"].append(child)
-        if rej[i] and not is_leaf:
-            expand(child, child_kind, part[cn], q_child, W, feat_std, feat_raw,
+        if sel[i] and not is_leaf:
+            expand(child, child_kind, part[cn], alpha, W, feat_std, feat_raw,
                    order_stats, n_perm, seed + 101 + i, max_depth)
 
 
@@ -190,8 +224,9 @@ def build_localization_tree(feat_std, feat_raw, W, orders, q=0.1, n_perm=400,
         "relation_path": ["merchant", "item", "order"],
         "aggregation": "order -> item -> merchant (rich + rolling)",
         "method": "multi-layer subset post-hoc localization; MMD permutation "
-                  "test per subset; Benjamini-Bogomolov hierarchical FDR",
-        "fdr_level_q": q,
+                  "test per subset; Westfall-Young step-down maxT (FWER) with "
+                  "hierarchical gatekeeping",
+        "alpha_fwer": q,
         "global_test": global_test,
         "root": root,
     }

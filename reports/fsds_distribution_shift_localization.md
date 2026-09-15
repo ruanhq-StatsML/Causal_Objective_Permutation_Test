@@ -28,7 +28,7 @@ On synthetic data with known ground truth, every module recovers exactly the inj
 - **Root-causing metric moves.** When GMV or rating dips for the new cohort, the localization tree points at the exact aggregated features (e.g. `gmv__mean`, `user_rating__median`) and the raw signal behind them, instead of a dashboard full of undifferentiated drift alarms.
 - **Supply vs demand attribution.** The two-dimensional structure separates a *merchant-side* change (new sellers behaving differently) from a *buyer-side* change (new shopper cohort), which usually imply different actions.
 - **Actionable thresholds.** Each leaf carries a KS-optimal split (`gmv__mean > 27.8` cleanly separates new vs existing merchants) and quantile grids — ready for rules, monitors, or segment definitions.
-- **Trustworthy alerts.** Error control (permutation validity + hierarchical FDR + stability selection) means selected features are defensible, not just the top of a noisy ranking — fewer false alarms for on-call.
+- **Trustworthy alerts.** Error control (permutation validity + Westfall–Young FWER + stability selection) means selected features are defensible, not just the top of a noisy ranking — fewer false alarms for on-call.
 - **Retraining / reweighting triggers.** Knowing *what kind* of shift (covariate vs concept) and *which features* tells you whether to reweight, retrain, or ignore.
 - **Reusable.** Adding an axis (item, category, region) or a new raw attribute is a config change; the output is machine-readable JSON for downstream UIs.
 
@@ -77,11 +77,11 @@ For every raw attribute, orders are aggregated to the entity with **rich** and *
 
 - **LOGO-MMD (leave-one-group-out).** Drop all aggregations of a raw attribute, recompute MMD; a large fall in MMD ⇒ that attribute carried the shift. Robust to the within-group correlation that dilutes single-feature importance.
 - **Stability selection.** Stratified subsampling gives each group's importance a bootstrap/percentile CI and a **selection frequency**; a group is kept only if its CI excludes 0 and it is selected in ≥ π of resamples (Meinshausen & Bühlmann, 2010).
-- **Two-level / multi-layer FS with hierarchical FDR.** The attribution drills through nested subsets: `root → raw attribute → aggregation family → feature`. At each split, families are BH-tested and the effective level is deflated by `R/m` (Benjamini & Bogomolov, 2014), which controls the FDR over discovered leaves across the whole tree. Non-selected families are never entered — a power gain with no leakage.
+- **Two-level / multi-layer FS by permutation (no BH).** The attribution drills through nested subsets: `root → raw attribute → aggregation family → feature`. BH is impractical here (few, strongly correlated group tests), so at each split the children are selected by a **Westfall–Young step-down max-T permutation** (shared permutations → a max-null that controls the family-wise error rate exactly and adapts to correlation); groups additionally require a bootstrap stability threshold. The tree is gated — non-selected families are never entered — a power gain with no leakage.
 
 ### 5.3 Statistical justification
 
-The two-level attribution is an honest **post-hoc localization** conditional on a significant global test — nothing more is claimed. Its validity rests on: (i) permutation exactness of MMD under exchangeability; (ii) Holm (FWER) / BH (FDR) correction of the family tests; (iii) Benjamini–Bogomolov hierarchical-FDR deflation down the tree; (iv) subsampling stability selection for finite-sample selection control.
+The two-level attribution is an honest **post-hoc localization** conditional on a significant global test — nothing more is claimed. Its validity rests on: (i) permutation exactness of MMD under exchangeability; (ii) **Westfall–Young step-down max-T** control of each family (exact FWER, correlation-robust, no independence assumption); (iii) hierarchical gatekeeping (a node is entered only if its parent was selected); (iv) subsampling stability selection for finite-sample selection control.
 
 ### 5.4 Per-node characterization
 
@@ -135,7 +135,7 @@ Example leaf (`gmv__mean`, merchant axis): split @ 27.8 (KS = 1.0, batch0 100 % 
 | --- | --- |
 | `Python/fsds_merchant_prototype.py` | relational data + merchant-dimension aggregation; PO-risk + LOCO (concept drift) |
 | `Python/fsds_logo_mmd.py` | LOGO-MMD covariate-shift detection + per-group MMD |
-| `Python/fsds_vimp_inference.py` | multiple testing + stability selection + two-level FS (hierarchical FDR) |
+| `Python/fsds_vimp_inference.py` | multiple-testing comparison (Holm/BH/BB) + stability selection — kept for reference; the production path uses permutation/WY instead |
 | `Python/fsds_localization_tree.py` | multi-layer subset post-hoc localization tree → JSON |
 | `Python/fsds_two_dimensional.py` | two-dimensional FSDS (merchant + buyer axes) |
 

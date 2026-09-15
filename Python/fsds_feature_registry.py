@@ -13,9 +13,10 @@ Design choices (per review):
   comparable (this also removes the earlier "different-dim bandwidth" caveat).
 * **Bootstrap stability.** Group LOGO importance gets a bootstrap CI + selection
   frequency (stratified resampling with jitter to break RBF-MMD ties).
-* **Cross-feature / cross-tree FDR.** Group significance is BH-controlled; the
-  within-group feature level uses the Benjamini-Bogomolov deflated level
-  q * R/m, so the FDR over selected features across the tree is controlled.
+* **Selection without BH.** Groups are selected by a permutation p-value plus a
+  bootstrap stability frequency (BH is impractical with few, correlated group
+  tests); features within a selected group are selected by a Westfall-Young
+  step-down max-T permutation (FWER, correlation-robust).
 
 Per feature the registry records: selection verdict, group LOGO importance +
 bootstrap CI/frequency, group & feature p (raw and adjusted), and the
@@ -27,11 +28,10 @@ import argparse
 import json
 import numpy as np
 import pandas as pd
-from statsmodels.stats.multitest import multipletests
 
 from fsds_merchant_prototype import raw_attr_of
 from fsds_logo_mmd import _median_gamma, mmd2_unbiased, mmd_permutation_test
-from fsds_localization_tree import agg_family, _batch_summary, _best_split
+from fsds_localization_tree import agg_family, _batch_summary, _best_split, _wy_children
 from fsds_two_dimensional import generate_two_dim_data, aggregate_to_entity, DIMENSIONS
 
 
@@ -96,25 +96,20 @@ def build_axis_registry(orders, dim, q=0.1, n_perm=400, n_boot=150, seed=2026):
         grp_p[g] = mmd_permutation_test(Zg, W, _median_gamma(Zg),
                                         n_perm=n_perm, seed=seed + gi)["p_value"]
     g_names = list(groups)
-    g_padj = dict(zip(g_names, multipletests([grp_p[g] for g in g_names],
-                                             alpha=q, method="fdr_bh")[1]))
-    sel_groups = [g for g in g_names if (g_padj[g] < q and logo_drops[g] > 0
+    # Group selection: permutation p + LOGO drop + bootstrap stability
+    # (no BH -- impractical with few, correlated group tests).
+    sel_groups = [g for g in g_names if (grp_p[g] < q and logo_drops[g] > 0
                                          and boot[g]["sel_freq"] >= 0.9)]
-    R, m = len(sel_groups), len(g_names)
-    q_feat = q * R / m if R > 0 else 0.0
 
-    # ---- feature level within selected groups: per-feature perm + BB-FDR ----
+    # ---- feature level within selected groups: Westfall-Young max-T (FWER) ----
     feat_selected, feat_p, feat_padj = set(), {}, {}
     for g in sel_groups:
         members = groups[g]
-        fp = [mmd_permutation_test(feat_std[[f]].values, W,
-                                   _median_gamma(feat_std[[f]].values),
-                                   n_perm=n_perm, seed=seed + 17 + i)["p_value"]
-              for i, f in enumerate(members)]
-        rej, padj = multipletests(fp, alpha=q_feat, method="fdr_bh")[:2]
+        _, padj, sel, _ = _wy_children(feat_std, W, [[f] for f in members],
+                                       n_perm, q, seed + 17)
         for i, f in enumerate(members):
-            feat_p[f], feat_padj[f] = fp[i], padj[i]
-            if rej[i]:
+            feat_p[f], feat_padj[f] = float(padj[i]), float(padj[i])
+            if sel[i]:
                 feat_selected.add(f)
 
     # ---- assemble one row per feature ----
@@ -130,8 +125,8 @@ def build_axis_registry(orders, dim, q=0.1, n_perm=400, n_boot=150, seed=2026):
             "axis": dim, "feature": f, "raw_attr": g, "agg_family": agg_family(f),
             "group_selected": g in sel_groups, "group_logo_vimp": logo_drops[g],
             "group_logo_ci_lo": boot[g]["ci_lo"], "group_logo_ci_hi": boot[g]["ci_hi"],
-            "group_sel_freq": boot[g]["sel_freq"], "group_padj": g_padj[g],
-            "feature_p": feat_p.get(f, np.nan), "feature_padj": feat_padj.get(f, np.nan),
+            "group_sel_freq": boot[g]["sel_freq"], "group_perm_p": grp_p[g],
+            "feature_wy_p": feat_padj.get(f, np.nan),
             "selected": final, "cohen_d": summ["cohen_d"],
             "mean_batch0": summ["batch0"]["mean"], "mean_batch1": summ["batch1"]["mean"],
             "split_threshold": split["threshold"], "split_ks": split["ks_stat"],
@@ -141,7 +136,8 @@ def build_axis_registry(orders, dim, q=0.1, n_perm=400, n_boot=150, seed=2026):
     meta = {"axis": dim, "label": cfg["label"], "n_entities": int(len(feat_std)),
             "n_features": len(names), "global_mmd2": global_test["mmd2"],
             "global_p": global_test["p_value"], "selected_groups": sel_groups,
-            "q_feat_effective": q_feat}
+            "selection": "permutation p + bootstrap stability (groups); "
+                         "Westfall-Young maxT (features)"}
     return reg, meta
 
 
@@ -167,8 +163,7 @@ def main():
         print("=" * 84)
         print(f"AXIS={dim}  label={meta['label']}  entities={meta['n_entities']}  "
               f"global MMD^2={meta['global_mmd2']:.4f} p={meta['global_p']:.4f}")
-        print(f"selected groups (BH & bootstrap-stable): {meta['selected_groups']}  "
-              f"q_feat_eff={meta['q_feat_effective']:.4f}")
+        print(f"selected groups (perm p + bootstrap-stable): {meta['selected_groups']}")
         sel = reg[reg["selected"]].sort_values("priority", ascending=False)
         print(f"selected features: {len(sel)}  (top by priority)")
         for _, r in sel.head(8).iterrows():
