@@ -1,0 +1,191 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\PR}{\mathbb{P}}
+\newcommand{\MMD}{\mathrm{MMD}}
+\newcommand{\Gcal}{\mathcal{G}}
+
+\title{\textbf{Non-Uniqueness of Distribution-Shift Attribution,\\
+and Why We Localize Subsets Instead}}
+\author{Technical note}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a marketplace comparing an existing batch of data against a new batch, we
+show a basic \emph{impossibility}: the \emph{total} distribution shift is
+identifiable and order-invariant, but the \emph{per-feature contribution} to it
+is not uniquely defined --- it depends on the order in which features are
+considered. We demonstrate this empirically with random feature-addition paths
+under two metrics: Maximum Mean Discrepancy (MMD) for covariate shift $P(X)$ and
+the pseudo-outcome / $R$-risk for concept drift $P(Y\mid X)$. The consequence is
+methodological: at any level of the entity hierarchy one should \emph{localize a
+responsible subset} (well-posed) rather than attribute per-feature proportions
+(ill-posed). We give the construction, the empirical result, the resulting
+multi-level drill-down, a worked business example, and how such a system should
+be evaluated.
+\end{abstract}
+
+\section{Setup}
+
+Orders (observations) carry raw attributes and are labelled by batch
+$W\in\{0,1\}$ (existing vs.\ new). We roll orders up to an entity axis
+$\mathsf e$ (merchant, buyer, item, region, $\dots$) with a feature map $\Phi$
+producing an entity--feature matrix $x\in\R^{p}$ (rich + rolling aggregations),
+with features grouped by raw attribute, $g:\{1,\dots,p\}\to\Gcal$. Let $P_0,P_1$
+be the two-batch feature distributions. A characteristic-kernel MMD measures
+covariate shift, $\MMD^2(P_0,P_1)=0\iff P_0=P_1$; with batch as ``treatment'',
+the $R$-risk of the induced pseudo-outcome regression measures concept drift and
+is insensitive to pure covariate shift.
+
+\section{Path-order attribution and its non-uniqueness}
+
+Let $T(S)$ be a shift metric ($\MMD^2$ or $R$-risk) evaluated on the feature
+subset $S\subseteq\{1,\dots,p\}$. Given an ordering $\pi$ of the features, the
+\emph{addition path} is the curve $S_0=\emptyset\subset S_1\subset\dots\subset
+S_p$ with $S_k=\{\pi_1,\dots,\pi_k\}$, and the marginal credited to feature
+$\pi_k$ is $T(S_k)-T(S_{k-1})$. Sampling many random $\pi$ and averaging the
+credits yields the Shapley value; but the credits along any single path are what
+a ``how much did feature $f$ contribute'' question actually asks.
+
+\begin{proposition}[Total identifiable, path non-unique]
+The endpoint $T(S_p)=T(\{1,\dots,p\})$ is invariant to the order $\pi$: the total
+shift is uniquely defined and estimable. The intermediate values $T(S_k)$,
+$0<k<p$, and hence the per-feature marginals, are \emph{not} invariant to $\pi$
+whenever the features are dependent; there is no order-free ``contribution of
+feature $f$''. Shapley restores uniqueness only by \emph{averaging over all
+orders}, i.e.\ by adopting a convention, not by identifying a truth.
+\end{proposition}
+
+\paragraph{Empirical demonstration.} We draw random feature-addition paths on the
+repository's banded-Toeplitz covariate-shift and concept-drift DGMs and record
+the metric at every step. Figure~\ref{fig:fan} shows the result: all paths
+converge to the same full-set total (red, order-invariant), but the accrual
+curves fan out in between; the shaded band is the \emph{irreducible attribution
+ambiguity}. For concept drift the maximum gap between two orders is $\approx$ the
+entire total ($\sim\!1.0$ against a total of $\sim\!1.06$): two feature orderings
+can disagree about ``how much has been explained so far'' by essentially the
+whole shift. The per-step standard deviation across orders is $30\!-\!40\%$ of
+the total for both metrics.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/path_nonuniqueness.png}
+\caption{Random feature-addition paths. Every order reaches the same total
+(red, order-invariant); the per-feature accrual fans out (shaded envelope $=$
+irreducible ambiguity). Left: concept drift ($R$-risk); right: covariate shift
+($\MMD^2$).}
+\label{fig:fan}
+\end{figure}
+
+\begin{remark}[Any number of levels]
+The argument is scale-free: it applies to features within one entity, and equally
+to the coarser ``how much does each child level contribute'' question. Hence a
+distribution shift is not uniquely decomposable at \emph{any} level of the
+hierarchy.
+\end{remark}
+
+\section{The well-posed object: multi-level subset localization}
+
+While ``how much'' is not identifiable, ``which subset carries the shift'' is: the
+total is order-invariant, and the selection of the responsible group is stable
+across attribution conventions and across resamples. We therefore localize
+recursively, applying the same two-stage selection at each level (a per-subset
+permutation test plus a bootstrap stability threshold, gated), and never report
+proportions:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Detect} the shift globally (MMD / $R$-risk permutation test).
+\item \textbf{Localize (level 1)} to a responsible attribute-group subset on the
+current axis.
+\item \textbf{Drill (level 2)} by re-running the same selection on the next
+aggregation key (e.g.\ item, region), \emph{conditioned} on the attribute flagged
+upstream --- again returning a subset, not a share.
+\item \textbf{Close the loop}: each selected subset carries an owner, a candidate
+rule (a KS-optimal split threshold), a decision (monitor / reweight / retrain /
+collect labels), and a trend status computed by diffing against the previous run.
+\end{enumerate}
+
+\section{A worked business example}
+
+\paragraph{Symptom.} In the new week's batch, the global test fires. Level-1
+localization on the \emph{region} axis selects the activity subset --- concretely
+the order-count feature \texttt{n\_orders} (and order-value aggregations) shifted
+\emph{up} for a subset of users in region $R$: those buyers are placing more (and
+larger) orders than the existing batch.
+
+\paragraph{Non-uniqueness, honestly.} We do \emph{not} claim ``region $R$'s users
+account for $43\%$ of the shift'' --- by the proposition that number is
+order/convention dependent. We claim the shift is \emph{localized to} region
+$R$'s user subset, with a stability of, say, $0.98$ and a split rule
+$\texttt{n\_orders per user}>t$.
+
+\paragraph{Drill one level.} Re-running the same two-stage selection on the
+\emph{item} axis, conditioned on the order-count signal, localizes the extra
+orders to a specific \textbf{product vertical} (item category $C$): within region
+$R$, the increase concentrates in category $C$ (e.g.\ ``fresh grocery''), not
+uniformly across the catalogue. Output: subset $=\{$region $R$, user segment,
+category $C\}$ with its own split rule and stability.
+
+\paragraph{Action / closed loop.} The subset routes to the category-$C$ /
+region-$R$ owner; the candidate rule becomes a monitor; the decision (e.g.\
+\emph{reweight} if the mapping is unchanged, \emph{collect labels / retrain} if
+the outcome relationship moved) is attached; the \texttt{trend} field marks it
+\emph{resolved} once the subset stops flagging. The business learns \emph{where}
+and \emph{who} and \emph{what to do} --- never a spurious percentage.
+
+\begin{remark}[Why this is the right granularity]
+``$43\%$ from category $C$'' would be unfalsifiable (non-identifiable) and
+un-actionable. ``The new-batch order surge is localized to category $C$ among
+region-$R$ users; here is the threshold and the owner'' is checkable, routable,
+and monitorable --- it closes the loop.
+\end{remark}
+
+\section{How to evaluate such a system}
+
+Because per-feature proportions are not identifiable, they must not be the yard
+stick. Evaluate only identifiable targets:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Target & Identifiable? & Metric \\
+\midrule
+Total / detection & yes (order-invariant) & test power; type-I under permuted labels \\
+Subset localization & yes (convention-stable) & subset recall / precision vs.\ ground truth \\
+Stability & yes & bootstrap selection frequency \\
+Decision layer & yes (with labels) & downstream $\Delta$loss backtest \\
+Per-feature proportion & \textbf{no} & --- (do not evaluate) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The principle: judge a method by the questions it claims to answer (detection,
+subset localization, stability, downstream impact), not by a question that is
+provably unanswerable. The non-identifiability itself is demonstrated
+empirically (Figure~\ref{fig:fan}), not hidden.
+
+\section{Conclusion}
+
+The total distribution shift is identifiable; its per-feature decomposition is
+not. This is not a limitation of a particular estimator but a property of
+dependent features under any additive path attribution. The productive response
+is to \emph{localize responsible subsets} recursively down the entity hierarchy
+and attach owner / rule / decision / trend to each --- turning an unanswerable
+``how much'' into an operational ``which subset, who, and what to do''.
+
+\end{document}
