@@ -152,6 +152,48 @@ def _report(title, summ, metric_orig):
           f"{summ['pairwise_curve_diff_mean']:.5f}")
 
 
+def _plot_paths(ax, paths, orig, title, ylabel):
+    curves = np.stack([p["metric_path"] for p in paths], axis=0)
+    steps = np.arange(1, curves.shape[1] + 1)
+    lo, hi = curves.min(0), curves.max(0)
+    ax.fill_between(steps, lo, hi, color="#1f77b4", alpha=0.15,
+                    label="path envelope (irreducible ambiguity)")
+    for c in curves:
+        ax.plot(steps, c, color="#1f77b4", alpha=0.35, lw=0.9)
+    ax.axhline(orig, color="#d62728", ls="--", lw=1.4,
+               label=f"full-set total = {orig:.3g} (order-invariant)")
+    ax.plot([curves.shape[1]], [orig], "o", color="#d62728", ms=6)
+    ax.set_title(title)
+    ax.set_xlabel("# features added along a random path")
+    ax.set_ylabel(ylabel)
+    ax.legend(loc="best", fontsize=8)
+
+
+def make_figure(args, path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    rng = np.random.default_rng(args.seed)
+    Xc, Yc, Wc = generate_concept_drift_dgp(args.n, args.p, delta_beta=0.6,
+                                            rho=args.rho, seed=args.seed)
+    pc, oc = porisk_path(Xc, Yc, Wc, B=args.b_paths, rng=rng)
+    Xv, Yv, Wv = generate_covariate_shift_dgp(args.n, args.p, gamma=0.6,
+                                              rho=args.rho, seed=args.seed + 1)
+    pv, ov = mmd_path(Xv, Wv, B=args.b_paths, rng=rng)
+
+    fig, (axl, axr) = plt.subplots(1, 2, figsize=(14, 5.5))
+    _plot_paths(axl, pc, oc, "Concept drift: R-risk (PO-risk) paths", "R-risk")
+    _plot_paths(axr, pv, ov, "Covariate shift: MMD\u00b2 paths", "MMD\u00b2")
+    fig.suptitle("Path-order non-uniqueness: all orders reach the same TOTAL "
+                 "(red), but the per-feature accrual fans out\n"
+                 "=> distribution-shift attribution is not uniquely decomposable; "
+                 "only subset localization is well-posed")
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    print(f"saved path-fan figure -> {path}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=600)
@@ -159,6 +201,7 @@ def main():
     ap.add_argument("--rho", type=float, default=0.3)
     ap.add_argument("--b-paths", type=int, default=16)
     ap.add_argument("--seed", type=int, default=2026)
+    ap.add_argument("--plot", type=str, default="")
     args = ap.parse_args()
 
     print("=" * 80)
@@ -194,6 +237,8 @@ def main():
           and sc["step_std_mean"] > 0 and sv["step_std_mean"] > 0)
     print(f"\nRESULT: {'PASS' if ok else 'CHECK'}  "
           f"(total order-invariant, path attribution non-unique)")
+    if args.plot:
+        make_figure(args, args.plot)
     return 0 if ok else 1
 
 

@@ -151,6 +151,10 @@ Example leaf (`gmv__mean`, merchant axis): split @ 27.8 (KS = 1.0, batch0 100 % 
 
 So the per-feature contribution is **not uniquely attributable at any level** (it depends on the addition order); only **subset localization** is well-posed. This holds for both regimes, with the emphasis on concept drift (PO-/R-risk). No cross-validation is used (linear nuisances, well-specified for these DGPs).
 
+![Path-order non-uniqueness](figures/path_nonuniqueness.png)
+
+*Every random feature-addition order reaches the same full-set total (red, order-invariant), but the accrual curves fan out in between — the shaded envelope is the irreducible attribution ambiguity. Left: concept drift (R-risk); right: covariate shift (MMD²).*
+
 Run examples:
 
 ```bash
