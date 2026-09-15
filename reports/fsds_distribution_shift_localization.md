@@ -139,11 +139,17 @@ Example leaf (`gmv__mean`, merchant axis): split @ 27.8 (KS = 1.0, batch0 100 % 
 | `Python/fsds_vimp_inference.py` | multiple-testing comparison (Holm/BH/BB) + stability selection — kept for reference; the production path uses simple per-subset permutation |
 | `Python/fsds_localization_tree.py` | multi-layer subset post-hoc localization tree → JSON |
 | `Python/fsds_two_dimensional.py` | two-dimensional FSDS (merchant + buyer axes) |
-| `Python/fsds_shapley_path_mmd.py` | permutation-path MMD Shapley + impossibility study (per-feature magnitude non-unique; subset stable) |
+| `Python/fsds_nonuniqueness.py` | **path-order non-uniqueness study (MMD + PO-risk)** — total order-invariant, per-feature accrual path-dependent |
+| `Python/fsds_shapley_path_mmd.py` | permutation-path MMD Shapley (the path-average proxy; secondary) |
 
 ### Impossibility study (why we select subsets, not attribute proportions)
 
-`fsds_shapley_path_mmd.py` samples random feature orders (`np.random.permutation`), adds features one-by-one along each path, and credits the marginal MMD² gain to each feature (Monte-Carlo Shapley). Empirically, for the correlated aggregations of a shifted raw attribute the three attribution conventions — standalone MMD, LOGO, and Shapley — assign the **same feature magnitudes that differ several-fold** (median max/min ≈ 3.7×), so "how much does feature *f* contribute to the OOD" has **no unique value**. Yet all conventions agree on **which subset** carries the shift (`{gmv, user_rating}`). Hence the framework selects responsible *subsets* (identifiable) rather than claiming per-feature contribution *proportions* (not identifiable).
+`fsds_nonuniqueness.py` builds random feature-addition paths (`np.random.permutation`) and records **one metric** along each path — **MMD²** for covariate shift, **PO-/R-risk** for concept drift (concise and more trustworthy than Shapley; Shapley is only the path *average*, a proxy). The `summarize_path_nonuniqueness` result:
+
+- **all paths end at the same full-set value** — the *total* shift is order-invariant and identifiable (`final_all_equal_orig = True`, range ≈ 0);
+- **the incremental curves diverge** — `step_std_mean` ≈ 32–37% of the total, and the pairwise max curve gap for concept drift ≈ **1.007 ≈ the entire total**: two addition orders can disagree by essentially the whole shift.
+
+So the per-feature contribution is **not uniquely attributable at any level** (it depends on the addition order); only **subset localization** is well-posed. This holds for both regimes, with the emphasis on concept drift (PO-/R-risk). No cross-validation is used (linear nuisances, well-specified for these DGPs).
 
 Run examples:
 
