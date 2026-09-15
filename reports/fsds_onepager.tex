@@ -1,0 +1,97 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.4em}
+\pagestyle{empty}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\HSIC}{\mathrm{HSIC}}
+\newcommand{\argmin}{\operatorname*{arg\,min}}
+
+\begin{document}
+\begin{center}
+{\large\textbf{Cross-Level Business-Metric Diagnosis: Association \& $Y\!\mid\!X$ Shift}}\\[2pt]
+{\small Two complementary, kernel/causal-objective tools --- no explicit metric formulas required}
+\end{center}
+\vspace{-4pt}
+
+Business metrics live at different levels (order, user, merchant) with no
+explicit relationships. Two questions, two tools:
+
+\vspace{4pt}
+\noindent\textbf{(A) Which metrics move together? --- HSIC (association linkage).}
+For metric pairs $(a,b)$ with RBF Gram matrices $K,L$ and centering
+$H=I-\tfrac1n\mathbf 1\mathbf 1^\top$,
+\[
+\widehat{\HSIC}(a,b)=\tfrac{1}{(n-1)^2}\operatorname{tr}(KHLH)\ \ge 0,
+\qquad =0 \iff a\perp\!\!\!\perp b .
+\]
+Symmetric, non-linear, assumption-light; large $\widehat{\HSIC}$ = a linkage
+edge. It recovers the chain and isolates unrelated metrics (\emph{no direction
+claimed}).
+
+\vspace{3pt}
+\noindent\textbf{(B) Did a target's $Y\!\mid\!X$ change, and on which $X$? ---
+PO-risk (one model per target).}
+With batch $W$ as ``treatment'', cross-fit $\mu(x)=\E[Y|x]$, $e(x)=\Pr(W{=}1|x)$;
+pseudo-outcome $\psi=(Y-\mu)(W-e)$; $\tau=\argmin_f\E[(\psi-f(X))^2]$;
+\[
+\mathrm{PO\text{-}risk}=\E[\tau(X)^2]\ (>0 \Rightarrow P(Y\!\mid\!X)\text{ shifted}),
+\qquad
+\phi_j=\mathrm{PO\text{-}risk}(X)-\mathrm{PO\text{-}risk}(X_{-j}).
+\]
+One meta-learner takes all $X$ jointly; LOCO $\phi_j$ localizes the change ---
+cost $O(\#\text{targets})$, not $O(p^2)$ pairwise models.
+
+\vspace{6pt}
+\begin{center}
+\begin{tabular}{@{}p{0.46\textwidth}p{0.46\textwidth}@{}}
+\toprule
+\textbf{(A) HSIC linkage} & \textbf{(B) PO-risk} $Y{=}$GMV (test $p=0.010$)\\
+\midrule
+\begin{tabular}{@{}llr@{}}
+$a$ & $b$ & $\widehat{\HSIC}$\\
+\midrule
+delivery & rating   & 0.055\\
+delivery & gmv      & 0.046\\
+rating   & n\_orders& 0.062\\
+n\_orders& gmv      & \textbf{0.070}\\
+$\ast$ w/ quantity/discount & & $\le 0.002$\\
+\end{tabular}
+&
+\begin{tabular}{@{}lr@{}}
+metric $x_j$ & LOCO $\phi_j$\\
+\midrule
+\textbf{rating} (driver) & \textbf{+0.106}\\
+orders   & +0.046\\
+delivery & +0.039\\
+promo    & +0.032\\
+tenure   & +0.028\\
+\end{tabular}
+\\
+\midrule
+Chain \texttt{delivery--rating--n\_orders--gmv} recovered; noise metrics isolated.
+& $P(Y|X)$ shifted; change loads on \texttt{rating}.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{4pt}
+\noindent\textbf{Use together.} HSIC maps the metric linkage across levels; for
+any target metric, PO-risk says whether its $Y\!\mid\!X$ relationship shifted and
+which linked metric carries it --- so a change in a merchant-level metric can be
+localized to an order-level metric, without modelling every pair and without a
+causal-proportion claim.
+
+\vspace{3pt}
+\noindent\textbf{Central point.} This feature selection for distribution shift
+(FSDS) procedure extends beyond two batches, unlocking multi-layer feature
+selection and localization in both feature stores and concurrent metric systems.
+In many circumstances the vague associations between metrics are not yielded by
+business resource-intensive models (which require a lot of man-days from the
+business requirement to deployment) and are not deployed in production systems
+--- this is where another value of our FSDS procedure lies.
+
+\end{document}

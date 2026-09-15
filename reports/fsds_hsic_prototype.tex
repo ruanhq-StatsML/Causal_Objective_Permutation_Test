@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\HSIC}{\mathrm{HSIC}}
+
+\title{\textbf{Discovering the Metric Linkage with HSIC\\
+\large a minimal prototype}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Idea}
+
+Business metrics live at different levels (order, user, merchant) and have
+\emph{no explicit formula} linking them. We only want to know \emph{which metrics
+move together} --- the association \emph{linkage} --- not any causal direction.
+The Hilbert--Schmidt Independence Criterion (HSIC) is a kernel measure of
+statistical dependence that is zero iff two variables are independent and, unlike
+correlation, detects \emph{non-linear} association without assuming a functional
+form. Running HSIC on every pair of metrics reveals the linked chain and isolates
+the unrelated ones.
+
+\section{HSIC}
+
+For paired samples $\{(a_i,b_i)\}_{i=1}^n$, with RBF kernels
+$k(a,a')=\exp(-\|a-a'\|^2/\sigma_a^2)$ and $l(b,b')=\exp(-\|b-b'\|^2/\sigma_b^2)$
+(bandwidths by the median heuristic), form Gram matrices $K,L\in\R^{n\times n}$
+and the centering matrix $H=I_n-\tfrac1n\mathbf{1}\mathbf{1}^\top$. The empirical
+HSIC is
+\begin{equation}
+\widehat{\HSIC}(a,b)=\frac{1}{(n-1)^2}\,\operatorname{tr}\!\big(KHLH\big)\;\ge 0,
+\end{equation}
+large when $a,b$ are dependent and $\approx 0$ when independent. It is symmetric
+and makes \emph{no} directional / causal claim --- it is purely an association.
+
+\section{Method}
+
+\begin{enumerate}
+\item Compute each metric per entity (a common index), giving columns
+$m_1,\dots,m_p$.
+\item For every pair compute $\widehat{\HSIC}(m_i,m_j)$.
+\item Keep pairs with $\widehat{\HSIC}$ above a small threshold as
+\emph{linkage edges}; the connected component is the metric \emph{chain}.
+\end{enumerate}
+
+\section{Result}
+
+On a synthetic marketplace with a linked chain
+\texttt{delivery\_mins} -- \texttt{user\_rating} -- \texttt{n\_orders} --
+\texttt{gmv} (metrics across the order, user, and merchant levels) plus two
+unrelated metrics (\texttt{quantity}, \texttt{discount}), the pairwise HSIC is:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llr}
+\toprule
+metric $a$ & metric $b$ & $\widehat{\HSIC}$ \\
+\midrule
+delivery\_mins & user\_rating & 0.055 \\
+delivery\_mins & n\_orders    & 0.056 \\
+delivery\_mins & gmv          & 0.046 \\
+user\_rating   & n\_orders    & 0.062 \\
+user\_rating   & gmv          & 0.054 \\
+n\_orders      & gmv          & \textbf{0.070} \\
+\midrule
+\multicolumn{2}{l}{\emph{any pair involving} \texttt{quantity} \emph{or} \texttt{discount}}
+ & $\le 0.002$ \\
+\bottomrule
+\end{tabular}
+\caption{Pairwise HSIC. The four chain metrics are mutually dependent
+($\widehat{\HSIC}\in[0.046,0.070]$); every pair touching \texttt{quantity} or
+\texttt{discount} is $\le 0.002$ (independent). HSIC recovers the linkage chain
+\texttt{delivery\_mins}--\texttt{user\_rating}--\texttt{n\_orders}--\texttt{gmv}
+and isolates the unrelated metrics --- with no explicit relationship supplied and
+no causal direction claimed.}
+\end{table}
+
+\paragraph{Takeaway.} HSIC alone --- one symmetric, assumption-light, kernel
+dependence number per pair --- is enough to \emph{discover the metric linkage
+across levels}. Direction and root cause are deliberately \emph{not} claimed
+here; this prototype only recovers which metrics are associated.
+
+\end{document}
