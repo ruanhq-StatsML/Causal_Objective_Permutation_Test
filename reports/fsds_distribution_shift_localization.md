@@ -139,6 +139,11 @@ Example leaf (`gmv__mean`, merchant axis): split @ 27.8 (KS = 1.0, batch0 100 % 
 | `Python/fsds_vimp_inference.py` | multiple-testing comparison (Holm/BH/BB) + stability selection — kept for reference; the production path uses simple per-subset permutation |
 | `Python/fsds_localization_tree.py` | multi-layer subset post-hoc localization tree → JSON |
 | `Python/fsds_two_dimensional.py` | two-dimensional FSDS (merchant + buyer axes) |
+| `Python/fsds_shapley_path_mmd.py` | permutation-path MMD Shapley + impossibility study (per-feature magnitude non-unique; subset stable) |
+
+### Impossibility study (why we select subsets, not attribute proportions)
+
+`fsds_shapley_path_mmd.py` samples random feature orders (`np.random.permutation`), adds features one-by-one along each path, and credits the marginal MMD² gain to each feature (Monte-Carlo Shapley). Empirically, for the correlated aggregations of a shifted raw attribute the three attribution conventions — standalone MMD, LOGO, and Shapley — assign the **same feature magnitudes that differ several-fold** (median max/min ≈ 3.7×), so "how much does feature *f* contribute to the OOD" has **no unique value**. Yet all conventions agree on **which subset** carries the shift (`{gmv, user_rating}`). Hence the framework selects responsible *subsets* (identifiable) rather than claiming per-feature contribution *proportions* (not identifiable).
 
 Run examples:
 
