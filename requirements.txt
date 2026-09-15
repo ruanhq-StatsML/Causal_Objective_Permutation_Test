@@ -1,0 +1,26 @@
+# Python dependencies for the Causal Objective Permutation Test project.
+# Install with:  pip install -r requirements.txt
+#
+# The CPU build of PyTorch is pulled from the official PyTorch wheel index so the
+# environment stays lean (no CUDA packages). Drop the extra index line below if a
+# GPU build is required.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# --- Core scientific / ML stack (permutation tests, model registry, DGPs) ---
+numpy==2.4.4
+pandas==3.0.5
+scipy==1.18.1
+scikit-learn==1.9.1
+xgboost==3.4.1
+statsmodels==0.15.0
+joblib==1.6.0
+matplotlib==3.11.2
+
+# --- Model explainability and deep-learning baselines (tarnet, R_learner_DL1) ---
+shap==0.52.0
+torch==2.14.0
+transformers==5.17.0
+
+# --- Development / CI tooling (lint + tests, mirrors python-package.yml) ---
+flake8==7.3.0
+pytest==9.1.1
