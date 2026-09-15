@@ -1,0 +1,10 @@
+[stationary] rep=1/3 d=30 n=20000 ref=5000 batch=25 dgp=stationary
+[stationary] ready in 45.0s n_batches=600 shift_batch=600 dgp=stationary
+[stationary] rep=2/3 d=30 n=20000 ref=5000 batch=25 dgp=stationary
+[stationary] ready in 44.9s n_batches=600 shift_batch=600 dgp=stationary
+[stationary] rep=3/3 d=30 n=20000 ref=5000 batch=25 dgp=stationary
+[stationary] ready in 45.1s n_batches=600 shift_batch=600 dgp=stationary
+[stationary] saved mab_stationary_d30_eps_summary.csv
+[scale/eps] saved mab_stationary_d30_eps_variance_vs_explore.csv (9 rows)
+[scale/eps] saved mab_stationary_d30_eps_variance_vs_explore.png
+[stationary] saved mab_stationary_d30_eps_vs_shift.png

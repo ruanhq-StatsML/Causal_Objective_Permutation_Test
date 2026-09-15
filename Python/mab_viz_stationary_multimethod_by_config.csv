@@ -1,0 +1,16 @@
+setting,d,n,n_ref,batch_size,n_repeats,method,config,method_label,epsilon,mean_final_regret,sd_final_regret,cv_final_regret
+stationary,30,20000,5000,25,3,AdaptiveEpsilonGreedy,anomaly_sensitivity=0.3|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5,"Adaptive (baseε=0.05, sens=0.3)",0.05,8.080299144984062,0.5381285497167922,0.0543767146561779
+stationary,30,20000,5000,25,3,AdaptiveEpsilonGreedy,anomaly_sensitivity=0.3|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5,"Adaptive (baseε=0.1, sens=0.3)",0.1,9.154221502688236,0.3865367851528065,0.0344765487035004
+stationary,30,20000,5000,25,3,AdaptiveEpsilonGreedy,anomaly_sensitivity=0.5|base_epsilon=0.05|gamma=0.9|max_epsilon=0.5,"Adaptive (baseε=0.05, sens=0.5)",0.05,10.002727772205132,0.6039054242231091,0.0492952247937838
+stationary,30,20000,5000,25,3,AdaptiveEpsilonGreedy,anomaly_sensitivity=0.5|base_epsilon=0.1|gamma=0.9|max_epsilon=0.5,"Adaptive (baseε=0.1, sens=0.5)",0.1,10.946816316445572,0.7320923269838907,0.0546049978940232
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.15,ε-greedy (0.15),0.15,7.102334666849814,0.9745401470967772,0.1120348076239347
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.1,ε-greedy (0.1),0.1,7.284436229867623,4.533148874258162,0.5081107775358233
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.2,ε-greedy (0.2),0.2,7.394585477814573,0.2521148061323928,0.0278380549965856
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.05,ε-greedy (0.05),0.05,8.667400492573,3.0830924997858498,0.2904370793660843
+stationary,30,20000,5000,25,3,Epsilon_Greedy,epsilon=0.02,ε-greedy (0.02),0.02,17.385964561892973,10.516069387054303,0.4938658806511274
+stationary,30,20000,5000,25,3,LinUCB_Vanilla,alpha=0.1|lambda_reg=50|use_momentum=False,LinUCB (λ=50),,7.829802360027756,0.3513093186437471,0.0366347507039311
+stationary,30,20000,5000,25,3,LinUCB_Vanilla,alpha=0.1|lambda_reg=100|use_momentum=False,LinUCB (λ=100),,8.840552727414767,0.137081095420038,0.0126605484036312
+stationary,30,20000,5000,25,3,Random,default,Random,,20.15253055086494,0.531449276966554,0.0215321106440937
+stationary,30,20000,5000,25,3,Thompson_Sampling,prior_lambda=0.1,Thompson (λ=0.1),,14.925576277852835,0.289518752361099,0.0158379862202081
+stationary,30,20000,5000,25,3,Thompson_Sampling,prior_lambda=0.15,Thompson (λ=0.15),,15.51713359550338,0.1634287251436447,0.0085994616521077
+stationary,30,20000,5000,25,3,UCB,default,UCB,,18.247995702627136,0.44583125649252,0.01994847557666

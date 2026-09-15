@@ -78,40 +78,59 @@ def generate_dgp(
 
     X = rng.normal(0, 1, size=(total_samples, feature_dim))
     beta = np.zeros(feature_dim)
-    beta[:15] = np.arange(15) / 10.0
+    n_sig = min(15, feature_dim)
+    beta[:n_sig] = np.arange(n_sig) / 10.0
 
-    if dgp == "linear_shift":
+    def _xi(col: int) -> np.ndarray:
+        return X[:, col % feature_dim]
+
+    if dgp in ("stationary", "nonlinear_stationary"):
+        # Fully stationary: same conditional law for all t (no CD / covariate shift).
+        Y = (
+            X @ beta
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.01
+            + (5.0 / (_xi(11) ** 2 + 0.15))
+            + rng.normal(0, noise_scale * 2, size=total_samples)
+        ) / 25.0
+        shift_point = total_samples  # no post-shift regime
+    elif dgp == "linear_shift":
         Y = (X @ beta + rng.normal(0, noise_scale * 2, size=total_samples)) / 25.0
     elif dgp == "nonlinear_messy_rich":
         Y = (
             X @ beta
-            + (X[:, 1] ** 2) * 0.015
-            + np.sin(X[:, 2] ** 2) * 0.05
-            + (X[:, 7] ** 2) * 0.25
-            + (X[:, 27] ** 2) * 0.2
-            + (5.0 / (X[:, 11] ** 2 + 0.15))
-            + (X[:, 3] * X[:, 5]) * 0.1
-            + np.cos(X[:, 8] * X[:, 9]) * 0.2
-            + np.exp(X[:, 4] * 0.01) * 0.5
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.25
+            + (_xi(27) ** 2) * 0.2
+            + (5.0 / (_xi(11) ** 2 + 0.15))
+            + (_xi(3) * _xi(5)) * 0.1
+            + np.cos(_xi(8) * _xi(9)) * 0.2
+            + np.exp(_xi(4) * 0.01) * 0.5
             + rng.normal(0, noise_scale * 2, size=total_samples)
         ) / 5.0
     else:
         Y = (
             X @ beta
-            + (X[:, 1] ** 2) * 0.015
-            + np.sin(X[:, 2] ** 2) * 0.05
-            + (X[:, 7] ** 2) * 0.01
-            + (5.0 / (X[:, 11] ** 2 + 0.15))
+            + (_xi(1) ** 2) * 0.015
+            + np.sin(_xi(2) ** 2) * 0.05
+            + (_xi(7) ** 2) * 0.01
+            + (5.0 / (_xi(11) ** 2 + 0.15))
             + rng.normal(0, noise_scale * 2, size=total_samples)
         ) / 25.0
-    beta_new = np.zeros(feature_dim)
-    beta_new[15:30] = np.arange(15) / 50.0
-    post_len = total_samples - shift_point
-    Y[shift_point:] = (
-        Y[shift_point:]
-        + (X[shift_point:] @ beta_new) * shift_magnitude
-        + rng.normal(0, noise_scale * 0.8, size=post_len)
-    )
+
+    if dgp not in ("stationary", "nonlinear_stationary"):
+        beta_new = np.zeros(feature_dim)
+        n_jump = min(15, max(0, feature_dim - n_sig))
+        if n_jump > 0:
+            beta_new[n_sig : n_sig + n_jump] = np.arange(n_jump) / 50.0
+        post_len = total_samples - shift_point
+        Y[shift_point:] = (
+            Y[shift_point:]
+            + (X[shift_point:] @ beta_new) * shift_magnitude
+            + rng.normal(0, noise_scale * 0.8, size=post_len)
+        )
     scaler = StandardScaler()
     X_ref = X[:ref_samples]
     scaler.fit(X_ref)
@@ -511,37 +530,42 @@ def generate_hyper_nonlinear_shift_dgp(
 
 
 def _ultra_nonlinear(x: np.ndarray, regime: int) -> float:
-    """Regime-specific messy nonlinear terms."""
+    """Regime-specific messy nonlinear terms (dimension-safe via wrap)."""
+    d = len(x)
+
+    def xi(i: int) -> float:
+        return float(x[i % d])
+
     if regime == 0:
         return (
-            (x[1] ** 2) * 0.018
-            + np.sin(x[2] ** 2) * 0.06
-            + (x[7] ** 2) * 0.22
-            + (5.0 / (x[11] ** 2 + 0.12))
-            + (x[3] * x[5]) * 0.08
+            (xi(1) ** 2) * 0.018
+            + np.sin(xi(2) ** 2) * 0.06
+            + (xi(7) ** 2) * 0.22
+            + (5.0 / (xi(11) ** 2 + 0.12))
+            + (xi(3) * xi(5)) * 0.08
         )
     if regime == 1:
         return (
-            (x[3] * x[5]) * 0.28
-            + np.cos(x[7] * x[8]) * 0.22
-            + np.exp(np.clip(x[4], -3, 3) * 0.02) * 0.45
-            + (x[12] ** 3) * 0.008
-            + np.sin(x[1] * x[9]) * 0.12
+            (xi(3) * xi(5)) * 0.28
+            + np.cos(xi(7) * xi(8)) * 0.22
+            + np.exp(np.clip(xi(4), -3, 3) * 0.02) * 0.45
+            + (xi(12) ** 3) * 0.008
+            + np.sin(xi(1) * xi(9)) * 0.12
         )
     if regime == 2:
         return (
-            (x[1] ** 3) * 0.012
-            + np.sin(x[2] * x[3]) * 0.16
-            + (x[9] ** 2) * 0.14
-            + (x[0] * x[6] - x[4] ** 2) * 0.09
-            + (3.0 / (x[13] ** 2 + 0.2))
+            (xi(1) ** 3) * 0.012
+            + np.sin(xi(2) * xi(3)) * 0.16
+            + (xi(9) ** 2) * 0.14
+            + (xi(0) * xi(6) - xi(4) ** 2) * 0.09
+            + (3.0 / (xi(13) ** 2 + 0.2))
         )
     return (
-        (x[0] * x[1] * x[2]) * 0.055
-        + np.cos(x[5] ** 2) * 0.12
-        + (x[6] ** 2) * 0.1
-        + np.tanh(x[14] * x[15]) * 0.25
-        + (x[8] * x[10] * x[11]) * 0.04
+        (xi(0) * xi(1) * xi(2)) * 0.055
+        + np.cos(xi(5) ** 2) * 0.12
+        + (xi(6) ** 2) * 0.1
+        + np.tanh(xi(14) * xi(15)) * 0.25
+        + (xi(8) * xi(10) * xi(11)) * 0.04
     )
 
 
@@ -571,16 +595,23 @@ def generate_ultra_messy_dgp(
     X = rng.normal(0, 1, size=(total_samples, feature_dim))
 
     # Four rotating concept regimes + micro-perturbation coefficients.
+    # Slice widths scale with d so low-dim (e.g. d=10) still runs.
+    block = max(3, min(15, feature_dim))
+    jump_w = max(2, min(20, feature_dim // 2 if feature_dim >= 4 else feature_dim))
     betas = []
     for k in range(4):
         b = np.zeros(feature_dim)
-        start = (k * 11) % max(1, feature_dim - 20)
-        b[start : start + 15] = np.linspace(0.4, -0.2, 15) * (0.8 + 0.1 * k)
-        extra_idx = np.arange(start + 30, start + 35) % feature_dim
-        b[extra_idx] = rng.normal(0, 0.15, size=len(extra_idx))
+        start = (k * max(1, feature_dim // 4)) % feature_dim
+        idx = (np.arange(block) + start) % feature_dim
+        b[idx] = np.linspace(0.4, -0.2, block) * (0.8 + 0.1 * k)
+        extra_n = max(1, min(5, feature_dim))
+        extra_idx = (np.arange(extra_n) + start + block) % feature_dim
+        b[extra_idx] = rng.normal(0, 0.15, size=extra_n)
         betas.append(b)
     beta_jump = np.zeros(feature_dim)
-    beta_jump[25:45] = np.linspace(0.5, -0.35, 20)
+    jump_start = min(feature_dim // 2, max(0, feature_dim - jump_w))
+    jump_idx = (np.arange(jump_w) + jump_start) % feature_dim
+    beta_jump[jump_idx] = np.linspace(0.5, -0.35, jump_w)
 
     Y = np.zeros(total_samples)
     shift_batch_indices: List[int] = []
