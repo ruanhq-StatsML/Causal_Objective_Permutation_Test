@@ -112,9 +112,12 @@ proportions:
 \item \textbf{Detect} the shift globally (MMD / $R$-risk permutation test).
 \item \textbf{Localize (level 1)} to a responsible attribute-group subset on the
 current axis.
-\item \textbf{Drill (level 2)} by re-running the same selection on the next
-aggregation key (e.g.\ item, region), \emph{conditioned} on the attribute flagged
-upstream --- again returning a subset, not a share.
+\item \textbf{Drill (level 2)} by \emph{restricting the order table to the
+entities selected at level 1} (a conditional drill-down: keep only the flagged
+subset's rows), then re-running the same selection on the next aggregation key
+(e.g.\ item / product vertical) \emph{within that subset} --- again returning a
+subset, not a share. Level 2 is therefore always evaluated on the level-1 subset,
+not the whole population.
 \item \textbf{Close the loop}: each selected subset carries an owner, a candidate
 rule (a KS-optimal split threshold), a decision (monitor / reweight / retrain /
 collect labels), and a trend status computed by diffing against the previous run.
@@ -134,12 +137,19 @@ order/convention dependent. We claim the shift is \emph{localized to} region
 $R$'s user subset, with a stability of, say, $0.98$ and a split rule
 $\texttt{n\_orders per user}>t$.
 
-\paragraph{Drill one level.} Re-running the same two-stage selection on the
-\emph{item} axis, conditioned on the order-count signal, localizes the extra
-orders to a specific \textbf{product vertical} (item category $C$): within region
-$R$, the increase concentrates in category $C$ (e.g.\ ``fresh grocery''), not
-uniformly across the catalogue. Output: subset $=\{$region $R$, user segment,
-category $C\}$ with its own split rule and stability.
+\paragraph{Drill one level --- \emph{inside} the flagged user subset.} We first
+restrict the order table to exactly the level-1 subset (the flagged region-$R$
+users, $\texttt{n\_orders per user}>t$), and only then aggregate those users'
+orders on the \emph{item / product-vertical} axis and re-run the two-stage
+selection. This conditional drill localizes the extra orders to a specific
+\textbf{product vertical} (item category $C$) \emph{within that user subset}:
+among the flagged region-$R$ users the surge concentrates in category $C$ (e.g.\
+``fresh grocery''), not uniformly across the catalogue. The localization is thus
+\textbf{product-vertical~$\times$~user-subset} (category $C$ conditioned on the
+region-$R$ user segment), output as subset $=\{$region $R$ users, category $C\}$
+with its own split rule and stability. Evaluating level 2 on the whole
+population instead of on the level-1 subset would confound the two levels and is
+explicitly avoided.
 
 \paragraph{Action / closed loop.} The subset routes to the category-$C$ /
 region-$R$ owner; the candidate rule becomes a monitor; the decision (e.g.\
