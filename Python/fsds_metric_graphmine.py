@@ -65,12 +65,64 @@ def personalized_pagerank(A, seed, alpha=0.15, iters=300):
     return r / r.sum()
 
 
+def draw_graph(A, Athr, mst, sh, ppr, target, path):
+    """PNG illustration: HSIC edges (grey), MST backbone (blue, bold), nodes
+    coloured by batch shift and sized by RWR propagation from the target."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    p = len(METRICS)
+    ang = 2 * np.pi * np.arange(p) / p + np.pi / 2
+    pos = np.column_stack([np.cos(ang), np.sin(ang)])
+    fig, ax = plt.subplots(figsize=(8.5, 7.5))
+
+    amax = A.max() or 1.0
+    for i in range(p):
+        for j in range(i + 1, p):
+            if Athr[i, j] > 0:
+                ax.plot(*zip(pos[i], pos[j]), color="#9aa0a6",
+                        lw=0.6 + 5 * A[i, j] / amax, alpha=0.6, zorder=1)
+    for i in range(p):
+        for j in range(p):
+            if mst[i, j] > 0:
+                ax.plot(*zip(pos[i], pos[j]), color="#1f77b4", lw=3.2,
+                        alpha=0.9, zorder=2)
+
+    sizes = 500 + 6000 * ppr
+    sc = ax.scatter(pos[:, 0], pos[:, 1], s=sizes, c=sh, cmap="Reds",
+                    vmin=0, vmax=max(sh.max(), 1e-6), edgecolors="k",
+                    linewidths=1.3, zorder=3)
+    ti = METRICS.index(target)
+    ax.scatter([pos[ti, 0]], [pos[ti, 1]], s=sizes[ti] + 500, marker="*",
+               facecolors="none", edgecolors="#111", linewidths=2.0, zorder=4)
+    for i, name in enumerate(METRICS):
+        ax.annotate(f"{name}\n[{LEVEL[name]}]", pos[i], ha="center", va="center",
+                    fontsize=8, zorder=5)
+
+    fig.colorbar(sc, ax=ax, shrink=0.7, label="batch shift (|cohen d|)")
+    ax.plot([], [], color="#1f77b4", lw=3.2, label="MST linkage backbone")
+    ax.plot([], [], color="#9aa0a6", lw=2, label="HSIC edge (width $\\propto$ HSIC)")
+    ax.scatter([], [], s=200, marker="*", facecolors="none", edgecolors="#111",
+               label=f"flagged target ({target})")
+    ax.legend(loc="upper left", fontsize=8, frameon=True)
+    ax.set_title("FSDS $+$ graph-mining: metric linkage graph\n"
+                 "node size $\\propto$ RWR propagation from the flagged target; "
+                 "colour $\\propto$ batch shift")
+    ax.set_axis_off()
+    ax.set_aspect("equal")
+    fig.tight_layout()
+    fig.savefig(path, dpi=140)
+    print(f"saved graph illustration -> {path}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--shift", type=float, default=1.2)
     ap.add_argument("--tau", type=float, default=0.01, help="HSIC edge threshold")
     ap.add_argument("--target", type=str, default="gmv")
     ap.add_argument("--seed", type=int, default=2026)
+    ap.add_argument("--plot", type=str, default="")
     args = ap.parse_args()
 
     M, W = generate(shift=args.shift, seed=args.seed)
@@ -123,6 +175,8 @@ def main():
     ok = truth.issubset(assoc) and "quantity" not in assoc and "discount" not in assoc
     print(f"RESULT: {'PASS' if ok else 'CHECK'}  (recovered the linked shifted "
           f"chain, isolated noise metrics)")
+    if args.plot:
+        draw_graph(A, Athr, mst, sh, ppr, args.target, args.plot)
     return 0 if ok else 1
 
 
