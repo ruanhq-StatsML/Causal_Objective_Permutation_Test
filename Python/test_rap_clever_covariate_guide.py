@@ -122,6 +122,20 @@ def test_rap_with_covariate_expand():
     assert out["hint"] in {"aggressive", "conservative", "keep"}
 
 
+def test_simulation_fused_alarm_beats_clever_h():
+    from rap_covariate_simulation import SimConfig, run
+
+    cfg = SimConfig(n_seeds=40)
+    summary = run(cfg)
+    # The rolling p-value alarm keeps pre-shift false alarms near alpha, while
+    # |H| alone fires on essentially every step.
+    assert summary["fused"]["false_alarm_rate"] < 0.2
+    assert summary["clever_H"]["false_alarm_rate"] > 0.8
+    # It still detects the known regime shift quickly.
+    assert summary["fused"]["detection_rate"] > 0.9
+    assert summary["fused"]["detection_latency"] < 10
+
+
 def test_window_makes_monitor_rolling():
     monitor = OnlineRollingStatistic(burnin=0, window=3)
     for s in [100.0, 100.0, 100.0]:
