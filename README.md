@@ -56,6 +56,70 @@ output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf
 
 
 
+## Skill: `rap_clever_covariate_guide` (Reasoning-via-Planning integration)
+
+`Python/rap_clever_covariate_guide.py` is a small, dependency-light (numpy +
+stdlib) MVP skill that carries the causal-inference signals in this repo into
+the *semantic* layer of an LLM planner (RAP — Reasoning via Planning / MCTS).
+
+It fuses two signals:
+
+1. **Clever covariate** `H = (Y - e) / (e (1 - e))` — the TMLE clever covariate.
+   Given the planner's prior `e` that a step succeeds and the observed outcome
+   `Y`, `H` gives the *direction and magnitude* of the surprise for that step.
+2. **Online rolling empirical p-value** — the same permute-then-refit online
+   monitor this repo already uses for streaming distribution-shift detection
+   (`empirical_pval` / `anomaly_score = 1 - p` in `mab_benchmark_core.py`,
+   the OnlineRFPerm-style statistic). It gives the *statistical confidence*
+   that the surprise is a genuine regime change rather than noise.
+
+The skill renders these into a natural-language RAP planning prompt with an
+explicit adjustment hint (`aggressive` / `conservative` / `keep`) and a
+regime-shift alarm (`p < alpha`) that recommends re-planning, so the LLM
+*reads* the anomaly signal and adapts its next expansion.
+
+```python
+from rap_clever_covariate_guide import RAPCleverCovariateSkill, RAPWithCovariate
+
+skill = RAPCleverCovariateSkill(threshold=0.5, alpha=0.05)
+res = skill.invoke(state="current reasoning state...", prior=0.3, outcome=1,
+                   history=["step1...", "step2..."])
+print(res["hint"])   # aggressive | conservative | keep
+print(res["replan"]) # True when the rolling p-value crosses alpha
+print(res["prompt"]) # full RAP planning prompt with the H + p-value blocks
+
+# Drop into an MCTS expansion loop:
+planner = RAPWithCovariate(llm, skill)
+out = planner.expand(node, prior=0.3, outcome=1)  # -> children + hint + replan
+```
+
+### Why this has production value
+
+The clever covariate supplies **numeric direction** and the online rolling
+p-value supplies **statistical significance gating**. Injecting the fused
+signal into the planning prompt (rather than only into numeric UCB/pruning)
+buys:
+
+- **Lower token cost.** The planner escalates exploration only when a deviation
+  is statistically notable, instead of overreacting to a single noisy outcome
+  (large `|H|` but non-significant `p` -> `keep`) — fewer wasted expansions.
+- **Higher success rate / faster recovery.** A sustained, significant anomaly
+  raises the alarm and steers the planner toward safe, proven branches and
+  re-planning, so it escapes bad branches faster.
+- **Near-zero marginal engineering cost.** Pure prompt engineering on top of
+  statistics the pipeline already computes — no fine-tuning or extra training.
+- **Complementary "numeric + semantic" guidance.** The same drift signal that
+  drives numeric UCB injection now also reaches the action-generation layer,
+  giving double-sided control over exploration.
+
+Run the tests / demo:
+
+```bash
+cd Python
+python -m pytest test_rap_clever_covariate_guide.py -q
+python rap_clever_covariate_guide.py   # prints an example prompt
+```
+
 ## Development
 
 ```r
