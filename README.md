@@ -56,6 +56,30 @@ output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf
 
 
 
+## FSDS for RAP reasoning: the clever-covariate planning hint
+
+The same clever covariate the doubly-robust learner uses to re-weight residuals,
+\(H = (Y - e)/(e(1-e))\), can steer a Reasoning-via-Planning (RAP / Tree-of-Thoughts)
+search. The skill `rap_clever_covariate_guide` turns \(H\) and its sign
+(aggressive / conservative / keep) into a natural-language block that is prepended
+to the planning prompt, so the LLM reads the drift anomaly semantically instead of
+only through a UCB term.
+
+```python
+from rap_clever_covariate_guide import RAPCleverCovariateSkill
+
+skill = RAPCleverCovariateSkill(threshold=0.5)
+res = skill.invoke(state="current reasoning state...", prior=0.3, outcome=1,
+                   history=["step1", "step2"])
+print(res.hint)    # aggressive
+print(res.prompt)  # planning prompt with the [Clever Covariate Signal] block
+```
+
+- `Python/rap_clever_covariate_guide.py` — the skill (H, hint, window channels, prompt builder, RAP wiring).
+- `Python/rap_covariate_offer_experiment.py` — deterministic, seed-free experiment on three one-step searches (offer / triage / retrieval).
+- `Python/rap_clever_covariate_guide.tex` — write-up justifying the mechanism and the three datasets.
+- `Python/test_rap_clever_covariate_guide.py` — `pytest` tests, including a reproduction of the offer-search figures.
+
 ## Development
 
 ```r
