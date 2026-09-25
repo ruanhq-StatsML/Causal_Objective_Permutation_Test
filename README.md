@@ -75,10 +75,11 @@ print(res.hint)    # aggressive
 print(res.prompt)  # planning prompt with the [Clever Covariate Signal] block
 ```
 
-- `Python/rap_clever_covariate_guide.py` — the skill (H, hint, window channels, prompt builder, RAP wiring).
-- `Python/rap_covariate_offer_experiment.py` — deterministic, seed-free experiment on three one-step searches (offer / triage / retrieval).
-- `Python/rap_clever_covariate_guide.tex` — write-up justifying the mechanism and the three datasets.
-- `Python/test_rap_clever_covariate_guide.py` — `pytest` tests, including a reproduction of the offer-search figures.
+- `Python/rap_clever_covariate_guide.py` — the skill (H, hint, threshold band / calibration, window channels, prompt builder, RAP wiring).
+- `Python/online_drift_detectors.py` — online RandomForest permutation two-sample test (`onlineRFPerm` p-value) and online rolling mean/std, reusing the repo's permute-then-refit recipe as the RAP re-route trigger.
+- `Python/rap_covariate_offer_experiment.py` — deterministic, seed-free experiment on three one-step searches (offer / triage / retrieval), including the online p-value trigger.
+- `Python/rap_clever_covariate_guide.tex` — write-up justifying the mechanism, the three datasets, and the online permutation trigger.
+- `Python/test_rap_clever_covariate_guide.py` — `pytest` tests, including a reproduction of the offer-search figures and the online detectors.
 
 ## Development
 

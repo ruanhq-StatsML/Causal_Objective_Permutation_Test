@@ -22,7 +22,7 @@ pre-drift reference loss by ``margin`` -- exactly the rule described in the pape
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from rap_clever_covariate_guide import (
     Beat,
@@ -30,6 +30,7 @@ from rap_clever_covariate_guide import (
     adjustment_hint,
     clip_prior,
 )
+from online_drift_detectors import pvalue_stream
 
 
 @dataclass
@@ -75,8 +76,18 @@ def _phase_metrics(beats: List[Beat], skill: RAPCleverCovariateSkill) -> Dict[st
     }
 
 
-def _run_policy(cfg: OfferConfig, read_sign: bool, skill: RAPCleverCovariateSkill) -> Tuple[List[Beat], int]:
-    """Return (beats, switch_index). switch_index = -1 if never switched."""
+def _run_policy(
+    cfg: OfferConfig,
+    read_sign: bool,
+    skill: RAPCleverCovariateSkill,
+    forced_switch: Optional[int] = None,
+) -> Tuple[List[Beat], int]:
+    """Return (beats, switch_index). switch_index = -1 if never switched.
+
+    ``forced_switch`` overrides the last-four-loss margin rule with an externally
+    supplied trigger step (e.g. the onlineRFPerm detection index). The switch still
+    respects the warmup.
+    """
     pre_ref_fail = 1.0 - _pre_activation(cfg, cfg.judge_pre)
     switch_to = _best_stable(cfg.actions)
     beats: List[Beat] = []
@@ -84,12 +95,17 @@ def _run_policy(cfg: OfferConfig, read_sign: bool, skill: RAPCleverCovariateSkil
     switch_index = -1
     for i in range(cfg.n_users):
         if read_sign and not switched and i >= cfg.warmup:
-            recent = beats[-cfg.window:]
-            if len(recent) == cfg.window:
-                recent_loss = sum(1 for b in recent if b.outcome == 0) / cfg.window
-                if recent_loss - pre_ref_fail > cfg.margin:
-                    switched = True
-                    switch_index = i
+            if forced_switch is not None:
+                trigger = i >= forced_switch
+            else:
+                recent = beats[-cfg.window:]
+                trigger = (
+                    len(recent) == cfg.window
+                    and sum(1 for b in recent if b.outcome == 0) / cfg.window - pre_ref_fail > cfg.margin
+                )
+            if trigger:
+                switched = True
+                switch_index = i
         if read_sign and switched:
             committed = cfg.actions[switch_to]
         else:
@@ -105,18 +121,19 @@ def _pre_activation(cfg: OfferConfig, action_name: str) -> float:
     return sum(act(i) for i in pre) / len(pre)
 
 
-def run(cfg: OfferConfig, skill: RAPCleverCovariateSkill) -> Dict[str, object]:
+def run(cfg: OfferConfig, skill: RAPCleverCovariateSkill, online: bool = True) -> Dict[str, object]:
     d = cfg.drift_index
     judge_beats, _ = _run_policy(cfg, read_sign=False, skill=skill)
     read_beats, switch_index = _run_policy(cfg, read_sign=True, skill=skill)
     post_n = cfg.n_users - d
+
     judge_pre = _phase_metrics(judge_beats[:d], skill)
     judge_post = _phase_metrics(judge_beats[d:], skill)
     read_pre = _phase_metrics(read_beats[:d], skill)
     read_post = _phase_metrics(read_beats[d:], skill)
     extra_vs_judge = round((read_post["Y"] - judge_post["Y"]) * post_n)
     extra_vs_pre = round((read_post["Y"] - judge_pre["Y"]) * post_n)
-    return {
+    result: Dict[str, object] = {
         "name": cfg.name,
         "post_n": post_n,
         "switch_index": switch_index,
@@ -126,6 +143,31 @@ def run(cfg: OfferConfig, skill: RAPCleverCovariateSkill) -> Dict[str, object]:
         "extra_vs_judge": extra_vs_judge,
         "extra_vs_pre": extra_vs_pre,
     }
+    if not online:
+        return result
+
+    # Online RF-permutation p-value + rolling statistic on the unread judge stream.
+    stream = pvalue_stream(judge_beats, alpha=0.05, also_at=[d])
+    detect = stream["detect_index"]
+    rfperm_beats, rfperm_switch = _run_policy(
+        cfg, read_sign=True, skill=skill, forced_switch=(detect if detect >= 0 else None)
+    )
+    rfperm_post = _phase_metrics(rfperm_beats[d:], skill)
+    roll_mean = stream["roll_mean"]
+    roll_std = stream["roll_std"]
+    result["online"] = {
+        "learner": stream["learner"],
+        "detect_index": detect,
+        "p_at_drift": stream["pvals"][d] if d < len(stream["pvals"]) else float("nan"),
+        "p_final": stream["pvals"][cfg.n_users],
+        "rfperm_switch": rfperm_switch,
+        "rfperm_post_Y": rfperm_post["Y"],
+        "roll_mean_pre": roll_mean[d - 1],
+        "roll_mean_post": roll_mean[-1],
+        "roll_std_pre": roll_std[d - 1],
+        "roll_std_post": roll_std[-1],
+    }
+    return result
 
 
 def build_configs() -> List[OfferConfig]:
@@ -203,6 +245,17 @@ def main() -> None:
         print("  abs residual: pre {a} ; judge post {b} ; read post {c}".format(
             a=_fmt(jp["abs_residual"]), b=_fmt(jpo["abs_residual"]),
             c=_fmt(rpo["abs_residual"])))
+        on = r["online"]
+        print("  --- online detectors ({lk}) ---".format(lk=on["learner"]))
+        print("  onlineRFPerm p: at drift {a} -> final {b} ; first p<0.05 at m={c}".format(
+            a=_fmt(on["p_at_drift"]), b=_fmt(on["p_final"]), c=on["detect_index"]))
+        print("  rolling mean Y: pre {a} -> post {b} ; rolling std: pre {c} -> post {d}".format(
+            a=_fmt(on["roll_mean_pre"]), b=_fmt(on["roll_mean_post"]),
+            c=_fmt(on["roll_std_pre"]), d=_fmt(on["roll_std_post"])))
+        print("  switch by RFPerm p-value at user {a} -> read post Y {b} "
+              "(margin rule switched at {c})".format(
+                  a=on["rfperm_switch"], b=_fmt(on["rfperm_post_Y"]),
+                  c=r["switch_index"]))
 
 
 if __name__ == "__main__":

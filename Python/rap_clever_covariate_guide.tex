@@ -4,7 +4,7 @@
 \setlength{\parskip}{0.32em}
 \setlength{\parindent}{0em}
 \title{The clever covariate as an RAP planning hint:\\
-what the sign buys on three searches}
+the online permutation test that fires the re-route}
 \author{}
 \date{2026}
 \begin{document}
@@ -22,19 +22,20 @@ After that write-back the clever covariate is
 H=\frac{Y-e}{e(1-e)},
 \]
 the same influence-function weight the doubly robust pseudo-outcome learner uses to re-weight a residual.
-The skill does not put \(H\) into a UCB term or a prune threshold.
-It renders \(H\) as one line of natural language and prepends it to the planning prompt, so the model that proposes the next actions reads the anomaly.
+The skill renders \(H\) as one line of natural language and prepends it to the planning prompt, so the model that proposes the next actions reads the anomaly.
 The online anomaly score is \(|H|\).
-The sign is the adjustment: \(H>0.5\) is aggressive, \(H<-0.5\) is conservative, and the remainder is keep.
+The sign is the adjustment: \(H>\tau\) is aggressive, \(H<-\tau\) is conservative, and the remainder is keep.
 
 For \(Y\in\{0,1\}\) the two values are immediate.
 A success gives \(H=1/e>0\); a failure gives \(H=-1/(1-e)<0\).
-If \(e<1/2\) then \(1/e>1/(1-e)\), so a confident success has the larger magnitude, and a detector that ranks beats by \(|H|\) alone will rank successes above failures.
-This is why the skill exposes the sign, not \(|H|\) alone.
-Two identities pin down what the anomaly channel can and cannot record.
-The conservative share equals the finished-failure rate, which is \(1-\bar Y\); it is a mirror of the outcome, not an independent channel.
-The mean \(|H|\) mixes a large success weight \(1/e\) with a small failure weight \(1/(1-e)\), so when the prior sits below one half the magnitude can fall exactly as the outcome falls.
-The channels that are free to move with the read are the activation rate \(\bar Y\), the prior of the chosen action, and, through them, the conservative share.
+If \(e<1/2\) then \(1/e>1/(1-e)\), so a confident success has the larger magnitude.
+The threshold \(\tau\) is therefore a band on the prior, not a free constant: a success fires aggressive iff \(e<1/\tau\), a failure fires conservative iff \(e>1-1/\tau\).
+Because \(|H|\ge 1\) for every binary beat, any \(\tau<1\) never returns keep and the sign fires on every finished episode; a \(\tau>1\) opens a dead zone around \(e=1/2\) where an outcome that matched a middling prior is kept.
+For a soft \(Y\in[0,1]\) the covariate is continuous and \(\tau\) is calibrated on a no-drift reference window at a quantile of \(|H|\), the same null-calibration the repository already uses for its permutation \(p\)-value.
+Two identities pin down the channels.
+The conservative share equals the finished-failure rate \(1-\bar Y\); it is a mirror of the outcome.
+The mean \(|H|\) mixes a large success weight \(1/e\) with a small failure weight \(1/(1-e)\), so when the prior sits below one half the magnitude falls as the outcome falls.
+The channels free to move with the read are the activation rate \(\bar Y\) and the prior of the chosen action.
 
 \section{Reading the sign on three one-step searches}
 Each search has three offers and keeps the top one.
@@ -42,8 +43,7 @@ Forty users, drift at user 16, twenty-four users after the drift.
 Activations are fixed modular functions of the user index, so every number below is reconstructable and seed-free.
 A judge commits one offer per user; before the drift it commits the habit-shaped offer, and after the drift the mix flips it to a low-yield offer.
 The sign-not-read policy always follows the judge.
-The sign-read policy follows the judge through the first 12 users, then switches once, permanently, to the highest stable-score offer when the mean loss of the last four finished beats exceeds the pre-drift reference loss by \(0.15\).
-A finished failure is exactly \(H<0\), so a run of high loss is a run of conservative signs, and the switch consumes the sign.
+The sign-read policy follows the judge through a warmup, then switches once, permanently, to the highest stable-score offer when a drift trigger fires.
 \begin{center}
 \begin{tabular}{llrrrr}
 \toprule
@@ -60,49 +60,64 @@ Retrieval & sign read     & 0.500 & 0.750 & \(+15\) & \(+6\) \\
 \bottomrule
 \end{tabular}
 \end{center}
-The extra columns count activations among the 24 post-drift users, against the drifted judge and against the pre-drift rate \(0.500\times24=12\).
+The offer search is the validation target: on the unread stream the prior on the committed offer moves from \(0.50\) to \(0.20\) and \(Y\) falls to \(0.167\); the sign matches \(Y\) on every post-drift step, so \(|H|\) moves only from \(2.00\) to \(1.875\) (a success carries \(1/0.20=5.00\), a failure \(1/0.80=1.25\)) and the conservative share rises from \(0.500\) to \(0.833\).
+Reading the sign commits the growth offer and lifts \(Y\) to \(0.625\).
+Triage is the bounded case: the best available branch clears only \(0.55\), so the read returns \(Y\) to the baseline and no higher.
+Retrieval is the strong case: the deep branch clears \(0.75\), so the read lifts \(Y\) six activations above the baseline.
 
-\section{What each search justifies}
-The offer search is the validation target and reproduces the companion note exactly.
-On the unread stream the prior on the committed offer moves from \(0.50\) to \(0.20\) and \(Y\) falls to \(0.167\), which is eight fewer activations than the baseline.
-The anomaly magnitude \(|H|\) moves only from \(2.00\) to \(1.875\): after the drift a success carries \(|H|=1/0.20=5.00\) and a failure carries \(|H|=1/0.80=1.25\), and the twenty failures dilute the four successes.
-The sign matches \(Y\) on every post-drift step, so the conservative share rises from \(0.500\) to \(0.833\), the mirror of \(Y\).
-The switch fires at user 17, the second post-drift user, because users 13--16 already show three losses in four.
-From there the ranking follows the stable score and commits the growth offer.
-Post-drift \(Y\) becomes \(0.625\): eleven more activations than the drifted judge and three above the pre-drift baseline.
-The prior on the selected offer moves to \(0.650\), the conservative share falls to \(0.375\), and \(|H|\) holds at \(1.995\).
-The increment is written by the activation rate and the chosen prior, not by the anomaly magnitude.
+\section{The online RF permutation test that fires the re-route}
+The last-four-loss margin used above is ad hoc.
+The re-route can instead be fired by the repository's own machinery: an online RandomForest permutation two-sample test.
+At each step the reference batch is the first eight finished beats and the recent batch is the last six; the features are the clever-covariate triple \([e,H,|H|]\); the statistic is the forest's out-of-bag accuracy at separating the two batches; and the null is 80 label permutations, so
+\[
+p=\frac{1+\#\{\text{permuted accuracy}\ge\text{observed}\}}{1+80},
+\qquad p_{\min}=\tfrac{1}{81}=0.0123 .
+\]
+A rolling mean and rolling standard deviation of \(Y\) over the last four beats are read alongside it.
+\begin{center}
+\begin{tabular}{lrrrrr}
+\toprule
+Search & \(p\) at drift & \(p\) final & First \(p<0.05\) & Roll.\ mean \(Y\) & Roll.\ std \(Y\) \\
+\midrule
+Offer     & 0.531 & 0.012 & \(m=19\) & \(0.500\to0.000\) & \(0.500\to0.000\) \\
+Triage    & 0.531 & 0.012 & \(m=20\) & \(0.500\to0.250\) & \(0.500\to0.433\) \\
+Retrieval & 0.531 & 0.012 & \(m=19\) & \(0.500\to0.000\) & \(0.500\to0.000\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+At the drift step \(m=16\) the recent window still holds only pre-drift beats, indistinguishable from the reference, so the forest cannot separate them and \(p\) sits at \(0.531\).
+As post-drift beats enter the recent window \(p\) falls, crosses \(0.05\) two-to-four beats after the drift, and reaches the permutation floor \(0.0123\) by \(m=40\).
+The three searches share the same pre-drift stream, so the drift-step \(p\) and the final \(p\) are identical; only the crossing time differs, and triage crosses one beat later because its post-drift shortfall is milder.
+The rolling mean tracks the fall in \(Y\); in triage the post-drift outcomes are mixed, so the rolling standard deviation rises to \(0.433\) and is itself a drift signal that the two silent searches do not show.
 
-The triage router is the bounded case.
-The drift is milder, \(Y\) falls only to \(0.250\), and the best available branch, the escalate offer, has stable score \(0.55\).
-Its post-drift failures accumulate more slowly, so the switch fires later, at user 19.
-Reading the sign returns \(Y\) to \(0.500\): six activations recovered against the judge, but zero above the baseline, because a branch that clears only \(0.55\) cannot lift the rate past the habit rate it replaces.
-The prior on the chosen offer moves from \(0.250\) to \(0.513\) and the conservative share falls from \(0.750\) to \(0.500\).
-Here \(|H|\) does not fall at all, \(2.00\) to \(2.00\), because the shortfall and the shallower prior offset.
-This is the search that shows the ceiling of the read: it recovers the drifted shortfall, and no more, when no strong branch exists.
-
-The retrieval reranker is the strong case.
-The drift is deep, the cached branch clears only \(0.125\), and the anomaly magnitude on the unread stream still barely moves, \(2.00\) to \(1.910\), with a post-drift success at \(|H|=7.143\) and a failure at \(|H|=1.163\).
-The best branch is the deep rerank at stable score \(0.75\).
-The switch fires at user 17, and post-drift \(Y\) becomes \(0.750\): fifteen activations above the judge and six above the baseline.
-The prior on the chosen branch moves from \(0.140\) to \(0.725\) and the conservative share falls from \(0.875\) to \(0.250\).
-When a strong branch exists and the ranking consumes the sign, the read clears the baseline by a wide margin.
+When the switch is driven by this \(p\)-value instead of the margin rule, the recovery is preserved:
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+Search & Margin switch \(\to Y\) & RFPerm switch \(\to Y\) & Extra vs judge \\
+\midrule
+Offer     & user 17, \(0.625\) & user 19, \(0.583\) & \(+10\) \\
+Triage    & user 19, \(0.500\) & user 20, \(0.458\) & \(+5\)  \\
+Retrieval & user 17, \(0.750\) & user 19, \(0.667\) & \(+13\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The permutation test switches two-to-three users later than the margin rule, because it waits until the recent window is post-drift enough to reject at \(0.05\), and it recovers a little less as a result (\(+10\), \(+5\), \(+13\) against the drifted judge, versus \(+11\), \(+6\), \(+15\)).
+That is the deliberate trade: a calibrated false-positive rate in exchange for a few beats of latency.
+The recovery still stands on all three searches, and it is now fired by the same distribution-shift test the repository is built around, not by a hand-tuned loss margin.
 
 \section{What the read does not do}
-The three searches share one control fact.
-The recovered \(Y\) equals the realized activation of the switched branch over the post-drift window, not its stable score: the growth and deep branches recover to \(0.625\) and \(0.750\), tracking their realized rates, while their priors \(0.67\) and \(0.75\) are only the numbers written into the prompt.
+The recovered \(Y\) equals the realized activation of the switched branch over the post-drift window, not its stable score.
 The read cannot manufacture a branch that does not exist, which is the triage ceiling, and it cannot recover a drop when the next step's ranking does not consume the sign.
-That last boundary is the Game-of-24 control in the companion note: the same \(H\), the same window, and the same anomaly score are all present, the argmax still follows the frozen forest, and \(Y\) falls from \(1.00\) to \(0.25\) with the absolute residual and the conservative share each rising by \(0.75\).
-The increment appears only when the next episode's ranking reads the sign; it does not appear from printing \(H\).
+That last boundary is the Game-of-24 control in the companion note: the same \(H\), the same window, and the same anomaly score are present, the argmax still follows the frozen forest, and \(Y\) falls from \(1.00\) to \(0.25\).
+The permutation \(p\)-value would still fire on that stream, but with no better branch to route toward the fired re-route buys nothing; detection and remedy are separate, and the read supplies only the remedy.
 
 \section{The production value}
-The skill is a prompt, not a training run, so the engineering cost is a template and one clipped division per step.
+The skill is a prompt plus one clipped division per step, and the trigger is a test the codebase already ships.
 Its value is three edges.
-First, the sign is a routing signal: on the offer, triage, and retrieval searches it recovers 11, 6, and 15 of the 24 post-drift activations, which is the business rate that a drifted judge silently forfeits.
-Second, the search cost is flat.
-The number of children scored per step does not change with the read, so the recovered activations are bought with zero extra expansion, and the token spend per step is unchanged while the wasted spend on a drifted branch is cut early.
-Third, \(|H|\) doubles as a monitor: it is the same distribution-shift statistic this repository permutes for a \(p\)-value, so the anomaly stream that steers the prompt is also the stream that raises a drift alert, with no second pipeline.
-The read is complementary to a numeric UCB term rather than a replacement: the number keeps steering the tree statistics, and the sign steers the language that proposes the next branch, a numeric-plus-semantic pair.
-The honest scope is the boundary above.
-The read pays when a better branch exists and the next-step ranking consumes the sign; it recovers only the shortfall when the best branch is weak, and it pays nothing when the ranking is frozen.
+First, the sign is a routing signal: on the offer, triage, and retrieval searches it recovers 11, 6, and 15 of the 24 post-drift activations under the margin rule, and 10, 5, and 13 under the permutation trigger, the business rate a drifted judge silently forfeits.
+Second, the search cost is flat: the number of children scored per step does not change with the read, so the recovered activations cost no extra expansion, and the wasted spend on a drifted branch is cut a handful of beats after the drift.
+Third, detection and steering share one pipeline: the online RandomForest permutation \(p\)-value that fires the re-route is the same distribution-shift statistic this repository permutes elsewhere, and the rolling mean and standard deviation are the monitoring read, so the anomaly stream that steers the prompt is also the stream that raises the drift alert.
+The read is complementary to a numeric UCB term: the number steers the tree statistics, and the sign steers the language that proposes the next branch.
+The honest scope is the boundary above: the read pays when a better branch exists and the ranking consumes the sign, it recovers only the shortfall when the best branch is weak, and the permutation trigger trades a few beats of latency for a controlled false-positive rate.
 \end{document}

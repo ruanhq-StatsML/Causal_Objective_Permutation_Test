@@ -44,6 +44,8 @@ __all__ = [
     "clip_prior",
     "clever_covariate",
     "adjustment_hint",
+    "hint_prior_band",
+    "calibrate_threshold",
     "Beat",
     "WindowStats",
     "CovariateSignal",
@@ -91,6 +93,74 @@ def adjustment_hint(h_value: float, threshold: float = DEFAULT_THRESHOLD) -> str
     if h_value < -threshold:
         return "conservative"
     return "keep"
+
+
+def hint_prior_band(threshold: float) -> Dict[str, object]:
+    """Translate a threshold into the prior band it acts on for a binary outcome.
+
+    For ``Y in {0, 1}`` the covariate is two-valued: a success gives ``1 / e`` and a
+    failure gives ``-1 / (1 - e)``. Hence a success fires ``aggressive`` iff
+    ``e < 1 / threshold`` and a failure fires ``conservative`` iff
+    ``e > 1 - 1 / threshold``. Because ``|H| >= 1`` for every binary beat, any
+    ``threshold < 1`` never yields ``keep`` (the sign always fires); a
+    ``threshold > 1`` opens a dead-zone around ``e = 0.5`` where outcomes that
+    matched a middling prior are kept. This helper returns those cut points so the
+    threshold can be reasoned about as a surprise band rather than a magic number.
+    """
+    if threshold <= 0:
+        return {
+            "success_fires_below_e": 1.0,
+            "failure_fires_above_e": 0.0,
+            "always_fires_for_binary": True,
+        }
+    success_max = 1.0 / threshold
+    failure_min = 1.0 - 1.0 / threshold
+    return {
+        # a success (Y=1) is 'aggressive' when its prior e is below this
+        "success_fires_below_e": min(success_max, 1.0),
+        # a failure (Y=0) is 'conservative' when its prior e is above this
+        "failure_fires_above_e": max(failure_min, 0.0),
+        # threshold < 1 => |H| >= 1 always exceeds it, so 'keep' never happens
+        "always_fires_for_binary": threshold < 1.0,
+    }
+
+
+def _quantile(values: Sequence[float], q: float) -> float:
+    """Linear-interpolation quantile without a numpy dependency."""
+    xs = sorted(values)
+    if not xs:
+        raise ValueError("cannot take a quantile of an empty sequence")
+    if len(xs) == 1:
+        return xs[0]
+    q = min(max(q, 0.0), 1.0)
+    pos = q * (len(xs) - 1)
+    low = int(pos)
+    high = min(low + 1, len(xs) - 1)
+    frac = pos - low
+    return xs[low] * (1.0 - frac) + xs[high] * frac
+
+
+def calibrate_threshold(
+    reference_beats: Sequence["Beat"],
+    quantile: float = 0.9,
+    clip: Sequence[float] = DEFAULT_CLIP,
+    minimum: float = DEFAULT_THRESHOLD,
+) -> float:
+    """Pick a threshold from the null (no-drift) distribution of ``|H|``.
+
+    This is the permute-then-refit / null-calibration idea used elsewhere in the
+    repo, applied to the anomaly score: on a reference window with no drift, set
+    the threshold at the ``quantile`` of ``|H|`` so that ``keep`` covers the null
+    fluctuations and roughly a ``1 - quantile`` fraction of null beats fire a hint.
+    The result is floored at ``minimum`` so a degenerate reference window cannot
+    silence the skill entirely. This matters most for continuous / soft outcomes,
+    where ``|H|`` is genuinely spread out; for sparse binary outcomes every
+    ``|H| >= 1`` and the calibrated threshold naturally lands at or above 1.
+    """
+    if not reference_beats:
+        return float(minimum)
+    mags = [abs(clever_covariate(b.outcome, b.prior, clip)) for b in reference_beats]
+    return float(max(minimum, _quantile(mags, quantile)))
 
 
 @dataclass
