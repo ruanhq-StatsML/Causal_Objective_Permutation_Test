@@ -104,10 +104,36 @@ print(result.report())   # primary level + drift type + shifted communities + to
 ### Run the end-to-end demo
 ```bash
 cd Python
-python -m graph_fsds.demo                       # all scenarios (quick)
-python -m graph_fsds.demo --scenario concept_drift --figures
-python -m graph_fsds.demo --full --figures      # heavier permutation budget
+python -m graph_fsds.demo --scenario community_shift --figures   # one scenario (fast)
+python -m graph_fsds.demo --figures                              # all five scenarios
+python -m graph_fsds.demo --full --figures                       # heavier budget
 ```
+
+### Demonstrated behaviour (synthetic scenarios)
+On the built-in stochastic-block-model scenarios the cascade recovers both the
+*type* and the *scale* of the injected drift, with a clean null (no false
+positive):
+
+| scenario          | detected type | primary scale | shifted communities | top driving dims                         |
+|-------------------|---------------|---------------|---------------------|------------------------------------------|
+| `null`            | none          | none          | 0                   | —                                        |
+| `covariate_shift` | covariate     | global        | 4 / 4               | `feat_0, feat_2, feat_3, feat_1`         |
+| `concept_drift`   | concept       | global        | 4 / 4               | (PO-risk fires; `feat_*`)                |
+| `community_shift` | covariate     | **community** | **2 / 4** (0, 1)    | community-local `feat_*`                 |
+| `structure_shift` | covariate     | global        | 4 / 4               | `struct_coreness, struct_avg_neigh_deg`  |
+
+`community_shift` is correctly localised to the two perturbed blocks, and
+`structure_shift` is attributed to the *structural* embedding dimensions (plus a
+modularity change surfaced by the cluster-stability signal) rather than the raw
+feature channels.
+
+> **Calibration note.** The k-hop feature diffusion `S^k X` couples nodes through
+> the (single) graph, which lets a flexible domain classifier fingerprint the
+> batch and inflates the node-level permutation test's type-I error. Diffusion is
+> therefore opt-in (`include_diffusion=True`); the default, calibrated node
+> representation is raw features + per-snapshot-standardized structural
+> descriptors, and feature/label scenarios share a fixed topology (a temporal
+> graph with a persistent node set).
 
 ## Development
 
