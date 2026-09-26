@@ -56,6 +56,59 @@ output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf
 
 
 
+## FSDS on Graph Embeddings (`Python/graph_fsds`)
+
+The same meta-learner objective-function machinery (PO-risk / R-risk +
+permute-then-refit + LOCO variable importance) is applied *on top of graph
+embeddings* to turn a raw "is there a shift?" signal into a **structured prior
+for graph learning**: it answers *where* a drift lives (global / community /
+node), *what kind* it is (covariate `P(X)` vs concept `P(Y|X)`), and *how much*
+the clustering itself has moved (ARI / NMI / modularity).
+
+### What it adds
+- **Hierarchical graph embedding** — training-free node / community / global /
+  structural embeddings (`(D^-1/2 A D^-1/2)^k X` feature diffusion + local
+  topology), fit on the existing snapshot and reused on the new one so
+  column-wise VIMP is comparable across batches.
+- **Conditional hierarchical FSDS** — a global → community → node cascade where
+  each level is *conditioned on the level above*: the global test picks the
+  drift type, which then selects the per-community objective (RF-domain VIMP for
+  covariate, PO-risk LOCO for concept), and finally per-node drift scores.
+- **Explicit cluster stability** — ARI / NMI / modularity change and per-community
+  Jaccard, exposed as a scalar prior that can force community-scale attribution.
+- **Attribution visualization** — side-by-side node drift maps, per-community
+  bars, and global embedding-dimension importance.
+- **Synthetic graph DGPs** — `null`, `covariate_shift`, `concept_drift`,
+  `community_shift`, `structure_shift` snapshots on a stochastic block model.
+
+### Quickstart
+```python
+from graph_fsds import (
+    HierarchicalGraphEmbedding, ConditionalHierarchicalFSDS, cluster_stability, dgp,
+)
+
+exist, new = dgp.make_scenario("community_shift", seed=2026)
+
+emb = HierarchicalGraphEmbedding(n_hops=2, standardize=True)
+he_exist = emb.fit_transform(exist.graph, exist.features, exist.communities)
+he_new = emb.transform(new.graph, new.features, exist.communities)
+
+stab = cluster_stability(exist.graph, new.graph)
+result = ConditionalHierarchicalFSDS(n_perm=100).run(
+    he_exist, he_new, exist.labels, new.labels, stability=stab)
+
+print(stab.summary())
+print(result.report())   # primary level + drift type + shifted communities + top nodes
+```
+
+### Run the end-to-end demo
+```bash
+cd Python
+python -m graph_fsds.demo                       # all scenarios (quick)
+python -m graph_fsds.demo --scenario concept_drift --figures
+python -m graph_fsds.demo --full --figures      # heavier permutation budget
+```
+
 ## Development
 
 ```r
