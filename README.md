@@ -56,6 +56,85 @@ output <- RRPerm(X, Y, W, n_splits = 5, m_model = 'rf_regression', e_model = 'rf
 
 
 
+## FSDS on Graph Embeddings (`Python/graph_fsds`)
+
+The same meta-learner objective-function machinery (PO-risk / R-risk +
+permute-then-refit + LOCO variable importance) is applied *on top of graph
+embeddings* to turn a raw "is there a shift?" signal into a **structured prior
+for graph learning**: it answers *where* a drift lives (global / community /
+node), *what kind* it is (covariate `P(X)` vs concept `P(Y|X)`), and *how much*
+the clustering itself has moved (ARI / NMI / modularity).
+
+### What it adds
+- **Hierarchical graph embedding** — training-free node / community / global /
+  structural embeddings (`(D^-1/2 A D^-1/2)^k X` feature diffusion + local
+  topology), fit on the existing snapshot and reused on the new one so
+  column-wise VIMP is comparable across batches.
+- **Conditional hierarchical FSDS** — a global → community → node cascade where
+  each level is *conditioned on the level above*: the global test picks the
+  drift type, which then selects the per-community objective (RF-domain VIMP for
+  covariate, PO-risk LOCO for concept), and finally per-node drift scores.
+- **Explicit cluster stability** — ARI / NMI / modularity change and per-community
+  Jaccard, exposed as a scalar prior that can force community-scale attribution.
+- **Attribution visualization** — side-by-side node drift maps, per-community
+  bars, and global embedding-dimension importance.
+- **Synthetic graph DGPs** — `null`, `covariate_shift`, `concept_drift`,
+  `community_shift`, `structure_shift` snapshots on a stochastic block model.
+
+### Quickstart
+```python
+from graph_fsds import (
+    HierarchicalGraphEmbedding, ConditionalHierarchicalFSDS, cluster_stability, dgp,
+)
+
+exist, new = dgp.make_scenario("community_shift", seed=2026)
+
+emb = HierarchicalGraphEmbedding(n_hops=2, standardize=True)
+he_exist = emb.fit_transform(exist.graph, exist.features, exist.communities)
+he_new = emb.transform(new.graph, new.features, exist.communities)
+
+stab = cluster_stability(exist.graph, new.graph)
+result = ConditionalHierarchicalFSDS(n_perm=100).run(
+    he_exist, he_new, exist.labels, new.labels, stability=stab)
+
+print(stab.summary())
+print(result.report())   # primary level + drift type + shifted communities + top nodes
+```
+
+### Run the end-to-end demo
+```bash
+cd Python
+python -m graph_fsds.demo --scenario community_shift --figures   # one scenario (fast)
+python -m graph_fsds.demo --figures                              # all five scenarios
+python -m graph_fsds.demo --full --figures                       # heavier budget
+```
+
+### Demonstrated behaviour (synthetic scenarios)
+On the built-in stochastic-block-model scenarios the cascade recovers both the
+*type* and the *scale* of the injected drift, with a clean null (no false
+positive):
+
+| scenario          | detected type | primary scale | shifted communities | top driving dims                         |
+|-------------------|---------------|---------------|---------------------|------------------------------------------|
+| `null`            | none          | none          | 0                   | —                                        |
+| `covariate_shift` | covariate     | global        | 4 / 4               | `feat_0, feat_2, feat_3, feat_1`         |
+| `concept_drift`   | concept       | global        | 4 / 4               | (PO-risk fires; `feat_*`)                |
+| `community_shift` | covariate     | **community** | **2 / 4** (0, 1)    | community-local `feat_*`                 |
+| `structure_shift` | covariate     | global        | 4 / 4               | `struct_coreness, struct_avg_neigh_deg`  |
+
+`community_shift` is correctly localised to the two perturbed blocks, and
+`structure_shift` is attributed to the *structural* embedding dimensions (plus a
+modularity change surfaced by the cluster-stability signal) rather than the raw
+feature channels.
+
+> **Calibration note.** The k-hop feature diffusion `S^k X` couples nodes through
+> the (single) graph, which lets a flexible domain classifier fingerprint the
+> batch and inflates the node-level permutation test's type-I error. Diffusion is
+> therefore opt-in (`include_diffusion=True`); the default, calibrated node
+> representation is raw features + per-snapshot-standardized structural
+> descriptors, and feature/label scenarios share a fixed topology (a temporal
+> graph with a persistent node set).
+
 ## Development
 
 ```r
