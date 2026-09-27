@@ -36,6 +36,16 @@ Plus **(0) batch covariate monitoring** on trace features \(\Dold\) vs \(\Dnew\)
 | `fsds_sot/applications.py` | Adapters: ReAct, plan–execute, multi-agent |
 | `demo_fsds_react_agent.py` | ReAct-style segment demo |
 | `demo_fsds_sot_agentic_incremental.py` | SoT agentic economics |
+| `demo_fsds_closed_loop.py` | Two-window SoT loop + intervention JSON |
+| `demo_fsds_rag_multihop_loop.py` | Multi-hop RAG until stabilize |
+| `demo_fsds_self_consistency_loop.py` | Dispersion ↓ → adaptive \(N^\star\) |
+
+## Closed loop (self-iteration)
+
+1. `iterate_once` / `run_self_iteration` in `closed_loop.py`
+2. Ladder: Reallocate → Re-topology → Re-ground → Re-configure → Re-learn
+3. On accept: `decay_reference(X_old, X_new, alpha≈0.85)`
+4. Log `suggest_intervention(plan, report, rung)` for ops
 
 ## When *not* to force FSDS
 
