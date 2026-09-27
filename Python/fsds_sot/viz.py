@@ -106,8 +106,19 @@ def plot_sot_dashboard(
     else:
         ax3.legend(loc="upper right", fontsize=8)
 
+    def _quadrant(si: float, qi: float) -> str:
+        sh, qh = si >= 0.5, qi >= 0.5
+        if sh and qh:
+            return "HiS·HiQ"
+        if sh and not qh:
+            return "HiS·LoQ"
+        if not sh and qh:
+            return "LoS·HiQ"
+        return "LoS·LoQ"
+
+    quad_labels = [_quadrant(float(s_norm[i]), float(q[i])) for i in range(B)]
     ax3.set_xticks(x)
-    ax3.set_xticklabels([f"b{i}" for i in range(B)])
+    ax3.set_xticklabels([f"b{i}\n{quad_labels[i]}" for i in range(B)], fontsize=7)
     ax3.set_title("Panel 3: budget executor (drivers → L / tier / checks)")
     ax3.set_ylim(0, 1.25)
     ax3.set_ylabel("normalized driver")

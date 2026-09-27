@@ -87,6 +87,31 @@ Panel 3 is **not** just embedding geometry; it is the **control output** of proc
 
 Panels 1–2 act on **topology**; panel 3 acts on **resources**; panel 4 acts on **batch-level monitoring** (when to re-plan defaults, not per-request decode).
 
+### Panel 3 color legend and quadrants
+
+| Visual | Color | Quantity (left axis, 0–1) |
+|--------|-------|---------------------------|
+| Left bar | Blue `#4C72B0` | **shift** (normalized): embedding moved vs reference |
+| Right bar | Green `#55A868` | **quality**: verifier/PRM confidence |
+| Line + dots | Red `#C44E52` | **risk** = shift × (1 − quality) |
+| Narrow bar | Purple `#8172B2` (right axis) | **L** expansion tokens (scheduled action) |
+| Text `S·1c` | Gray | **tier** (S/M/L) and **check** count |
+
+Quadrant tags under each branch (threshold 0.5 on normalized shift / quality):
+
+- **HiS·HiQ**: long **L** OK; low risk → few checks; watch purple bar height (critical path).
+- **HiS·LoQ**: high risk → more checks, prefer large tier; consider re-retrieve before expand.
+- **LoS·HiQ**: terse **L**, small tier — budget donor.
+- **LoS·LoQ** (“weird signal”): low shift but low quality — do not upscale model; **check_base** keeps at least one check (attribution: “uncertain but not drifting” still needs a guardrail).
+
+### Topology → resources flow
+
+1. **Panel 1 (heatmap)**: who is coupled → merge or sequentialize (width reduction).
+2. **Panel 2 (PCA)**: same clusters as colors → which branches run together in parallel.
+3. **Panel 3**: *within* the approved topology, assign **L / tier / checks** per branch; longest purple bar sets latency span.
+
+Embedding geometry drives **1–2**; **shift** derived from embedding + **quality** from outside drive **3**.
+
 ## Quick start
 
 ```bash
