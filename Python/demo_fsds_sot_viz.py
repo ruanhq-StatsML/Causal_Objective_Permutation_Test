@@ -36,6 +36,7 @@ def main() -> int:
         branch_shift_scores=shift,
         branch_quality=Q1[0],
         feature_vimp=report.covariate_vimp,
+        plan=plan,
         out_path=out,
         title="FSDS-SoT: groups + budget drivers + batch drift",
     )

@@ -7,6 +7,7 @@ from typing import Optional, Sequence
 
 import numpy as np
 
+from .budget import SoTPlan
 from .decompose import coupling_matrix, evaluate_decomposability
 
 
@@ -23,16 +24,17 @@ def plot_sot_dashboard(
     branch_quality: Optional[np.ndarray] = None,
     feature_vimp: Optional[np.ndarray] = None,
     feature_names: Optional[Sequence[str]] = None,
+    plan: Optional[SoTPlan] = None,
     *,
     out_path: str | Path = "fsds_sot_dashboard.png",
     title: str = "FSDS-SoT embedding dashboard",
 ) -> Path:
     """
     Four panels:
-      1) Branch coupling heatmap (grouping granularity)
-      2) Branch PCA scatter colored by cluster
-      3) Per-branch shift / quality (budget inputs)
-      4) Trace-level covariate VIMP (top features)
+      1) Branch coupling heatmap (grouping granularity) — actionable: K, merge, sequential
+      2) Branch PCA scatter colored by cluster — actionable: cluster assignment
+      3) Budget executor: shift, quality, risk, and emitted L/tier/checks — actionable: deploy
+      4) Trace-level covariate VIMP (top features) — actionable: re-plan / monitor
     """
     import matplotlib.pyplot as plt
 
@@ -66,15 +68,49 @@ def plot_sot_dashboard(
     axes[0, 1].set_xlabel("PC1")
     axes[0, 1].set_ylabel("PC2")
 
+    ax3 = axes[1, 0]
     x = np.arange(B)
     w = 0.35
-    axes[1, 0].bar(x - w / 2, branch_shift_scores, width=w, label="shift")
-    axes[1, 0].bar(x + w / 2, branch_quality, width=w, label="quality")
-    axes[1, 0].set_xticks(x)
-    axes[1, 0].set_xticklabels([f"b{i}" for i in range(B)])
-    axes[1, 0].set_title("Budget drivers (→ tokens / tier / checks)")
-    axes[1, 0].legend(loc="upper right", fontsize=8)
-    axes[1, 0].set_ylim(0, max(1.05, float(branch_shift_scores.max()) * 1.1))
+    s_norm = branch_shift_scores / (branch_shift_scores.max() + 1e-9)
+    q = np.clip(branch_quality, 0, 1)
+    risk = s_norm * (1.0 - q)
+
+    ax3.bar(x - w / 2, s_norm, width=w, label="shift (norm)", color="#4C72B0")
+    ax3.bar(x + w / 2, q, width=w, label="quality", color="#55A868")
+    ax3.plot(x, risk, "o-", color="#C44E52", label="risk ≈ shift×(1−q)", markersize=6)
+
+    if plan is not None and len(plan.branch_budgets) == B:
+        ax3b = ax3.twinx()
+        tokens = [plan.branch_budgets[i].expansion_tokens for i in range(B)]
+        ax3b.bar(
+            x,
+            tokens,
+            width=0.15,
+            alpha=0.35,
+            color="#8172B2",
+            label="L tokens (action)",
+        )
+        ax3b.set_ylabel("expansion tokens", fontsize=8)
+        for i, bb in enumerate(plan.branch_budgets):
+            ax3.text(
+                i,
+                max(s_norm[i], q[i], risk[i]) + 0.06,
+                f"{bb.model_tier[0].upper()}·{bb.check_budget}c",
+                ha="center",
+                fontsize=7,
+                color="#333",
+            )
+        lines1, lab1 = ax3.get_legend_handles_labels()
+        lines2, lab2 = ax3b.get_legend_handles_labels()
+        ax3.legend(lines1 + lines2, lab1 + lab2, loc="upper right", fontsize=7)
+    else:
+        ax3.legend(loc="upper right", fontsize=8)
+
+    ax3.set_xticks(x)
+    ax3.set_xticklabels([f"b{i}" for i in range(B)])
+    ax3.set_title("Panel 3: budget executor (drivers → L / tier / checks)")
+    ax3.set_ylim(0, 1.25)
+    ax3.set_ylabel("normalized driver")
 
     ax = axes[1, 1]
     if feature_vimp is not None and feature_vimp.size:

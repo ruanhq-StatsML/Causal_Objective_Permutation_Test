@@ -66,6 +66,27 @@ So “选几个” is a **joint** decision: business caps the envelope; FSDS fil
 
 Same budget executor (tokens, model tier, checks); only the **topology** differs.
 
+## Dashboard panel 3 — actionable budget executor
+
+Panel 3 is **not** just embedding geometry; it is the **control output** of procedure (2).
+
+| Signal | Meaning | Action emitted |
+|--------|---------|----------------|
+| **shift** (bar) | Branch embedding moved vs skeleton/reference → new information | Scales **expansion tokens** \(L_b\) |
+| **quality** (bar) | Verifier / PRM / pass-rate proxy for this branch | Down-weights spend when already confident |
+| **risk** (line) | \(\propto \mathrm{shift}\times(1-\mathrm{quality})\) | Scales **check budget**; with shift, selects **model tier** |
+| **L** (purple bars) | `expansion_tokens` after cap + total budget | Scheduler: `max decode = L_b` |
+| **M·Nc** label | tier initial + check count | Route model; run N self-verify/tool checks |
+
+**How to read for ops**
+
+- **High shift + high quality**: long expansion OK (content-rich, trustworthy) — watch **critical path** (longest purple bar).
+- **High shift + low quality**: high risk → more checks, prefer **large** tier; may trigger re-retrieval before expand.
+- **Low shift + high quality**: terse **L**, **small** tier, minimal checks — reclaim budget (zero-sum mode).
+- **Low shift + low quality**: suspicious stale/low signal — keep minimal checks; do not waste large model.
+
+Panels 1–2 act on **topology**; panel 3 acts on **resources**; panel 4 acts on **batch-level monitoring** (when to re-plan defaults, not per-request decode).
+
 ## Quick start
 
 ```bash
