@@ -37,18 +37,21 @@ def main() -> int:
 
     result = {
         "window1": {
-            "accepted": out1.accepted,
-            "escalated": out1.escalated,
+            "accepted": bool(out1.accepted),
+            "escalated": bool(out1.escalated),
             "drift_proxy": out1.drift_proxy,
             "rung": out1.rung_used.name,
         },
         "window2_after_intervention": {
-            "accepted": out2.accepted,
-            "escalated": out2.escalated,
+            "accepted": bool(out2.accepted),
+            "escalated": bool(out2.escalated),
             "drift_proxy": out2.drift_proxy,
             "rung": out2.rung_used.name,
         },
-        "history": state.history,
+        "history": [
+            {k: (bool(v) if isinstance(v, (bool, np.bool_)) else v) for k, v in h.items()}
+            for h in state.history
+        ],
         "interventions_applied": interventions,
     }
     print(json.dumps(result, indent=2))
