@@ -21,6 +21,132 @@ the loop.
   abstain or covariate-only reporting when unreliable.
 \end{enumerate}
 
+\subsection{Actionable outputs at a glance (tables)}
+\label{sec:action-tables}
+
+Table~\ref{tab:obj1-topology} summarises the primary topology object: suggested
+parallel width $K$, merge rules, and execution order inside each cluster.
+Table~\ref{tab:obj2-budget} gives the budget executor outputs.
+Table~\ref{tab:incremental-value} lists incremental value beyond cost reduction.
+Table~\ref{tab:dashboard-panels} maps the four-panel dashboard to decisions.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~1 --- grouping granularity (embedding topology). $K$ is a
+\emph{suggestion}; $K_{\mathrm{final}}=\mathrm{clip}(K_{\mathrm{FSDS}},K_{\min}^{\mathrm{biz}},K_{\max}^{\mathrm{biz}})$.}
+\label{tab:obj1-topology}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & How it is computed & Actionable insight \\
+\midrule
+Suggested size $K$ &
+Coupling graph on $\{\z_b\}$; connected components / spectral clusters &
+How many \emph{parallel groups} to run; clip by business min/max width \\
+Cluster membership &
+Cluster labels per skeleton point $b$ &
+Which branches share a parallel slot vs.\ must not race \\
+Merge pairs &
+High coupling + concept-redundant ($C_{ij}\le\varepsilon_c$) &
+Collapse duplicate skeleton points before expand (no double-counting) \\
+Sequential order &
+Topological / dependency order \emph{within} a cluster &
+Ranked expand sequence when intra-cluster coupling is high \\
+Parallel vs.\ sequential &
+$P=1-\overline{H}_{ij}$, redundancy $R$, balance $\mathrm{Bal}$ &
+Allow SoT parallel only if gate passes; else CoT or cluster-internal chain \\
+Straggler flag &
+Imbalanced predicted shift or length across $b$ &
+Split or cap a branch before it dominates critical path \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~2 --- critical-path budget executor (after topology is fixed).}
+\label{tab:obj2-budget}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & Driver & Actionable insight \\
+\midrule
+Expansion tokens $L_b$ &
+Normalized shift $s_b$, quality $q_b$; clip to $C_{\mathrm{lat}}$ &
+Set \texttt{max\_new\_tokens} per branch; longest $L_b$ sets span \\
+Model tier &
+High $s_b$ and risk $s_b(1-q_b)$ &
+Route branch to small / medium / large model \\
+Check budget &
+Risk $\propto s_b(1-q_b)$; minimum $1$ if low shift but low $q_b$ &
+Targeted verify / tool-validity calls (not uniform on every branch) \\
+Zero-sum reclaim &
+Low-shift, high-$q_b$ branches &
+Reallocate saved tokens to drifting branches under fixed total budget \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Incremental value of FSDS-SoT vs.\ uniform SoT (justify with A/B or
+frontier: success $\times$ cost $\times$ span).}
+\label{tab:incremental-value}
+\begin{tabular}{@{}llp{0.42\linewidth}@{}}
+\toprule
+Category & Primary object & What improves (beyond lower token bill) \\
+\midrule
+Latency / SLA &
+Object~2 &
+Shorter critical path (span); fewer straggler timeouts under parallel decode \\
+Reliability under drift &
+Object~2 (+ $Y$) &
+Higher success / tool-validity when retrieve--act branches shift \\
+Observability &
+Batch $\VIMP$ + Object~1 &
+Localised drift tickets; faster MTTR vs.\ aggregate accuracy alone \\
+Safety / compliance &
+Object~2 &
+Directed checks on high-risk cells; minimum guardrail on LoS$\cdot$LoQ \\
+Capacity &
+Object~1 + Object~2 &
+Fewer bad parallel merges; more effective QPS per GPU slot \\
+Strategy safety &
+Object~1 &
+Fallback to sequential when decomposability fails (avoid SoT tail risk) \\
+Learning loop (slow) &
+Batch monitoring &
+Targeted retrain / AGOD on persistent drift slices \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Dashboard panels: embedding-only vs.\ mixed signals.}
+\label{tab:dashboard-panels}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Panel & Data source & Suggestion type & Typical action \\
+\midrule
+1 Coupling heatmap & Branch embedding & $K$, merge, sequentialise &
+Re-plan groups before expand \\
+2 PCA clusters & Branch embedding & Same partition as Panel~1 &
+Visual audit of cluster assignment \\
+3 Budget bars &
+Embedding shift + quality &
+$L_b$, tier, checks &
+Deploy per-branch scheduler limits \\
+4 Batch VIMP &
+Trace features $\Dold$ vs.\ $\Dnew$ &
+Default policy drift &
+Adjust templates, caps, monitoring cadence \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Suggested cluster count $K$ (not a business mandate)}
 \label{sec:k-suggested}
 
