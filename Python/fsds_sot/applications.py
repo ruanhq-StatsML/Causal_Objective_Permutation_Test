@@ -80,6 +80,67 @@ def build_plan_execute_trace(
     return SegmentTrace(AgentPattern.PLAN_EXECUTE, names, Z, q, trace)
 
 
+def chain_dispersion(chain_embs: np.ndarray) -> float:
+    """Self-consistency: mean pairwise cosine distance in sample chain embeddings."""
+    Z = _normalize_rows(chain_embs)
+    if Z.shape[0] < 2:
+        return 0.0
+    sim = Z @ Z.T
+    np.fill_diagonal(sim, 0.0)
+    return float(1.0 - sim.mean())
+
+
+def adaptive_sample_count(
+    chain_embs: np.ndarray,
+    *,
+    n_min: int = 3,
+    n_max: int = 15,
+    dispersion_target: float = 0.12,
+) -> int:
+    """Stop / continue sampling: more chains while dispersion above target."""
+    d = chain_dispersion(chain_embs)
+    if d <= dispersion_target:
+        return max(n_min, chain_embs.shape[0])
+    extra = int(np.ceil((d - dispersion_target) / 0.04))
+    return int(np.clip(chain_embs.shape[0] + extra, n_min, n_max))
+
+
+def build_self_consistency_trace(
+    chain_embs: np.ndarray,
+    chain_scores: Optional[np.ndarray] = None,
+) -> SegmentTrace:
+    """Each row = one sampled reasoning chain final-state embedding."""
+    Z = _normalize_rows(chain_embs)
+    names = tuple(f"chain_{i}" for i in range(Z.shape[0]))
+    if chain_scores is None:
+        q = np.linspace(0.55, 0.85, Z.shape[0])
+    else:
+        q = np.asarray(chain_scores, dtype=float)
+    disp = chain_dispersion(Z)
+    trace = np.concatenate([Z.mean(axis=0), np.array([Z.shape[0], disp, q.std()])])
+    return SegmentTrace(AgentPattern.SELF_CONSISTENCY, names, Z, q, trace)
+
+
+def build_rag_multihop_trace(
+    hop_names: Sequence[str],
+    hop_chunk_embs: np.ndarray,
+    *,
+    grounding: Optional[np.ndarray] = None,
+) -> SegmentTrace:
+    """
+    Multi-hop RAG: one segment per hop (aggregated chunk embedding for that hop).
+    hop_chunk_embs: (H, d)
+    """
+    Z = _normalize_rows(hop_chunk_embs)
+    names = tuple(hop_names)
+    if grounding is None:
+        q = np.linspace(0.9, 0.5, len(names))[::-1]
+    else:
+        q = np.asarray(grounding, dtype=float)
+    trace = np.concatenate([Z.mean(axis=0), np.array([len(names), float(q.min()), float(q.std())])])
+    return SegmentTrace(AgentPattern.RAG_BRANCH, names, Z, q, trace)
+
+
 def build_multi_agent_trace(
     role_names: Sequence[str],
     utterance_embs: np.ndarray,

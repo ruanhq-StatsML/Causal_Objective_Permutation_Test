@@ -22,8 +22,10 @@ def main() -> int:
     state = LoopState()
     interventions = []
 
-    def apply(plan, rung):
-        interventions.append({"rung": rung.name, "branches": len(plan.branch_budgets)})
+    def apply(plan, rung, intervention):
+        interventions.append(
+            {"rung": rung.name, "branches": len(plan.branch_budgets), **intervention}
+        )
 
     out1, state = iterate_once(
         X0, X1, B1.mean(axis=0), Q1[0], state, apply_intervention=apply

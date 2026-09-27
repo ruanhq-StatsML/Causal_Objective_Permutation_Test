@@ -133,17 +133,46 @@ group, (ii)~KPI vs.\ pre-intervention baseline (success, span, cost),
 shows decaying drift share without KPI regression---evidence that the loop is
 converging, not chasing noise.
 
-\section{Roadmap: next implementations}
+\section{Implemented self-iteration stack (code)}
+\label{sec:impl-loop}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Repository modules for closed-loop agent reasoning (branch
+\texttt{cursor/fsds-sot-tot-manuscript-7451}).}
+\label{tab:impl-loop}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Module / demo & Role in the loop \\
+\midrule
+\texttt{closed\_loop.py} &
+\texttt{iterate\_once}, \texttt{run\_self\_iteration}, ladder, reference decay \\
+\texttt{applications.py} &
+ReAct, plan--execute, multi-agent, RAG hops, self-consistency segments \\
+\texttt{demo\_fsds\_closed\_loop.py} & SoT batch: two-window drift decay \\
+\texttt{demo\_fsds\_react\_agent.py} & ReAct segment budgets + economics \\
+\texttt{demo\_fsds\_rag\_multihop\_loop.py} &
+Multi-hop reground until \texttt{stabilize\_threshold} \\
+\texttt{demo\_fsds\_self\_consistency\_loop.py} &
+Dispersion $\downarrow$ $\Rightarrow$ adaptive $N^\star$ + loop accept \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Reference update.} After an accepted window, $\Dold \leftarrow
+\alpha \Dold + (1-\alpha)\Dnew'$ with $\alpha\in[0.8,0.95]$ so the control
+system tracks a moving baseline without forgetting recent fixes.
+
+\section{Roadmap: remaining hooks}
 \label{sec:roadmap}
 
-Priority extensions in code (\texttt{Python/fsds\_sot/} and siblings):
+Production hooks still to wire (same estimators, new $\phi$ only):
 \begin{itemize}[leftmargin=*]
-  \item \textbf{ReAct adapter} --- segment = Thought--Action--Observation;
-  $Y$ = tool validity; action = re-call vs.\ continue.
-  \item \textbf{Adaptive Self-Consistency} --- dispersion on sample embeddings;
-  action = stop sampling or resample direction.
-  \item \textbf{Closed-loop driver} --- \texttt{closed\_loop.py}: one window
-  in/out, ladder state, re-measure hook (Algorithm~\ref{alg:closed-loop}).
+  \item \textbf{Live KPI guard} --- non-inferiority test on conversion / resolution
+  before accepting an intervention.
+  \item \textbf{Code-agent span PO-risk} --- edit-hunk $Y$ from CI logs.
+  \item \textbf{Tool-registry batch} --- schema-version covariate block in Panel~4.
 \end{itemize}
 SoT remains the reference implementation; other rows in
 Table~\ref{tab:agent-apps} reuse the same estimators and differ only in
