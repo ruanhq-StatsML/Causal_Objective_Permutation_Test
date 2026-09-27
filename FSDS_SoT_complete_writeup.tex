@@ -233,6 +233,87 @@ with retrieve/act drift; (iii)~production A/B on success, span, cost.
 on tool branches. Typical demo direction: large cost/check savings with span and
 success validated on real $Y$ in deployment.
 
+\section{SoT usage: efficiency beyond compute cost and utilization}
+\label{sec:sot-efficiency}
+
+Cost and GPU utilisation answer ``how much we pay'' and ``how full the cluster
+is.'' \emph{Efficiency} answers ``how much useful reasoning we get per unit of
+wall-clock and per unit of generation''---the operational reason to adopt SoT in
+the first place, amplified when FSDS schedules topology and budgets. We separate
+four efficiency notions that SoT practitioners already care about; FSDS makes
+each one measurable and steerable.
+
+\paragraph{Latency efficiency (span).} Under parallel decode, user-visible latency
+is dominated by the critical path $T_\infty$ (Section~\ref{sec:budget-formulas}),
+not by total tokens $T_1$. Uniform SoT often assigns every branch the same
+expansion cap, so a single straggler branch fixes $T_\infty$ even when other
+branches finish early---parallelism does not help the SLA. FSDS shortens or caps
+branches with low shift, splits or reorders high-coupling pairs (Object~1), and
+concentrates length on branches that actually carry new information (Object~2).
+With $P$ parallel slots, wall-clock satisfies Brent's bound
+$T_P \le T_\infty + (T_1-T_\infty)/P$; reducing $T_\infty$ is the direct lever on
+p99 and timeout rate \emph{without} requiring higher utilisation.
+
+\paragraph{Parallel efficiency ($K$ vs.\ $P$).} SoT's benefit assumes the skeleton
+decomposes into $K$ weakly coupled clusters that can run concurrently. When
+$K_{\mathrm{final}}>P$, execution proceeds in waves; idle slots and merge
+contention are pure efficiency losses. Object~1 estimates $K$, flags merge pairs,
+and enforces cluster-internal order so that each wave runs \emph{meaningful}
+parallel work rather than racing branches that must later be reconciled. This is
+efficiency of \emph{parallel form}: fewer false starts, fewer merge retries, better
+slot occupancy in each wave.
+
+\paragraph{Generation efficiency (quality per token).} Efficiency is not only
+``fewer tokens'' but ``more outcome per token.'' Aligning $L_b$ and tier with
+shift~$\times$~quality puts capacity on branches whose embeddings indicate new
+content or low verifier confidence, and makes terse expansions on stable,
+high-quality branches---raising success or tool-validity per generated token
+rather than uniformly inflating or deflating all branches. Targeted checks
+(Object~2) add verification only on high-risk cells, improving \emph{verification
+efficiency} (fewer verify calls per successful episode).
+
+\paragraph{Workflow efficiency (time-to-action).} Before expansion, the dashboard
+turns embedding topology into explicit decisions: suggested $K$, merge list,
+ranked order within clusters, and per-branch $(L_b,\mathrm{tier},\mathrm{checks})$.
+Operators and schedulers skip trial-and-error uniform caps and post-hoc firefighting;
+batch $\VIMP$ (Panel~4) separates ``change default skeleton policy'' from
+``change this episode's branch budget,'' reducing mean time to diagnose drift.
+That is efficiency of the \emph{control loop}, not of the GPU kernel.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Efficiency dimensions for FSDS-scheduled SoT (orthogonal to raw cost and
+utilisation).}
+\label{tab:sot-efficiency}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.34\linewidth}p{0.34\linewidth}@{}}
+\toprule
+Efficiency notion & What SoT alone assumes & What FSDS adds \\
+\midrule
+Latency (span) &
+Equal branch lengths; critical path = longest branch &
+Cap/stragger control; shift-weighted $L_b$; cluster ordering \\
+Parallel form &
+All skeleton points expand in parallel &
+Suggested $K$, merge, sequentialise; gate when $\mathcal{D}$ is low \\
+Quality / token &
+Same model and length everywhere &
+Tier routing; risk-based checks; terse stable branches \\
+Control loop &
+Manual tuning of width and caps &
+Tables~\ref{tab:obj1-topology}--\ref{tab:dashboard-panels}; drift-local actions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Usage takeaway.} Use FSDS-SoT when SoT is already in the stack but
+episodes show uneven branch shift, tool-branch drift, straggler timeouts, or
+unexplained merge/rework: Object~1 fixes \emph{how many groups and in what order};
+Object~2 fixes \emph{how much generation and verification each group receives}.
+Efficiency gains appear as shorter critical paths, higher valid parallel width,
+better outcome per token, and faster operational response---complementary to,
+not redundant with, compute-cost savings already documented elsewhere.
+
 \section{ToT vs.\ SoT (one row each)}
 \label{sec:tot-sot}
 
