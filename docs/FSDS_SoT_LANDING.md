@@ -46,12 +46,33 @@ Typical production narrative:
 - **Unit economics**: 15–40% token/compute reduction on mixed workloads (stable + drifting branches) before quality lift from targeted checks.
 - **Reliability**: check budget on concept-risk regions reduces expensive full re-runs.
 
+## Business vs data: how many groups?
+
+**Business** should set hard constraints: max parallel width, latency SLA, cost cap, compliance rules (e.g. always run checks on financial claims). **FSDS** recommends a data-driven granularity \(K\) and merge/prune suggestions from coupling + redundancy. Production policy is usually:
+
+\[
+K_{\mathrm{final}} = \mathrm{clip}(K_{\mathrm{FSDS}},\ K_{\min}^{\mathrm{biz}},\ K_{\max}^{\mathrm{biz}})
+\]
+
+So “选几个” is a **joint** decision: business caps the envelope; FSDS fills in the partition inside the envelope.
+
+## Tree-search (ToT) vs branch count (SoT)
+
+| | **SoT** | **ToT** |
+|---|---------|---------|
+| Width | Number of skeleton points / parallel clusters | **Branching factor** per expanded node (how many children) |
+| Depth | **Expansion tokens** per branch (critical path) | **Search depth** (how many reasoning layers) |
+| FSDS knob | Decomposability \(K\), then \(L_b\) / tier / checks | Prune/expand **which nodes**, adjust \(b\) and max depth where drift concentrates |
+
+Same budget executor (tokens, model tier, checks); only the **topology** differs.
+
 ## Quick start
 
 ```bash
 cd Python
-pip install numpy scikit-learn scipy
-python demo_fsds_sot.py
+pip install numpy scikit-learn scipy matplotlib
+python3 demo_fsds_sot.py
+python3 demo_fsds_sot_viz.py   # writes artifacts/fsds_sot_dashboard.png
 ```
 
 Programmatic use:
