@@ -314,6 +314,18 @@ Efficiency gains appear as shorter critical paths, higher valid parallel width,
 better outcome per token, and faster operational response---complementary to,
 not redundant with, compute-cost savings already documented elsewhere.
 
+\paragraph{In one paragraph (SoT usage).}
+Skeleton-of-Thought wins when branches are weakly coupled and expansion budgets
+match where the answer actually lives; it loses when every branch gets the same
+length, the longest branch sets the SLA, or parallel runs race and must be merged
+again. FSDS-SoT reads branch embeddings once, suggests how many parallel groups
+$K$ to run (merge and order within each group), then assigns each group its own
+expansion cap, model tier, and check count from shift and quality---so wall-clock
+tracks the critical path, parallel slots run meaningful work, and each generated
+token is more likely to move the task forward. That is the everyday usage case:
+SoT for speed, FSDS for \emph{where} to parallelise and \emph{how much} to spend
+on each skeleton point.
+
 \section{ToT vs.\ SoT (one row each)}
 \label{sec:tot-sot}
 
