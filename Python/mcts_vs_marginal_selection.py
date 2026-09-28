@@ -84,7 +84,6 @@ def evaluate(name: str, data, model, target: int) -> dict:
     )
     solo = solo_scores(value_fn, neighbors)
     loco = loco_scores(value_fn, neighbors)
-    labels = np.array([1 if node in oracle else 0 for node in neighbors])
     order = list(neighbors)
     labels = np.array([1 if node in oracle else 0 for node in order])
     auc = {
