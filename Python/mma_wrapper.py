@@ -93,6 +93,28 @@ def perturb_neighborhood(x_ref, x_new, neigh) -> np.ndarray:
     return pert
 
 
+def mmd_neighborhood_perturbation(x_ref, x_new, neigh) -> dict:
+    """MMD drop from moving one neighborhood back to the reference snapshot.
+
+    ``mmd2_unbiased`` compares the two node-feature clouds. Gamma is the median
+    heuristic on the original pair and is held fixed, so the drop is the effect
+    of moving those nodes, not a change of bandwidth. LOGO-MMD drops columns
+    and therefore refits gamma; this perturbation keeps the coordinates.
+    """
+    ref = np.asarray(x_ref, dtype=float)
+    new = np.asarray(x_new, dtype=float)
+    gamma = _median_gamma(np.vstack([ref, new]))
+    before = mmd2_unbiased(ref, new, gamma)
+    after = mmd2_unbiased(ref, perturb_neighborhood(ref, new, neigh), gamma)
+    return {
+        "neighborhood": [int(i) for i in neigh],
+        "gamma": float(gamma),
+        "mmd_before": float(before),
+        "mmd_after": float(after),
+        "delta": float(before - after),
+    }
+
+
 def _perturb_tokens(X: np.ndarray, W: np.ndarray, L) -> np.ndarray:
     """Replace the query-batch tokens in ``L`` with the reference-batch mean."""
     pert = np.array(X, copy=True, dtype=float)
@@ -343,11 +365,13 @@ def graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, neigh) -> dict:
 
     base = pack(x_new)
     after = pack(perturb_neighborhood(x_ref, x_new, neigh))
-    mmd, hsic_fn, porisk = MMD(), HSIC(), window_porisk
+    mmd_step = mmd_neighborhood_perturbation(x_ref, x_new, neigh)
+    hsic_fn, porisk = HSIC(), window_porisk
     return {
         "neighborhood": list(neigh),
+        "mmd": mmd_step,
         "delta": {
-            "MMD": mmd(base, w) - mmd(after, w),
+            "MMD": mmd_step["delta"],
             "PORisk": porisk(base, y, w) - porisk(after, y, w),
             "HSIC": hsic_fn(base, w) - hsic_fn(after, w),
         },

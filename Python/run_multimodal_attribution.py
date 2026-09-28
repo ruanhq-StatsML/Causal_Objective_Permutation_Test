@@ -18,8 +18,8 @@ from torch.utils.data import DataLoader, Dataset
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fsds_nonuniqueness import generate_concept_drift_dgp  # noqa: E402
 from mma_wrapper import (  # noqa: E402
-    graph_neighborhood_delta,
     mma_wrapper,
+    mmd_neighborhood_perturbation,
     neighborhood_indices,
     online_bootstrap_ci,
     online_pfi,
@@ -216,28 +216,26 @@ def _graph_neighborhood_try() -> None:
     x_ref = rng.normal(size=(len(G), 4))
     x_new = x_ref + rng.normal(scale=0.05, size=x_ref.shape)
     x_new[membership == 0] += 1.8
-    y_ref = x_ref[:, 0]
-    y_new = x_new[:, 0]
     seed = int(np.argmax(np.linalg.norm(x_new - x_ref, axis=1)))
     neigh = neighborhood_indices(A, [seed])
     far_pool = np.flatnonzero(membership == 2)
     far = far_pool[:len(neigh)].tolist()
-    hit = graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, neigh)
-    miss = graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, far)
+    hit = mmd_neighborhood_perturbation(x_ref, x_new, neigh)
+    miss = mmd_neighborhood_perturbation(x_ref, x_new, far)
     print(f"graph seed {seed} block {int(membership[seed])}")
     print(f"graph neighborhood indices: {hit['neighborhood']}")
-    d, m = hit["delta"], miss["delta"]
     print(
-        f"graph neighborhood delta  MMD={d['MMD']:+.5f}  "
-        f"PORisk={d['PORisk']:+.5f}  HSIC={d['HSIC']:+.5f}"
+        f"graph neighborhood MMD  before={hit['mmd_before']:.5f}  "
+        f"after={hit['mmd_after']:.5f}  delta={hit['delta']:+.5f}  "
+        f"gamma={hit['gamma']:.5f}"
     )
     print(
-        f"graph other-block delta   MMD={m['MMD']:+.5f}  "
-        f"PORisk={m['PORisk']:+.5f}  HSIC={m['HSIC']:+.5f}"
+        f"graph other-block MMD   before={miss['mmd_before']:.5f}  "
+        f"after={miss['mmd_after']:.5f}  delta={miss['delta']:+.5f}"
     )
     assert int(membership[seed]) == 0
     assert np.mean(membership[neigh] == 0) > 0.5
-    assert hit["delta"]["MMD"] > miss["delta"]["MMD"]
+    assert hit["delta"] > miss["delta"]
 
 
 def main() -> None:
