@@ -196,6 +196,98 @@ def online_pfi(
     return rows
 
 
+def window_porisk(X, Y, W) -> float:
+    """Full-set risk inside ``fsds_nonuniqueness.porisk_path``.
+
+    Linear outcome fit, logistic propensity, ridge tau. No cross-fitting.
+    """
+    from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+
+    X = _flat(_as_tokens(X))
+    Y = np.asarray(Y, dtype=float).ravel()
+    W = np.asarray(W, dtype=int).ravel()
+    mu = LinearRegression().fit(X, Y).predict(X)
+    e = LogisticRegression(max_iter=400).fit(X, W).predict_proba(X)[:, 1]
+    e = np.clip(e, 0.02, 0.98)
+    Yt = Y - mu
+    Wt = W.astype(float) - e
+    mask = np.abs(Wt) > 1e-3
+    if int(mask.sum()) < 3:
+        return float(np.mean(Yt ** 2))
+    z = Yt[mask] / Wt[mask]
+    sw = Wt[mask] ** 2
+    tau = Ridge(alpha=1.0).fit(X[mask], z, sample_weight=sw)
+    return float(np.mean((Yt - tau.predict(X) * Wt) ** 2))
+
+
+def online_bootstrap_ci(
+    X,
+    Y,
+    ref_n: int = 8,
+    recent_n: int = 6,
+    step: int = 2,
+    n_boot: int = 40,
+    seed: int = 2026,
+) -> list:
+    """Online PO-risk with the bootstrap percentile interval.
+
+    The window is the ``pvalue_stream`` reference plus trailing recent batch.
+    Resamples are the stratified bootstrap in ``_resample_indices``. The
+    interval is the 2.5 and 97.5 percentiles used by ``resample_vimp``.
+    """
+    from fsds_vimp_inference import _resample_indices
+
+    X = _as_tokens(X)
+    Y = np.asarray(Y, dtype=float).ravel()
+    n = X.shape[0]
+    if ref_n + recent_n > n:
+        raise ValueError("ref_n + recent_n exceeds the stream length")
+    rng = np.random.default_rng(seed)
+    rows = []
+    for m in range(ref_n + recent_n, n + 1, step):
+        idx = np.array(list(range(ref_n)) + list(range(m - recent_n, m)))
+        Xw, yw = X[idx], Y[idx]
+        w = np.array([0] * ref_n + [1] * recent_n, dtype=int)
+        point = window_porisk(Xw, yw, w)
+        draws = np.empty(n_boot, dtype=float)
+        for b in range(n_boot):
+            bidx = _resample_indices(w, rng, "bootstrap", 1.0, 0.0)
+            draws[b] = window_porisk(Xw[bidx], yw[bidx], w[bidx])
+        rows.append({
+            "m": int(m),
+            "porisk": float(point),
+            "ci_lo": float(np.percentile(draws, 2.5)),
+            "ci_hi": float(np.percentile(draws, 97.5)),
+        })
+    return rows
+
+
+def plot_online_porisk(series, path: str, enter_m: int) -> None:
+    """Path figure: PO-risk line and the online bootstrap band."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(1, len(series), figsize=(6.2 * len(series), 5.2), sharey=False)
+    if len(series) == 1:
+        axes = [axes]
+    for ax, (title, rows) in zip(axes, series):
+        m = np.array([r["m"] for r in rows])
+        y = np.array([r["porisk"] for r in rows])
+        lo = np.array([r["ci_lo"] for r in rows])
+        hi = np.array([r["ci_hi"] for r in rows])
+        ax.fill_between(m, lo, hi, color="#1f77b4", alpha=0.15, label="95% online bootstrap CI")
+        ax.plot(m, y, color="#1f77b4", lw=1.8, label="online PO-risk")
+        ax.axvline(enter_m, color="#d62728", ls="--", lw=1.2, label="query enters recent window")
+        ax.set_title(title)
+        ax.set_xlabel("stream step m")
+        ax.set_ylabel("PO-risk")
+        ax.legend(loc="best", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
 def FSDS_runner(X, W, grid, top_k: int = 4):
     """Leave-one-token-out MMD. Returns patch coordinates and token indices ``L``."""
     score = MMD().MMD_LOCO(X, W)

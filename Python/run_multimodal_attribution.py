@@ -16,7 +16,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mma_wrapper import mma_wrapper, online_pfi  # noqa: E402
+from fsds_nonuniqueness import generate_concept_drift_dgp  # noqa: E402
+from mma_wrapper import mma_wrapper, online_bootstrap_ci, online_pfi, plot_online_porisk  # noqa: E402
 
 
 class ViViTEmbedding(nn.Module):
@@ -116,6 +117,32 @@ def _print_result(name: str, out: dict) -> None:
         )
 
 
+def _print_online_porisk(name: str, rows: list) -> None:
+    for row in rows:
+        print(
+            f"{name} onlinePORisk m={row['m']} "
+            f"risk={row['porisk']:.5f} "
+            f"CI=[{row['ci_lo']:.5f}, {row['ci_hi']:.5f}]"
+        )
+
+
+def _concept_online_porisk(path: str) -> None:
+    """Their concept-drift stream, then the online bootstrap band."""
+    X, Y, _W = generate_concept_drift_dgp(n=80, p=6, delta_beta=0.8, rho=0.2, seed=3)
+    X0, Y0, _ = generate_concept_drift_dgp(n=80, p=6, delta_beta=0.0, rho=0.2, seed=4)
+    shifted = online_bootstrap_ci(X, Y, ref_n=16, recent_n=12, step=8, n_boot=30, seed=3)
+    null = online_bootstrap_ci(X0, Y0, ref_n=16, recent_n=12, step=8, n_boot=30, seed=4)
+    _print_online_porisk("concept", shifted)
+    _print_online_porisk("concept_null", null)
+    plot_online_porisk(
+        [("concept drift", shifted), ("no concept drift", null)],
+        path,
+        enter_m=52,
+    )
+    assert shifted[-1]["ci_lo"] <= shifted[-1]["ci_hi"]
+    assert abs(shifted[0]["porisk"] - shifted[-1]["porisk"]) > abs(null[0]["porisk"] - null[-1]["porisk"])
+
+
 def _print_online_pfi(name: str, rows: list) -> None:
     for row in rows:
         print(
@@ -154,9 +181,28 @@ def _synthetic_token_check() -> None:
     assert out["delta"]["MMD"] > 0.0
 
 
+def _quadrant_means(tokens: np.ndarray, grid) -> np.ndarray:
+    """Mean embedding in each 2 by 2 spatial block, averaged over time."""
+    n_t, n_h, n_w = grid
+    means = tokens.mean(axis=2)
+    cols = []
+    for ih in (0, n_h // 2):
+        for iw in (0, n_w // 2):
+            idx = []
+            for t in range(n_t):
+                for h in range(ih, ih + n_h // 2):
+                    for w in range(iw, iw + n_w // 2):
+                        idx.append(t * n_h * n_w + h * n_w + w)
+            cols.append(means[:, idx].mean(axis=1))
+    return np.column_stack(cols)
+
+
 def main() -> None:
+    out_dir = Path("/opt/cursor/artifacts")
+    out_dir.mkdir(parents=True, exist_ok=True)
     _synthetic_token_check()
     _synthetic_online_pfi()
+    _concept_online_porisk(str(out_dir / "online_porisk_concept_ci.png"))
 
     torch.manual_seed(0)
     model = ViViTEmbedding().eval()
@@ -175,6 +221,23 @@ def main() -> None:
     pfi_null = online_pfi(null_stream, model.grid, ref_n=8, recent_n=6, step=8)
     _print_online_pfi("video", pfi)
     _print_online_pfi("video_null", pfi_null)
+    y_shift = np.concatenate([y_ref, y_query])
+    y_quiet = np.concatenate([y_ref, y_null])
+    porisk_shift = online_bootstrap_ci(
+        _quadrant_means(stream, model.grid), y_shift,
+        ref_n=8, recent_n=6, step=4, n_boot=30, seed=7,
+    )
+    porisk_null = online_bootstrap_ci(
+        _quadrant_means(null_stream, model.grid), y_quiet,
+        ref_n=8, recent_n=6, step=4, n_boot=30, seed=8,
+    )
+    _print_online_porisk("video", porisk_shift)
+    _print_online_porisk("video_null", porisk_null)
+    plot_online_porisk(
+        [("video local shift", porisk_shift), ("video no shift", porisk_null)],
+        str(out_dir / "online_porisk_video_ci.png"),
+        enter_m=22,
+    )
 
     assert shifted["base"]["MMD"] > null["base"]["MMD"]
     assert [0, 0] in shifted["patch_indices"]
