@@ -17,8 +17,8 @@ from typing import Any, Dict, List
 import numpy as np
 
 from .budget import BranchBudget, SoTPlan, allocate_branch_budgets
-from .economics import estimate_economics
 from .pipeline import FSDSSoT
+from .pricing import DEFAULT_CHECK_COST_USD, DEFAULT_COST_PER_1K_MEDIUM_USD, plan_variable_cost_usd
 
 
 @dataclass
@@ -34,8 +34,22 @@ class PolicyMetrics:
         return asdict(self)
 
 
-def _tier_cost_mult(tier: str) -> float:
-    return {"small": 0.35, "medium": 1.0, "large": 2.8}.get(tier, 1.0)
+def success_probability(
+    plan: SoTPlan,
+    need: np.ndarray,
+    quality: np.ndarray,
+    *,
+    uniform_L: int = 520,
+) -> float:
+    """Deterministic success proxy (same as simulate_episode_outcome expectation path)."""
+    span = max(b.expansion_tokens for b in plan.branch_budgets)
+    L = np.array([b.expansion_tokens for b in plan.branch_budgets], dtype=float)
+    align = (L / (L.sum() + 1e-9) * need).sum()
+    q_pen = float(np.mean(quality))
+    u = np.ones_like(need) / len(need)
+    align_uniform = (u * need).sum()
+    lift = (align - align_uniform) / (align_uniform + 1e-9)
+    return float(np.clip(0.52 + 0.28 * align + 0.15 * q_pen + 0.08 * lift - 0.0003 * span, 0.05, 0.98))
 
 
 def simulate_episode_outcome(
@@ -52,22 +66,14 @@ def simulate_episode_outcome(
     span = max(b.expansion_tokens for b in plan.branch_budgets)
     total = sum(b.expansion_tokens for b in plan.branch_budgets)
     checks = sum(b.check_budget for b in plan.branch_budgets)
-    cost = sum(
-        b.expansion_tokens * _tier_cost_mult(b.model_tier) * 0.000006
-        for b in plan.branch_budgets
-    ) + checks * 0.002
-
-    # Alignment score: did we spend on high-need branches?
-    L = np.array([b.expansion_tokens for b in plan.branch_budgets], dtype=float)
-    align = (L / (L.sum() + 1e-9) * need).sum()
-    q_pen = quality.mean()
-
-    # Uniform baseline alignment reference
-    u = np.ones_like(need) / len(need)
-    align_uniform = (u * need).sum()
-
-    lift = (align - align_uniform) / (align_uniform + 1e-9)
-    p_succ = np.clip(0.52 + 0.28 * align + 0.15 * q_pen + 0.08 * lift - 0.0003 * span, 0.05, 0.98)
+    _, _, cost = plan_variable_cost_usd(
+        [b.expansion_tokens for b in plan.branch_budgets],
+        [b.model_tier for b in plan.branch_budgets],
+        [b.check_budget for b in plan.branch_budgets],
+        cost_per_1k_medium=DEFAULT_COST_PER_1K_MEDIUM_USD,
+        check_cost=DEFAULT_CHECK_COST_USD,
+    )
+    p_succ = success_probability(plan, need, quality, uniform_L=uniform_L)
     success = float(rng.random() < p_succ)
     return success, int(span), int(total), float(cost), float(checks)
 

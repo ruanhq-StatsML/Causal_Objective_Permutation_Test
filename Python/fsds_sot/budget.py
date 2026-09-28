@@ -5,6 +5,8 @@ from typing import Literal
 
 import numpy as np
 
+from .entropy_alloc import entropy, regularized_allocation_weights
+
 ModelTier = Literal["small", "medium", "large"]
 
 
@@ -39,6 +41,8 @@ def allocate_branch_budgets(
     check_base: int = 1,
     check_scale: float = 2.0,
     kappa: float = 1.0,
+    entropy_lambda: float = 0.15,
+    temperature: float = 1.0,
 ) -> SoTPlan:
     """
     Water-filling with critical-path cap:
@@ -54,8 +58,11 @@ def allocate_branch_budgets(
     nw = np.ones_like(s) if need_weights is None else np.asarray(need_weights, dtype=float)
     nw = nw / (nw.max() + 1e-9)
     raw = kappa * s * q * nw
-    raw = raw / (raw.max() + 1e-9)
-    L = np.clip(raw * latency_cap_tokens, min_tokens, latency_cap_tokens).astype(int)
+    w = regularized_allocation_weights(raw, temperature=temperature, entropy_lambda=entropy_lambda)
+    # Map weights to lengths: target total min(sum L, total_token_budget), cap each at C_lat
+    target_sum = min(total_token_budget, len(w) * latency_cap_tokens)
+    L = np.clip((w * target_sum).astype(int), min_tokens, latency_cap_tokens)
+    _ = entropy(w)  # available for logging / diagnostics
     if min_tokens_by_branch is not None:
         floors = np.asarray(min_tokens_by_branch, dtype=int)
         L = np.maximum(L, np.clip(floors, min_tokens, latency_cap_tokens))

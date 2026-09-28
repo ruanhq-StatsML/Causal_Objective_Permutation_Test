@@ -20,6 +20,7 @@ from fsds_sot import FSDSSoT
 from fsds_sot.agentic_dgp import _branch_need_vector, generate_agentic_batch, episodes_to_arrays
 from fsds_sot.incremental_value import evaluate_policies_on_agentic, uniform_plan
 from fsds_sot.plan_metrics import breakdown_plan, compare_to_uniform
+from fsds_sot.mcts_search import optimize_budget_for_success
 from fsds_sot.pareto_poc import run_pareto_sweep
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +60,7 @@ def main() -> int:
     need = _branch_need_vector(names)
 
     incremental = evaluate_policies_on_agentic(Z, Q, need, X0, X1, seed=2026)
+    mcts = optimize_budget_for_success(Z[0], Q[0], need, mcts_sims=60, seed=2026)
     pareto = run_pareto_sweep(
         Z,
         Q,
@@ -129,6 +131,18 @@ def main() -> int:
                 "checks_reduction_pct_eval": cmp["checks_reduction_pct"],
             },
             "5_pareto_poc": pareto,
+            "5b_entropy_mcts_success": {
+                "entropy_lambda_default": 0.15,
+                "formula": "w=(1-lambda)*softmax(log raw/tau)+lambda/B",
+                "mcts_local_search": mcts,
+            },
+            "5c_roi_fields": [
+                "baseline_total_cost_usd",
+                "fsds_total_cost_usd",
+                "net_economic_gain_usd",
+                "roi_pct",
+                "expected_value_usd",
+            ],
             "6_delivery_status": {
                 "code": "Python/fsds_sot + demos on branch cursor/fsds-sot-tot-manuscript-7451",
                 "next_production": [
@@ -152,7 +166,7 @@ def main() -> int:
     inc = incremental["incremental"]
     tok_red = payload["six_points"]["3_total_tokens_28pct"]["eval_total_token_reduction_pct"]
     rec = pareto["recommended"]
-    md = f"""# 老板交付 — FSDS Agent SoT 六点说明
+    md = rf"""# 老板交付 — FSDS Agent SoT 六点说明
 
 > 生成时间 (UTC): {payload["generated_at_utc"]}  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  

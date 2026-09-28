@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 
 from .budget import SoTPlan
+from .pricing import (
+    DEFAULT_CHECK_COST_USD,
+    DEFAULT_COST_PER_1K_MEDIUM_USD,
+    DEFAULT_FSDS_OVERHEAD_USD,
+    DEFAULT_VALUE_PER_SUCCESS_USD,
+    generation_cost_usd,
+    plan_variable_cost_usd,
+)
 
 
 @dataclass
@@ -20,13 +28,30 @@ class SoTEconomicsReport:
     net_savings_usd: float
     fsds_overhead_usd: float
     roi_multiple: float
+    # Extended ROI (optional success value)
+    baseline_total_cost_usd: float = 0.0
+    fsds_total_cost_usd: float = 0.0
+    baseline_check_cost_usd: float = 0.0
+    expected_value_usd: float = 0.0
+    baseline_expected_value_usd: float = 0.0
+    net_economic_gain_usd: float = 0.0
+    roi_pct: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
 
-def _tier_price(tier: str) -> float:
-    return {"small": 0.15, "medium": 0.60, "large": 2.50}.get(tier, 0.60)
+def _parallel_span(lengths: np.ndarray, *, parallel_slots: int) -> int:
+    if lengths.size == 0:
+        return 0
+    if lengths.size <= parallel_slots:
+        return int(lengths.max())
+    fsds_sorted = np.sort(lengths)[::-1]
+    pad = (-len(fsds_sorted)) % parallel_slots
+    if pad:
+        fsds_sorted = np.pad(fsds_sorted, (0, pad), mode="constant")
+    waves = fsds_sorted.reshape(-1, parallel_slots).max(axis=1)
+    return int(waves.sum())
 
 
 def estimate_economics(
@@ -34,54 +59,78 @@ def estimate_economics(
     *,
     branches: int,
     uniform_tokens_per_branch: int = 512,
-    cost_per_1k_output_tokens: float = 0.006,
-    check_cost_per_call: float = 0.002,
-    fsds_overhead_usd: float = 0.0005,
+    uniform_checks_per_branch: int = 2,
+    cost_per_1k_output_tokens: float = DEFAULT_COST_PER_1K_MEDIUM_USD,
+    check_cost_per_call: float = DEFAULT_CHECK_COST_USD,
+    fsds_overhead_usd: float = DEFAULT_FSDS_OVERHEAD_USD,
     parallel_slots: int = 8,
+    success_rate: Optional[float] = None,
+    baseline_success_rate: Optional[float] = None,
+    value_per_success_usd: float = DEFAULT_VALUE_PER_SUCCESS_USD,
+    implementation_cost_usd: Optional[float] = None,
 ) -> SoTEconomicsReport:
     """
-    Economic justification sketch:
-    - Baseline SoT: equal-length parallel branches -> critical path = uniform length.
-    - FSDS SoT: adaptive lengths + tier routing + targeted checks.
-    """
-    baseline_span = uniform_tokens_per_branch
-    fsds_lengths = np.array([b.expansion_tokens for b in plan.branch_budgets], dtype=float)
-    fsds_span = int(fsds_lengths.max()) if fsds_lengths.size else uniform_tokens_per_branch
+    ROI uses the same tier/check pricing as simulators.
 
-    baseline_cost = branches * uniform_tokens_per_branch * (cost_per_1k_output_tokens / 1000.0)
-    fsds_gen_cost = sum(
-        b.expansion_tokens * _tier_price(b.model_tier) * (cost_per_1k_output_tokens / 1000.0)
-        for b in plan.branch_budgets
+    Net economic gain = (Δ success value) + (baseline variable cost − FSDS variable cost) − FSDS overhead.
+    ROI multiple = net gain / max(investment, overhead), investment defaults to overhead + small impl cost.
+    """
+    fsds_lengths = np.array([b.expansion_tokens for b in plan.branch_budgets], dtype=float)
+    B = branches if branches > 0 else len(plan.branch_budgets)
+
+    baseline_span = uniform_tokens_per_branch
+    fsds_span = int(fsds_lengths.max()) if fsds_lengths.size else uniform_tokens_per_branch
+    if B > parallel_slots:
+        baseline_span = int(np.ceil(B / parallel_slots) * uniform_tokens_per_branch)
+        fsds_span = _parallel_span(fsds_lengths, parallel_slots=parallel_slots)
+
+    baseline_gen = B * generation_cost_usd(
+        uniform_tokens_per_branch, "medium", cost_per_1k_medium=cost_per_1k_output_tokens
     )
-    check_cost = sum(b.check_budget for b in plan.branch_budgets) * check_cost_per_call
+    baseline_chk = B * uniform_checks_per_branch * check_cost_per_call
+    baseline_total = baseline_gen + baseline_chk
+
+    fsds_gen, fsds_chk, fsds_var = plan_variable_cost_usd(
+        [b.expansion_tokens for b in plan.branch_budgets],
+        [b.model_tier for b in plan.branch_budgets],
+        [b.check_budget for b in plan.branch_budgets],
+        cost_per_1k_medium=cost_per_1k_output_tokens,
+        check_cost=check_cost_per_call,
+    )
+    fsds_total = fsds_var + fsds_overhead_usd
 
     latency_reduction = 100.0 * (1.0 - fsds_span / max(baseline_span, 1))
-    cost_savings = 100.0 * (1.0 - (fsds_gen_cost + check_cost) / max(baseline_cost, 1e-9))
-    net_savings = baseline_cost - fsds_gen_cost - check_cost - fsds_overhead_usd
-    roi = net_savings / max(fsds_overhead_usd, 1e-9)
+    cost_savings = 100.0 * (1.0 - fsds_var / max(baseline_total, 1e-9))
+    net_savings = baseline_total - fsds_total
 
-    # Parallel slots bound (Brent-style): if branches > slots, latency scales
-    if branches > parallel_slots:
-        baseline_span = int(np.ceil(branches / parallel_slots) * uniform_tokens_per_branch)
-        fsds_sorted = np.sort(fsds_lengths)[::-1]
-        padded = np.pad(
-            fsds_sorted,
-            (0, parallel_slots - len(fsds_sorted) % parallel_slots),
-            mode="constant",
-        )
-        waves = padded.reshape(-1, parallel_slots).max(axis=1)
-        fsds_span = int(waves.sum())
-        latency_reduction = 100.0 * (1.0 - fsds_span / max(baseline_span, 1))
+    sr = success_rate if success_rate is not None else 0.0
+    sr0 = baseline_success_rate if baseline_success_rate is not None else sr
+    ev = sr * value_per_success_usd
+    ev0 = sr0 * value_per_success_usd
+    net_gain = (ev - ev0) + (baseline_total - fsds_var) - fsds_overhead_usd
+
+    invest = implementation_cost_usd
+    if invest is None:
+        invest = fsds_overhead_usd + 0.002  # amortized monitoring impl (POC default)
+    roi = net_gain / max(invest, 1e-9)
+    roi_pct = 100.0 * net_gain / max(baseline_total + ev0, 1e-9)
 
     return SoTEconomicsReport(
         baseline_latency_tokens=int(baseline_span),
         fsds_latency_tokens=int(fsds_span),
         latency_reduction_pct=float(latency_reduction),
-        baseline_compute_cost_usd=float(baseline_cost),
-        fsds_compute_cost_usd=float(fsds_gen_cost),
+        baseline_compute_cost_usd=float(baseline_gen),
+        fsds_compute_cost_usd=float(fsds_gen),
         cost_savings_pct=float(cost_savings),
-        check_cost_usd=float(check_cost),
+        check_cost_usd=float(fsds_chk),
         net_savings_usd=float(net_savings),
         fsds_overhead_usd=float(fsds_overhead_usd),
         roi_multiple=float(roi),
+        baseline_total_cost_usd=float(baseline_total),
+        fsds_total_cost_usd=float(fsds_total),
+        baseline_check_cost_usd=float(baseline_chk),
+        expected_value_usd=float(ev),
+        baseline_expected_value_usd=float(ev0),
+        net_economic_gain_usd=float(net_gain),
+        roi_pct=float(roi_pct),
     )

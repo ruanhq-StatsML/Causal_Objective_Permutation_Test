@@ -53,6 +53,8 @@ class FSDSSoT:
         need_weights: Optional[np.ndarray] = None,
         min_tokens_by_branch: Optional[np.ndarray] = None,
         budget_kappa: float = 1.0,
+        entropy_lambda: float = 0.15,
+        temperature: float = 1.0,
     ) -> tuple[SoTPlan, DecomposabilityReport]:
         """Budget + topology only (no batch covariate re-fit)."""
         ref = branch_embeddings.mean(axis=0, keepdims=True)
@@ -69,6 +71,8 @@ class FSDSSoT:
             need_weights=need_weights,
             min_tokens_by_branch=min_tokens_by_branch,
             kappa=budget_kappa,
+            entropy_lambda=entropy_lambda,
+            temperature=temperature,
         )
         plan.use_parallel = decomp.allow_parallel
         plan.clusters = decomp.sequential_clusters
@@ -86,6 +90,8 @@ class FSDSSoT:
         need_weights: Optional[np.ndarray] = None,
         min_tokens_by_branch: Optional[np.ndarray] = None,
         budget_kappa: float = 1.0,
+        entropy_lambda: float = 0.15,
+        temperature: float = 1.0,
     ) -> tuple[SoTAttributionReport, SoTPlan, SoTEconomicsReport]:
         cov = covariate_attribution(X_old, X_new, seed=self.seed)
         self._cov_cache = (X_old, X_new, cov)
@@ -100,12 +106,31 @@ class FSDSSoT:
             need_weights=need_weights,
             min_tokens_by_branch=min_tokens_by_branch,
             budget_kappa=budget_kappa,
+            entropy_lambda=entropy_lambda,
+            temperature=temperature,
         )
+
+        from .incremental_value import success_probability, uniform_plan
+
+        ref = branch_embeddings.mean(axis=0, keepdims=True)
+        shift = np.linalg.norm(branch_embeddings - ref, axis=1)
+        shift = shift / (shift.max() + 1e-9)
+        q = branch_quality if branch_quality is not None else np.ones(branch_embeddings.shape[0]) * 0.7
+        uni = uniform_plan(shift, q, latency_cap_tokens=latency_cap_tokens, total_token_budget=total_token_budget)
+        need = (
+            need_weights / (need_weights.sum() + 1e-9)
+            if need_weights is not None
+            else np.ones(len(q)) / len(q)
+        )
+        sr = success_probability(plan, need, q, uniform_L=latency_cap_tokens)
+        sr0 = success_probability(uni, need, q, uniform_L=latency_cap_tokens)
 
         econ = estimate_economics(
             plan,
             branches=branch_embeddings.shape[0],
             uniform_tokens_per_branch=latency_cap_tokens,
+            success_rate=sr,
+            baseline_success_rate=sr0,
         )
 
         report = SoTAttributionReport(
