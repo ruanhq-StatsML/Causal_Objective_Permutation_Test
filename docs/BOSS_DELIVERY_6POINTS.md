@@ -1,6 +1,6 @@
 # 老板交付 — FSDS Agent SoT 六点说明
 
-> 生成时间 (UTC): 2026-09-28T09:30:34.819467+00:00  
+> 生成时间 (UTC): 2026-09-28T10:00:24.316629+00:00  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  
 > 完整 JSON: `artifacts/boss_delivery_six_points.json`
 
@@ -104,4 +104,4 @@ L_b = \\mathrm{clip}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{\\m
 
 **在 KPI 非劣前提下，FSDS-SoT 将 agentic 合成 batch 的 $/episode 降低约 34%，checks 减半，success 与 uniform 持平；延迟由 critical path 决定，需同时报 span 与 Σ tokens。**
 
-*Last refresh: timer iteration — see `generated_at_utc` in JSON.*
+*Final pre-review checkpoint — see `generated_at_utc` in JSON.*
