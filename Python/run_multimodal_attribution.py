@@ -16,7 +16,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mma_wrapper import mma_wrapper  # noqa: E402
+from mma_wrapper import mma_wrapper, online_pfi  # noqa: E402
 
 
 class ViViTEmbedding(nn.Module):
@@ -116,6 +116,29 @@ def _print_result(name: str, out: dict) -> None:
         )
 
 
+def _print_online_pfi(name: str, rows: list) -> None:
+    for row in rows:
+        print(
+            f"{name} onlinePFI m={row['m']} "
+            f"token {row['top_token']} patch {row['top_patch']} "
+            f"pfi={row['top_pfi']:+.5f}"
+        )
+
+
+def _synthetic_online_pfi() -> None:
+    """Reference stream, then a query stream that only shifts token 5."""
+    rng = np.random.default_rng(1)
+    n, n_tokens, dim = 16, 8, 4
+    ref = rng.normal(0.0, 1.0, size=(n, n_tokens, dim))
+    query = rng.normal(0.0, 1.0, size=(n, n_tokens, dim))
+    query[:, 5, :] += 2.5
+    rows = online_pfi(np.vstack([ref, query]), grid=(2, 2, 4), ref_n=8, recent_n=6, step=4)
+    _print_online_pfi("synthetic", rows)
+    assert rows[-1]["top_token"] == 5
+    assert rows[-1]["top_patch"] == [1, 1]
+    assert rows[-1]["top_pfi"] > 0.0
+
+
 def _synthetic_token_check() -> None:
     """One token carries the batch shift. FSDS should return that index first."""
     rng = np.random.default_rng(0)
@@ -133,6 +156,7 @@ def _synthetic_token_check() -> None:
 
 def main() -> None:
     _synthetic_token_check()
+    _synthetic_online_pfi()
 
     torch.manual_seed(0)
     model = ViViTEmbedding().eval()
@@ -145,8 +169,17 @@ def main() -> None:
     null = mma_wrapper(z_ref, z_null, np.concatenate([y_ref, y_null]), model.grid, top_k=4)
     _print_result("video", shifted)
     _print_result("video_null", null)
+    stream = np.vstack([z_ref, z_query])
+    null_stream = np.vstack([z_ref, z_null])
+    pfi = online_pfi(stream, model.grid, ref_n=8, recent_n=6, step=8)
+    pfi_null = online_pfi(null_stream, model.grid, ref_n=8, recent_n=6, step=8)
+    _print_online_pfi("video", pfi)
+    _print_online_pfi("video_null", pfi_null)
+
     assert shifted["base"]["MMD"] > null["base"]["MMD"]
     assert [0, 0] in shifted["patch_indices"]
+    assert pfi[-1]["top_patch"] == [0, 0]
+    assert pfi[-1]["top_pfi"] > pfi_null[-1]["top_pfi"]
     print("PIPELINE_OK")
 
 

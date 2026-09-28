@@ -142,6 +142,60 @@ class PORisk:
         return vimp
 
 
+def permutation_token_importance(X, W, rng, n_repeats: int = 1) -> np.ndarray:
+    """MMD drop when token ``j`` is shuffled. Same difference as permutation importance."""
+    X = _as_tokens(X)
+    W = np.asarray(W, dtype=int).ravel()
+    score = MMD()
+    base = score(X, W)
+    vimp = np.empty(X.shape[1], dtype=float)
+    n = X.shape[0]
+    for j in range(X.shape[1]):
+        drops = np.empty(n_repeats, dtype=float)
+        for _ in range(n_repeats):
+            Xp = np.array(X, copy=True)
+            Xp[:, j, :] = X[rng.permutation(n), j, :]
+            drops[_] = base - score(Xp, W)
+        vimp[j] = float(drops.mean())
+    return vimp
+
+
+def online_pfi(
+    tokens,
+    grid,
+    ref_n: int = 8,
+    recent_n: int = 6,
+    step: int = 1,
+    seed: int = 2026,
+    n_repeats: int = 1,
+) -> list:
+    """Streaming permutation importance.
+
+    The window is the one in ``pvalue_stream`` (RAP branch
+    ``Python/online_drift_detectors.py``): a fixed reference batch, then the
+    trailing recent batch. Each step shuffles one token and records the MMD drop.
+    """
+    tokens = _as_tokens(tokens)
+    n = tokens.shape[0]
+    if ref_n + recent_n > n:
+        raise ValueError("ref_n + recent_n exceeds the stream length")
+    rng = np.random.default_rng(seed)
+    rows = []
+    for m in range(ref_n + recent_n, n + 1, step):
+        idx = list(range(ref_n)) + list(range(m - recent_n, m))
+        W = np.array([0] * ref_n + [1] * recent_n, dtype=int)
+        vimp = permutation_token_importance(tokens[idx], W, rng, n_repeats=n_repeats)
+        top = int(np.argmax(vimp))
+        rows.append({
+            "m": int(m),
+            "top_token": top,
+            "top_patch": patch_of(top, grid),
+            "top_pfi": float(vimp[top]),
+            "vimp": vimp,
+        })
+    return rows
+
+
 def FSDS_runner(X, W, grid, top_k: int = 4):
     """Leave-one-token-out MMD. Returns patch coordinates and token indices ``L``."""
     score = MMD().MMD_LOCO(X, W)
