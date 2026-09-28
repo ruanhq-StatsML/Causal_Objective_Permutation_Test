@@ -2,12 +2,12 @@
 
 The kept set S is a subset of one node's neighbors. The value of S is the
 target node's true-class logit with only the edges from the target to S,
-minus the same logit with none of those edges. Attribution of a neighbor is
-the change in that value when the neighbor is removed from the best set, or
-added to it when it was left out.
+minus the same logit with none of those edges.
 
-Two Planetoid graphs, Cora and CiteSeer. Each half-hour picks the next test
-node and appends one record, stopping at 05:30 Asia/Shanghai.
+Attribution is taken inside the search. Expanding a node drops one neighbor
+and perturbs the graph to that smaller edge set. The neighbor's score is the
+visit-weighted mean of ``value(S) - value(S without that neighbor)`` over the
+states where MCTS made that drop.
 """
 
 from __future__ import annotations
@@ -85,9 +85,11 @@ class ValueFunction:
 
 
 class MCTSNode:
-    def __init__(self, state: set, parent=None):
+    def __init__(self, state: set, parent=None, dropped=None, perturb_delta: float = 0.0):
         self.state = set(state)
         self.parent = parent
+        self.dropped = dropped
+        self.perturb_delta = float(perturb_delta)
         self.children = []
         self.Q = 0.0
         self.N = 0
@@ -121,10 +123,20 @@ def mcts_search(value_fn, neighbors: set, n_iterations: int = 80, c: float = 1.4
         if node.untried:
             neighbor = random.choice(tuple(node.untried))
             node.untried.remove(neighbor)
-            child = MCTSNode(state=node.state - {neighbor}, parent=node)
+            before = value_fn(node.state)
+            new_state = node.state - {neighbor}
+            after = value_fn(new_state)
+            child = MCTSNode(
+                state=new_state,
+                parent=node,
+                dropped=neighbor,
+                perturb_delta=before - after,
+            )
             node.children.append(child)
             node = child
-        value = value_fn(node.state)
+            value = after
+        else:
+            value = value_fn(node.state)
         while node is not None:
             node.N += 1
             node.Q += (value - node.Q) / node.N
@@ -147,8 +159,52 @@ def extract_best_subset(root: MCTSNode) -> set:
     return best_state
 
 
+def _tree_attribution(root: MCTSNode) -> tuple[dict, dict]:
+    """Visit-weighted sum of each drop's perturbation delta."""
+    total: dict = {}
+    weight: dict = {}
+
+    def walk(node: MCTSNode) -> None:
+        if node.dropped is not None and node.N > 0:
+            total[node.dropped] = total.get(node.dropped, 0.0) + node.perturb_delta * node.N
+            weight[node.dropped] = weight.get(node.dropped, 0.0) + node.N
+        for child in node.children:
+            walk(child)
+
+    walk(root)
+    return total, weight
+
+
+def merge_attribution(roots) -> tuple[dict, dict]:
+    total: dict = {}
+    weight: dict = {}
+    for root in roots:
+        part, part_weight = _tree_attribution(root)
+        for neighbor, value in part.items():
+            total[neighbor] = total.get(neighbor, 0.0) + value
+            weight[neighbor] = weight.get(neighbor, 0.0) + part_weight[neighbor]
+    scores = {neighbor: total[neighbor] / weight[neighbor] for neighbor in total}
+    return scores, weight
+
+
+def perturbation_path(root: MCTSNode) -> list:
+    """Drop order along the highest-Q child at each step."""
+    path = []
+    node = root
+    while node.children:
+        child = max(node.children, key=lambda item: item.Q)
+        path.append({
+            "neighbor": int(child.dropped),
+            "delta": float(child.perturb_delta),
+            "visits": int(child.N),
+        })
+        node = child
+    return path
+
+
 def multi_start_mcts(value_fn, neighbors: set, n_starts: int = 4, n_iterations: int = 80):
     best_state, best_value, roots = None, -np.inf, []
+    best_root = None
     for _ in range(n_starts):
         root = mcts_search(value_fn, neighbors, n_iterations)
         roots.append(root)
@@ -157,7 +213,9 @@ def multi_start_mcts(value_fn, neighbors: set, n_starts: int = 4, n_iterations: 
         if value > best_value:
             best_value = value
             best_state = state
-    return best_state, best_value, roots
+            best_root = root
+    scores, visits = merge_attribution(roots)
+    return best_state, best_value, roots, scores, visits, perturbation_path(best_root)
 
 
 def uniform_crossover(left: set, right: set) -> set:
@@ -199,7 +257,9 @@ def _collect_states(root: MCTSNode) -> list:
 def hybrid_search(value_fn, neighbors: set, n_starts: int = 5, n_iterations: int = 200,
                   pop_size: int = 30, n_gen: int = 50):
     """Multi-start MCTS, then evolutionary search seeded by those states."""
-    best_mcts, value_mcts, roots = multi_start_mcts(value_fn, neighbors, n_starts, n_iterations)
+    best_mcts, value_mcts, roots, scores, visits, path = multi_start_mcts(
+        value_fn, neighbors, n_starts, n_iterations
+    )
     population = []
     for root in roots:
         for state in _collect_states(root):
@@ -230,8 +290,10 @@ def hybrid_search(value_fn, neighbors: set, n_starts: int = 5, n_iterations: int
         population = nxt
 
     if value_evo > value_mcts:
-        return best_evo, float(value_evo), float(value_mcts)
-    return best_mcts, float(value_mcts), float(value_mcts)
+        chosen, chosen_value = best_evo, float(value_evo)
+    else:
+        chosen, chosen_value = best_mcts, float(value_mcts)
+    return chosen, chosen_value, float(value_mcts), scores, visits, path
 
 
 def extract_attribution(value_fn, neighbors: set, best_state: set) -> dict:
@@ -274,11 +336,11 @@ def run_one(name: str, data, model, target: int, seed: int) -> dict:
     if len(neighbors) < 2:
         return {"dataset": name, "target": int(target), "skipped": True, "degree": len(neighbors)}
     value_fn = ValueFunction(model, data, target)
-    best_state, best_value, mcts_value = hybrid_search(value_fn, neighbors)
-    scores = extract_attribution(value_fn, neighbors, best_state)
+    best_state, best_value, mcts_value, scores, visits, path = hybrid_search(value_fn, neighbors)
+    marginal = extract_attribution(value_fn, neighbors, best_state)
     ranked = sorted(scores.items(), key=lambda item: -abs(item[1]))
-    inside = [scores[node] for node in best_state]
-    outside = [scores[node] for node in neighbors - best_state]
+    inside = [scores[node] for node in best_state if node in scores]
+    outside = [scores[node] for node in neighbors - best_state if node in scores]
     return {
         "dataset": name,
         "target": int(target),
@@ -289,8 +351,14 @@ def run_one(name: str, data, model, target: int, seed: int) -> dict:
         "mcts_value": mcts_value,
         "mean_in": float(np.mean(inside)) if inside else 0.0,
         "mean_out": float(np.mean(outside)) if outside else 0.0,
-        "top": [{"neighbor": int(node), "attr": float(score), "in_subset": node in best_state}
-                for node, score in ranked[:8]],
+        "path": path,
+        "top": [{
+            "neighbor": int(node),
+            "attr": float(score),
+            "visits": int(visits.get(node, 0)),
+            "marginal": float(marginal.get(node, 0.0)),
+            "in_subset": node in best_state,
+        } for node, score in ranked[:8]],
         "n_cache": len(value_fn.cache),
     }
 
@@ -402,7 +470,11 @@ def write_summary(log_path: Path, summary_path: Path) -> None:
             lines.append(f"{row.get('time')} {row['dataset']} 节点 {row['target']} 度 {row['degree']} 跳过")
             continue
         top = row.get("top", [])
-        head = ", ".join(f"{item['neighbor']}:{item['attr']:+.3f}" for item in top[:3])
+        head = ", ".join(
+            f"{item['neighbor']}:{item['attr']:+.3f}"
+            f"(v{item.get('visits', 0)})"
+            for item in top[:3]
+        )
         lines.append(
             f"{row.get('time')} {row['dataset']} 节点 {row['target']} 度 {row['degree']} "
             f"子集 {row['subset_size']} 价值 {row['best_value']:+.3f} "

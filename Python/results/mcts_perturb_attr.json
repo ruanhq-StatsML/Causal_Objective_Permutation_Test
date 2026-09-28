@@ -1,0 +1,381 @@
+[
+  {
+    "dataset": "Cora",
+    "target": 1708,
+    "true_class": 3,
+    "degree": 6,
+    "subset_size": 0,
+    "best_value": 0.0,
+    "mcts_value": 0.0,
+    "mean_in": 0.0,
+    "mean_out": -0.18886699345773048,
+    "path": [
+      {
+        "neighbor": 2313,
+        "delta": -0.644484668970108,
+        "visits": 138
+      },
+      {
+        "neighbor": 1358,
+        "delta": -0.22515973448753357,
+        "visits": 75
+      },
+      {
+        "neighbor": 873,
+        "delta": -0.19084322452545166,
+        "visits": 54
+      },
+      {
+        "neighbor": 467,
+        "delta": -0.048699378967285156,
+        "visits": 19
+      },
+      {
+        "neighbor": 2314,
+        "delta": -0.1681605577468872,
+        "visits": 9
+      },
+      {
+        "neighbor": 1857,
+        "delta": -0.6890184879302979,
+        "visits": 8
+      }
+    ],
+    "top": [
+      {
+        "neighbor": 2313,
+        "attr": -0.6594211521126875,
+        "visits": 820,
+        "marginal": -3.003350257873535,
+        "in_subset": false
+      },
+      {
+        "neighbor": 1358,
+        "attr": -0.22741507633968636,
+        "visits": 675,
+        "marginal": -1.7010345757007599,
+        "in_subset": false
+      },
+      {
+        "neighbor": 873,
+        "attr": -0.1478128196657166,
+        "visits": 645,
+        "marginal": -1.4101913273334503,
+        "in_subset": false
+      },
+      {
+        "neighbor": 467,
+        "attr": -0.09308256111503427,
+        "visits": 612,
+        "marginal": -0.9919452667236328,
+        "in_subset": false
+      },
+      {
+        "neighbor": 2314,
+        "attr": -0.07608108948000142,
+        "visits": 610,
+        "marginal": -0.9478979110717773,
+        "in_subset": false
+      },
+      {
+        "neighbor": 1857,
+        "attr": 0.0706107379667435,
+        "visits": 574,
+        "marginal": -0.6890184879302979,
+        "in_subset": false
+      }
+    ],
+    "n_cache": 64
+  },
+  {
+    "dataset": "Cora",
+    "target": 1710,
+    "true_class": 2,
+    "degree": 5,
+    "subset_size": 1,
+    "best_value": 6.876291751861572,
+    "mcts_value": 6.876291751861572,
+    "mean_in": 5.215685520158706,
+    "mean_out": -0.7170018157366991,
+    "path": [
+      {
+        "neighbor": 372,
+        "delta": -1.217130184173584,
+        "visits": 61
+      },
+      {
+        "neighbor": 480,
+        "delta": -1.4626803398132324,
+        "visits": 23
+      },
+      {
+        "neighbor": 2444,
+        "delta": -0.20629262924194336,
+        "visits": 8
+      },
+      {
+        "neighbor": 687,
+        "delta": -0.9629602432250977,
+        "visits": 5
+      },
+      {
+        "neighbor": 1358,
+        "delta": 6.876291751861572,
+        "visits": 4
+      }
+    ],
+    "top": [
+      {
+        "neighbor": 1358,
+        "attr": 5.215685520158706,
+        "visits": 711,
+        "marginal": 6.876291751861572,
+        "in_subset": true
+      },
+      {
+        "neighbor": 372,
+        "attr": -1.6841334593712065,
+        "visits": 831,
+        "marginal": -3.3676600456237793,
+        "in_subset": false
+      },
+      {
+        "neighbor": 480,
+        "attr": -1.4819088733902577,
+        "visits": 827,
+        "marginal": -2.991772174835205,
+        "in_subset": false
+      },
+      {
+        "neighbor": 2444,
+        "attr": 0.2116777535476529,
+        "visits": 797,
+        "marginal": -0.7954459190368652,
+        "in_subset": false
+      },
+      {
+        "neighbor": 687,
+        "attr": 0.08635731626701473,
+        "visits": 802,
+        "marginal": -0.9629602432250977,
+        "in_subset": false
+      }
+    ],
+    "n_cache": 32
+  },
+  {
+    "dataset": "Cora",
+    "target": 1713,
+    "true_class": 0,
+    "degree": 4,
+    "subset_size": 1,
+    "best_value": 4.723614454269409,
+    "mcts_value": 4.723614454269409,
+    "mean_in": 4.210185432539946,
+    "mean_out": -1.2333313340148906,
+    "path": [
+      {
+        "neighbor": 1358,
+        "delta": -2.2499396800994873,
+        "visits": 96
+      },
+      {
+        "neighbor": 1898,
+        "delta": -1.1738858222961426,
+        "visits": 42
+      },
+      {
+        "neighbor": 1696,
+        "delta": -0.8083791732788086,
+        "visits": 25
+      },
+      {
+        "neighbor": 88,
+        "delta": 4.723614454269409,
+        "visits": 24
+      }
+    ],
+    "top": [
+      {
+        "neighbor": 88,
+        "attr": 4.210185432539946,
+        "visits": 929,
+        "marginal": 4.723614454269409,
+        "in_subset": true
+      },
+      {
+        "neighbor": 1358,
+        "attr": -2.7378157713225013,
+        "visits": 950,
+        "marginal": -4.397352457046509,
+        "in_subset": false
+      },
+      {
+        "neighbor": 1898,
+        "attr": -1.0584878043157642,
+        "visits": 948,
+        "marginal": -2.0776314735412598,
+        "in_subset": false
+      },
+      {
+        "neighbor": 1696,
+        "attr": 0.09630957359359378,
+        "visits": 945,
+        "marginal": -0.8083791732788086,
+        "in_subset": false
+      }
+    ],
+    "n_cache": 16
+  },
+  {
+    "dataset": "CiteSeer",
+    "target": 2312,
+    "true_class": 4,
+    "degree": 4,
+    "subset_size": 2,
+    "best_value": 3.67544424533844,
+    "mcts_value": 3.67544424533844,
+    "mean_in": 1.7540211714602805,
+    "mean_out": -0.7072117417245298,
+    "path": [
+      {
+        "neighbor": 1654,
+        "delta": -0.5823049545288086,
+        "visits": 63
+      },
+      {
+        "neighbor": 2401,
+        "delta": -0.9019217491149902,
+        "visits": 27
+      },
+      {
+        "neighbor": 1967,
+        "delta": 0.5821633338928223,
+        "visits": 14
+      },
+      {
+        "neighbor": 28,
+        "delta": 3.0932809114456177,
+        "visits": 13
+      }
+    ],
+    "top": [
+      {
+        "neighbor": 28,
+        "attr": 2.232167038402042,
+        "visits": 925,
+        "marginal": 1.5670747756958008,
+        "in_subset": true
+      },
+      {
+        "neighbor": 1967,
+        "attr": 1.2758753045185192,
+        "visits": 925,
+        "marginal": 0.5821633338928223,
+        "in_subset": true
+      },
+      {
+        "neighbor": 1654,
+        "attr": -0.7355332583994478,
+        "visits": 925,
+        "marginal": -0.9530172348022461,
+        "in_subset": false
+      },
+      {
+        "neighbor": 2401,
+        "attr": -0.6788902250496117,
+        "visits": 925,
+        "marginal": -0.9019217491149902,
+        "in_subset": false
+      }
+    ],
+    "n_cache": 16
+  },
+  {
+    "dataset": "CiteSeer",
+    "target": 2316,
+    "true_class": 4,
+    "degree": 11,
+    "subset_size": 8,
+    "best_value": 2.492368698120117,
+    "mcts_value": 2.492368698120117,
+    "mean_in": 0.42846790291283265,
+    "mean_out": -0.15999218322600103,
+    "path": [
+      {
+        "neighbor": 2547,
+        "delta": -0.4271249771118164,
+        "visits": 64
+      },
+      {
+        "neighbor": 2673,
+        "delta": -0.09747791290283203,
+        "visits": 11
+      },
+      {
+        "neighbor": 2383,
+        "delta": 0.10462188720703125,
+        "visits": 1
+      }
+    ],
+    "top": [
+      {
+        "neighbor": 28,
+        "attr": 0.6096214432465402,
+        "visits": 152,
+        "marginal": 0.5983552932739258,
+        "in_subset": true
+      },
+      {
+        "neighbor": 80,
+        "attr": 0.590870644636215,
+        "visits": 157,
+        "marginal": 0.5799083709716797,
+        "in_subset": true
+      },
+      {
+        "neighbor": 1921,
+        "attr": 0.4842657755656415,
+        "visits": 166,
+        "marginal": 0.44149112701416016,
+        "in_subset": true
+      },
+      {
+        "neighbor": 392,
+        "attr": 0.46648957687995335,
+        "visits": 173,
+        "marginal": 0.4391012191772461,
+        "in_subset": true
+      },
+      {
+        "neighbor": 2547,
+        "attr": -0.4366709810144761,
+        "visits": 425,
+        "marginal": -0.532414436340332,
+        "in_subset": false
+      },
+      {
+        "neighbor": 819,
+        "attr": 0.40399136794240853,
+        "visits": 190,
+        "marginal": 0.36567115783691406,
+        "in_subset": true
+      },
+      {
+        "neighbor": 1678,
+        "attr": 0.36662690409549,
+        "visits": 197,
+        "marginal": 0.3169546127319336,
+        "in_subset": true
+      },
+      {
+        "neighbor": 923,
+        "attr": 0.3549114781983045,
+        "visits": 196,
+        "marginal": 0.31000804901123047,
+        "in_subset": true
+      }
+    ],
+    "n_cache": 903
+  }
+]
