@@ -235,6 +235,78 @@ def online_pfi(
     return rows
 
 
+def _registry():
+    from model_registry_class import ModelRegistry
+
+    factory = ModelRegistry(
+        ntree=40,
+        ridge_alpha=0.25,
+        nthread=1,
+        maxit=200,
+        max_depth=5,
+        gamma=0.25,
+        eta=0.15,
+        mlp_hidden_size=4,
+        positive_class=1,
+    )
+    return factory.as_r_style_dict()
+
+
+def _folds(n: int, n_folds: int, seed: int, labels=None):
+    rng = np.random.default_rng(seed)
+    if labels is None:
+        indices = np.arange(n)
+        rng.shuffle(indices)
+        return np.array_split(indices, n_folds)
+    folds = [[] for _ in range(n_folds)]
+    for lab in np.unique(labels):
+        idx = np.flatnonzero(np.asarray(labels) == lab)
+        rng.shuffle(idx)
+        for i, piece in enumerate(np.array_split(idx, n_folds)):
+            folds[i].extend(int(v) for v in piece)
+    return [np.asarray(fold, dtype=int) for fold in folds]
+
+
+def drperm_po_risk(
+    X,
+    Y,
+    T,
+    model_m: str = "rf_regressor",
+    model_e: str = "logistic_classifier",
+    seed: int = 0,
+    n_folds: int = 2,
+    clip_e: float = 0.01,
+) -> float:
+    """Observed PO-risk from ``DRPerm``.
+
+    Cross-fit ``model_m`` and ``model_e`` from ``MODEL_REGISTRY`` and predict
+    the held-out fold. Pseudo-outcome is ``(Y - mu) * (T - e)``. Tau is
+    ``model_m`` fit to that pseudo-outcome. The risk is ``mean(tau ** 2)``.
+    """
+    registry = _registry()
+    outcome = registry[model_m]
+    propensity = registry[model_e]
+    X = np.asarray(X, dtype=float)
+    if X.ndim > 2:
+        X = X.reshape(X.shape[0], -1)
+    Y = np.asarray(Y, dtype=float).ravel()
+    T = np.asarray(T, dtype=int).ravel()
+    n = X.shape[0]
+    mu = np.zeros(n, dtype=float)
+    e = np.zeros(n, dtype=float)
+    for k, test_idx in enumerate(_folds(n, n_folds, seed, T)):
+        train_idx = np.setdiff1d(np.arange(n), test_idx)
+        fit_mu = outcome["fit"](X[train_idx], Y[train_idx], seed=seed + k)
+        mu[test_idx] = outcome["predict"](fit_mu, X[test_idx])
+        fit_e = propensity["fit"](X[train_idx], T[train_idx], seed=seed + 100 + k)
+        e[test_idx] = propensity["predict"](fit_e, X[test_idx])
+    e = np.clip(e, clip_e, 1.0 - clip_e)
+    pseudo = (Y - mu) * (T.astype(float) - e)
+    fit_tau = outcome["fit"](X, pseudo, seed=seed + 200)
+    tau = outcome["predict"](fit_tau, X)
+    return float(np.mean(tau ** 2))
+
+
 def window_porisk(X, Y, W) -> float:
     """Full-set risk inside ``fsds_nonuniqueness.porisk_path``.
 
@@ -270,9 +342,10 @@ def online_bootstrap_ci(
 ) -> list:
     """Online PO-risk with the bootstrap percentile interval.
 
-    The window is the ``pvalue_stream`` reference plus trailing recent batch.
+    The fixed prefix is the original batch, ``T = 0``. Each sample in the
+    trailing window is ``T = 1``. The risk on that window is ``drperm_po_risk``.
     Resamples are the stratified bootstrap in ``_resample_indices``. The
-    interval is the 2.5 and 97.5 percentiles used by ``resample_vimp``.
+    interval is the 2.5 and 97.5 percentiles.
     """
     from fsds_vimp_inference import _resample_indices
 
@@ -287,11 +360,11 @@ def online_bootstrap_ci(
         idx = np.array(list(range(ref_n)) + list(range(m - recent_n, m)))
         Xw, yw = X[idx], Y[idx]
         w = np.array([0] * ref_n + [1] * recent_n, dtype=int)
-        point = window_porisk(Xw, yw, w)
+        point = drperm_po_risk(Xw, yw, w, seed=seed + m)
         draws = np.empty(n_boot, dtype=float)
         for b in range(n_boot):
             bidx = _resample_indices(w, rng, "bootstrap", 1.0, 0.0)
-            draws[b] = window_porisk(Xw[bidx], yw[bidx], w[bidx])
+            draws[b] = drperm_po_risk(Xw[bidx], yw[bidx], w[bidx], seed=seed + 1000 + m + b)
         rows.append({
             "m": int(m),
             "porisk": float(point),
