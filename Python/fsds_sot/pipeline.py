@@ -117,11 +117,8 @@ class FSDSSoT:
         shift = shift / (shift.max() + 1e-9)
         q = branch_quality if branch_quality is not None else np.ones(branch_embeddings.shape[0]) * 0.7
         uni = uniform_plan(shift, q, latency_cap_tokens=latency_cap_tokens, total_token_budget=total_token_budget)
-        need = (
-            need_weights / (need_weights.sum() + 1e-9)
-            if need_weights is not None
-            else np.ones(len(q)) / len(q)
-        )
+        need = need_weights if need_weights is not None else np.ones(len(q)) / len(q)
+        need = np.asarray(need, dtype=float)
         sr = success_probability(plan, need, q, uniform_L=latency_cap_tokens)
         sr0 = success_probability(uni, need, q, uniform_L=latency_cap_tokens)
 

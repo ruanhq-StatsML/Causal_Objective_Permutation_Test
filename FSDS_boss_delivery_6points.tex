@@ -22,10 +22,14 @@ $2600\rightarrow 1870$ tokens/ep ($\approx 28\%$ on synthetic agentic batch).
 Uniform: $2$ per branch ($10$/ep). FSDS: $\mathrm{round}(1+2s_b(1-q_b))$;
 eval mean $\approx 5$ checks/ep.
 
-\paragraph{5. Pareto POC.}
-Sweep $\kappa$ and retrieve/act \texttt{L\_floor}; KPI guard
-$\Delta\mathrm{success}\ge -3\%$ vs uniform; recommend max cost cut among passing configs
-(see JSON \texttt{recommended}).
+\paragraph{5. Pareto + MCTS + entropy.}
+Entropy-regularized weights
+$w=(1-\lambda)\mathrm{softmax}(\log raw/\tau)+\lambda/B$;
+MCTS/local search on $(\kappa,\lambda,\mathrm{floor})$ for success-rate
+(\texttt{mcts\_search.py}).
+\paragraph{5b. ROI.}
+\texttt{net\_economic\_gain} = $\Delta(\mathrm{success}\cdot v_{\mathrm{succ}})$ +
+variable cost savings $-$ overhead; unified tier/check pricing (\texttt{pricing.py}).
 
 \paragraph{6. Delivery.}
 Code: \texttt{fsds\_sot/}; PR \#12; next: wire real resolution/tool\_ok into guard, canary adopt.

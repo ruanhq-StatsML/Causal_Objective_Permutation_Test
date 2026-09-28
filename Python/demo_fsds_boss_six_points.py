@@ -43,7 +43,7 @@ def _example_agentic_plan(X0, X1, Z, Q, need):
         latency_cap_tokens=520,
         need_weights=need,
         min_tokens_by_branch=np.array([0, 360, 0, 360, 0], dtype=int),
-        budget_kappa=0.9,
+        budget_kappa=0.85,
         entropy_lambda=0.05,
     )
     return plan_u, plan_f

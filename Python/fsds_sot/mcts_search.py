@@ -200,7 +200,8 @@ def local_search_refine(
     plan = plan_from_hyperparams(
         shift, quality, need, current, total_budget=total_budget, latency_cap=latency_cap
     )
-    best_r = _reward(plan, need, quality, latency_cap=latency_cap)
+    uni = uniform_plan(shift, quality, latency_cap_tokens=latency_cap, total_token_budget=total_budget)
+    best_r = _reward(plan, need, quality, latency_cap=latency_cap, uniform_plan_ref=uni)
 
     for _ in range(max_steps):
         improved = False

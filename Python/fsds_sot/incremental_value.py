@@ -138,7 +138,7 @@ def evaluate_policies_on_agentic(
                     latency_cap_tokens=520,
                     need_weights=need,
                     min_tokens_by_branch=np.where(need >= 0.95, 320, 0).astype(int),
-                    budget_kappa=0.9,
+                    budget_kappa=0.85,
                     entropy_lambda=0.05,
                 )
             else:
