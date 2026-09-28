@@ -1,9 +1,8 @@
-"""Standard pipeline: dataloader -> VAE or ViViT embedding -> FSDS.
+"""Dataloader -> ViViT tokens -> MMA wrapper.
 
-Image batches use ``run_vae_domain_shift`` (ConvVAE ``mu``).
-Video batches use a ViViT embedding.
-Both embeddings are handed to ``graph_fsds.fsds_core`` unchanged:
-``covariate_shift_test`` and ``domain_vimp``.
+The wrapper stacks the two batches, runs FSDS, and returns patch indices
+``[[h, w], ...]`` plus token indices ``L``. Post-hoc localization then
+perturbs those tokens and reports the change in MMD, PO-risk, and HSIC.
 """
 
 from __future__ import annotations
@@ -17,19 +16,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from graph_fsds.fsds_core import covariate_shift_test, domain_vimp
-from run_vae_domain_shift import (
-    ConvVAE,
-    ImageDataset,
-    encode_dataset,
-    make_synthetic_dataset,
-    make_transform,
-    train_vae,
-)
+from mma_wrapper import mma_wrapper  # noqa: E402
 
 
 class ViViTEmbedding(nn.Module):
-    """Tubelet ViViT. Returns one embedding per clip."""
+    """Tubelet ViViT. Returns one embedding per patch token."""
 
     def __init__(
         self,
@@ -51,7 +42,12 @@ class ViViTEmbedding(nn.Module):
             kernel_size=(tubelet_size, patch_size, patch_size),
             stride=(tubelet_size, patch_size, patch_size),
         )
-        n_tokens = (num_frames // tubelet_size) * (image_size // patch_size) ** 2
+        self.grid = (
+            num_frames // tubelet_size,
+            image_size // patch_size,
+            image_size // patch_size,
+        )
+        n_tokens = self.grid[0] * self.grid[1] * self.grid[2]
         self.cls = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos = nn.Parameter(torch.zeros(1, n_tokens + 1, embed_dim))
         layer = nn.TransformerEncoderLayer(
@@ -68,10 +64,11 @@ class ViViTEmbedding(nn.Module):
         nn.init.trunc_normal_(self.cls, std=0.02)
 
     def forward(self, clips: torch.Tensor) -> torch.Tensor:
+        """Token embeddings, index ``t * (H W) + h * W + w`` (CLS dropped)."""
         tokens = self.tubelet(clips).flatten(2).transpose(1, 2)
         cls = self.cls.expand(tokens.size(0), -1, -1)
         x = torch.cat([cls, tokens], dim=1) + self.pos[:, : tokens.size(1) + 1]
-        return self.norm(self.encoder(x)[:, 0])
+        return self.norm(self.encoder(x)[:, 1:])
 
 
 class ClipDataset(Dataset):
@@ -89,95 +86,67 @@ class ClipDataset(Dataset):
         return self.clips[idx]
 
 
-def _image_loaders(root: Path, n: int = 16, batch_size: int = 8):
-    train_dir = root / "synthetic_train"
-    eval_dir = root / "synthetic_eval"
-    make_synthetic_dataset(train_dir, n_images=n, seed=0, color_shift=0.0)
-    make_synthetic_dataset(eval_dir, n_images=n, seed=1, color_shift=40.0)
-    transform = make_transform(64)
-    train_loader = DataLoader(
-        ImageDataset(str(train_dir), transform=transform),
-        batch_size=batch_size, shuffle=True, num_workers=0,
-    )
-    eval_loader = DataLoader(
-        ImageDataset(str(eval_dir), transform=transform),
-        batch_size=batch_size, shuffle=False, num_workers=0,
-    )
-    return train_loader, eval_loader
-
-
-def _vae_embeddings(train_loader: DataLoader, eval_loader: DataLoader, out_dir: Path):
-    device = torch.device("cpu")
-    vae = ConvVAE(latent_dim=32, img_channels=3, img_size=64).to(device)
-    model_path = out_dir / "vae_model.pth"
-    train_vae(vae, train_loader, device, num_epochs=2, model_path=model_path)
-    vae.eval()
-
-    def encode(x: torch.Tensor) -> torch.Tensor:
-        with torch.no_grad():
-            mu, _ = vae.encode(x.to(device))
-        return mu
-
-    z_ref = encode_dataset(train_loader, encode).numpy()
-    z_query = encode_dataset(eval_loader, encode).numpy()
-    return z_ref, z_query
-
-
 def _video_loader(n: int, shift: float, seed: int, batch_size: int = 8) -> DataLoader:
     return DataLoader(ClipDataset(n, shift, seed), batch_size=batch_size, shuffle=False)
 
 
-def _vivit_embeddings(loader: DataLoader, model: ViViTEmbedding) -> np.ndarray:
-    chunks = []
+def _vivit_batch(loader: DataLoader, model: ViViTEmbedding):
+    tokens, outcomes = [], []
     with torch.no_grad():
         for clips in loader:
-            chunks.append(model(clips).cpu().numpy())
-    return np.concatenate(chunks, axis=0)
+            tokens.append(model(clips).cpu().numpy())
+            outcomes.append(clips[:, :, 4:, :8, :8].mean(dim=(1, 2, 3, 4)).numpy())
+    return np.concatenate(tokens, axis=0), np.concatenate(outcomes, axis=0)
 
 
-def fsds_downstream(z_ref: np.ndarray, z_query: np.ndarray, name: str, seed: int = 2026) -> dict:
-    """Existing FSDS covariate test and domain VIMP on one embedding pair."""
-    x = np.vstack([z_ref, z_query])
-    w = np.concatenate([
-        np.zeros(z_ref.shape[0], dtype=int),
-        np.ones(z_query.shape[0], dtype=int),
-    ])
-    cov = covariate_shift_test(
-        x, w, n_perm=19, n_folds=2, domain_model="logistic", alpha=0.05, seed=seed,
-    )
-    vimp = domain_vimp(
-        x, w, domain_model="logistic", n_repeats=4, n_folds=2, seed=seed,
-    )
-    top = vimp["vimp_rank"][:5].tolist()
+def _print_result(name: str, out: dict) -> None:
+    print(f"{name} patch-indices: {out['patch_indices']}")
+    print(f"{name} token indices L: {out['L']}")
+    delta = out["delta"]
     print(
-        f"{name:16} auc={cov['auc']:.3f} p={cov['p_value']:.3f} "
-        f"reject={cov['reject']} top_dims={top}"
+        f"{name} delta  MMD={delta['MMD']:+.5f}  "
+        f"PORisk={delta['PORisk']:+.5f}  HSIC={delta['HSIC']:+.5f}"
     )
-    return {"name": name, **cov, "top_dims": top}
+    loco = out["loco"]
+    for i, token in enumerate(out["L"]):
+        print(
+            f"{name} LOCO token {token} patch {out['patch_indices'][i]}  "
+            f"MMD={loco['MMD'][i]:+.5f}  PORisk={loco['PORisk'][i]:+.5f}  "
+            f"HSIC={loco['HSIC'][i]:+.5f}"
+        )
+
+
+def _synthetic_token_check() -> None:
+    """One token carries the batch shift. FSDS should return that index first."""
+    rng = np.random.default_rng(0)
+    n, n_tokens, dim = 16, 8, 4
+    ref = rng.normal(0.0, 1.0, size=(n, n_tokens, dim))
+    query = rng.normal(0.0, 1.0, size=(n, n_tokens, dim))
+    query[:, 5, :] += 2.5
+    y = np.concatenate([ref[:, 5, :].mean(axis=1), query[:, 5, :].mean(axis=1)])
+    out = mma_wrapper(ref, query, y, grid=(2, 2, 4), top_k=4)
+    _print_result("synthetic", out)
+    assert out["L"][0] == 5
+    assert out["patch_indices"][0] == [1, 1]
+    assert out["delta"]["MMD"] > 0.0
 
 
 def main() -> None:
-    out_dir = Path("/opt/cursor/artifacts/embedding_fsds")
-    out_dir.mkdir(parents=True, exist_ok=True)
+    _synthetic_token_check()
 
-    train_loader, eval_loader = _image_loaders(out_dir, n=16, batch_size=8)
-    z_img_ref, z_img_query = _vae_embeddings(train_loader, eval_loader, out_dir)
-    print(f"VAE embeddings {z_img_ref.shape} {z_img_query.shape}")
+    torch.manual_seed(0)
+    model = ViViTEmbedding().eval()
+    z_ref, y_ref = _vivit_batch(_video_loader(16, shift=0.0, seed=0), model)
+    z_query, y_query = _vivit_batch(_video_loader(16, shift=3.0, seed=1), model)
+    z_null, y_null = _vivit_batch(_video_loader(16, shift=0.0, seed=2), model)
+    print(f"ViViT tokens {z_ref.shape} grid {model.grid}")
 
-    vivit = ViViTEmbedding().eval()
-    z_vid_ref = _vivit_embeddings(_video_loader(24, shift=0.0, seed=0), vivit)
-    z_vid_query = _vivit_embeddings(_video_loader(24, shift=1.5, seed=1), vivit)
-    z_vid_null = _vivit_embeddings(_video_loader(24, shift=0.0, seed=2), vivit)
-    print(f"ViViT embeddings {z_vid_ref.shape}")
-
-    rows = [
-        fsds_downstream(z_img_ref, z_img_query, "image_vae", seed=2026),
-        fsds_downstream(z_vid_ref, z_vid_query, "video_vivit", seed=2027),
-        fsds_downstream(z_vid_ref, z_vid_null, "video_null", seed=2028),
-    ]
-    shifted = next(row for row in rows if row["name"] == "video_vivit")
-    null = next(row for row in rows if row["name"] == "video_null")
-    assert shifted["auc"] > null["auc"]
+    shifted = mma_wrapper(z_ref, z_query, np.concatenate([y_ref, y_query]), model.grid, top_k=4)
+    null = mma_wrapper(z_ref, z_null, np.concatenate([y_ref, y_null]), model.grid, top_k=4)
+    _print_result("video", shifted)
+    _print_result("video_null", null)
+    assert shifted["base"]["MMD"] > null["base"]["MMD"]
+    assert [0, 0] in shifted["patch_indices"]
     print("PIPELINE_OK")
 
 
