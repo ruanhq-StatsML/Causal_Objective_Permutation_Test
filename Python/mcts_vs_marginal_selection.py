@@ -111,8 +111,69 @@ def evaluate(name: str, data, model, target: int) -> dict:
     }
 
 
+def best_visited(root, value_fn):
+    best_state, best_value = set(root.state), float(value_fn(root.state))
+
+    def walk(node):
+        nonlocal best_state, best_value
+        value = float(value_fn(node.state))
+        if value > best_value:
+            best_value = value
+            best_state = set(node.state)
+        for child in node.children:
+            walk(child)
+
+    walk(root)
+    return best_state, best_value
+
+
+def search_from(value_fn, neighbors: set, start: set, seed: int):
+    m.random.seed(seed)
+    np.random.seed(seed)
+    best_state, best_value = set(start), float(value_fn(start))
+    for trial in range(5):
+        m.random.seed(seed + trial)
+        root = m.mcts_search(value_fn, neighbors, n_iterations=80, start=start)
+        state, value = best_visited(root, value_fn)
+        if value > best_value:
+            best_value = value
+            best_state = state
+    return best_state, best_value
+
+
+def start_comparison(name: str, data, model, target: int, solo: dict) -> dict:
+    m.random.seed(1000 + target)
+    np.random.seed(1000 + target)
+    neighbors = set(m.build_adj(data.edge_index, data.num_nodes)[target]) - {target}
+    value_fn = m.ValueFunction(model, data, target)
+    oracle, oracle_value = oracle_subset(value_fn, neighbors)
+    starts = {
+        "full": set(neighbors),
+        "empty": set(),
+        "solo_positive": {node for node, score in solo.items() if score > 0},
+    }
+    found = {}
+    for label, start in starts.items():
+        state, value = search_from(value_fn, neighbors, start, seed=3000 + target)
+        found[label] = {
+            "start_size": len(start),
+            "size": len(state),
+            "value": value,
+            "gap": value - oracle_value,
+            "covers_oracle": oracle <= start,
+        }
+    return {
+        "dataset": name,
+        "target": int(target),
+        "oracle_size": len(oracle),
+        "oracle_value": oracle_value,
+        "starts": found,
+    }
+
+
 def main() -> None:
     rows = []
+    starts = []
     for name, nodes in TARGETS.items():
         data, in_dim, n_classes = m.load_planetoid(name)
         torch.manual_seed(0)
@@ -120,6 +181,18 @@ def main() -> None:
         for target in nodes:
             row = evaluate(name, data, model, target)
             rows.append(row)
+            neighbors = set(m.build_adj(data.edge_index, data.num_nodes)[target]) - {target}
+            value_fn = m.ValueFunction(model, data, target)
+            solo = solo_scores(value_fn, neighbors)
+            start_row = start_comparison(name, data, model, target, solo)
+            starts.append(start_row)
+            print(f"START {name} {target} oracle {start_row['oracle_value']:+.3f}")
+            for label, item in start_row["starts"].items():
+                print(
+                    f"  {label:14s} pool {item['start_size']:2d} "
+                    f"value {item['value']:+.3f} gap {item['gap']:+.3f} "
+                    f"covers {item['covers_oracle']}"
+                )
             auc = row["auc"]
             print(
                 f"{name} {target} deg {row['degree']} oracle {row['oracle_size']} "
@@ -133,10 +206,11 @@ def main() -> None:
                     f"gap {effect['gap']:+.3f} prec {effect['precision']:.2f} "
                     f"recall {effect['recall']:.2f}"
                 )
+    payload = {"selection": rows, "starts": starts}
     out = Path("/opt/cursor/artifacts/mcts_selection_auc.json")
-    out.write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     repo = Path(__file__).resolve().parent / "results" / "mcts_selection_auc.json"
-    repo.write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    repo.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print("SELECTION_AUC_OK", out)
 
 

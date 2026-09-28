@@ -114,8 +114,11 @@ class MCTSNode:
         return best_child
 
 
-def mcts_search(value_fn, neighbors: set, n_iterations: int = 80, c: float = 1.414, beta: float = 0.1):
-    root = MCTSNode(state=set(neighbors))
+def mcts_search(value_fn, neighbors: set, n_iterations: int = 80, c: float = 1.414, beta: float = 0.1,
+               start=None):
+    """Search subsets of ``start``. The default start is the full neighborhood."""
+    root_state = set(neighbors if start is None else start) & set(neighbors)
+    root = MCTSNode(state=root_state)
     for _ in range(n_iterations):
         node = root
         while node.is_fully_expanded() and node.children:

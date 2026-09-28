@@ -1,232 +1,381 @@
-[
-  {
-    "dataset": "Cora",
-    "target": 1708,
-    "degree": 6,
-    "oracle_size": 0,
-    "oracle_value": 0.0,
-    "oracle": [],
-    "mcts_subset": [
-      1857,
-      2314
-    ],
-    "mcts_value": -0.8571790456771851,
-    "auc": {
-      "mcts": null,
-      "solo": null,
-      "loco": null
+{
+  "selection": [
+    {
+      "dataset": "Cora",
+      "target": 1708,
+      "degree": 6,
+      "oracle_size": 0,
+      "oracle_value": 0.0,
+      "oracle": [],
+      "mcts_subset": [
+        1857,
+        2314
+      ],
+      "mcts_value": -0.8571790456771851,
+      "auc": {
+        "mcts": null,
+        "solo": null,
+        "loco": null
+      },
+      "effect": {
+        "mcts": {
+          "size": 2,
+          "value": -0.8571790456771851,
+          "gap": -0.8571790456771851,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "solo": {
+          "size": 0,
+          "value": 0.0,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "loco": {
+          "size": 3,
+          "value": -0.9058784246444702,
+          "gap": -0.9058784246444702,
+          "precision": 0.0,
+          "recall": 0.0
+        }
+      },
+      "n_cache": 64
     },
-    "effect": {
-      "mcts": {
-        "size": 2,
-        "value": -0.8571790456771851,
-        "gap": -0.8571790456771851,
-        "precision": 0.0,
-        "recall": 0.0
+    {
+      "dataset": "Cora",
+      "target": 1710,
+      "degree": 5,
+      "oracle_size": 1,
+      "oracle_value": 6.876291751861572,
+      "oracle": [
+        1358
+      ],
+      "mcts_subset": [
+        1358
+      ],
+      "mcts_value": 6.876291751861572,
+      "auc": {
+        "mcts": 1.0,
+        "solo": 1.0,
+        "loco": 1.0
       },
-      "solo": {
-        "size": 0,
-        "value": 0.0,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
+      "effect": {
+        "mcts": {
+          "size": 1,
+          "value": 6.876291751861572,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "solo": {
+          "size": 3,
+          "value": 5.707038879394531,
+          "gap": -1.169252872467041,
+          "precision": 0.3333333333333333,
+          "recall": 1.0
+        },
+        "loco": {
+          "size": 3,
+          "value": 5.707038879394531,
+          "gap": -1.169252872467041,
+          "precision": 0.3333333333333333,
+          "recall": 1.0
+        }
       },
-      "loco": {
-        "size": 3,
-        "value": -0.9058784246444702,
-        "gap": -0.9058784246444702,
-        "precision": 0.0,
-        "recall": 0.0
+      "n_cache": 32
+    },
+    {
+      "dataset": "Cora",
+      "target": 1713,
+      "degree": 4,
+      "oracle_size": 1,
+      "oracle_value": 4.723614454269409,
+      "oracle": [
+        88
+      ],
+      "mcts_subset": [
+        88
+      ],
+      "mcts_value": 4.723614454269409,
+      "auc": {
+        "mcts": 1.0,
+        "solo": 1.0,
+        "loco": 1.0
+      },
+      "effect": {
+        "mcts": {
+          "size": 1,
+          "value": 4.723614454269409,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "solo": {
+          "size": 2,
+          "value": 3.9152352809906006,
+          "gap": -0.8083791732788086,
+          "precision": 0.5,
+          "recall": 1.0
+        },
+        "loco": {
+          "size": 2,
+          "value": 3.9152352809906006,
+          "gap": -0.8083791732788086,
+          "precision": 0.5,
+          "recall": 1.0
+        }
+      },
+      "n_cache": 16
+    },
+    {
+      "dataset": "CiteSeer",
+      "target": 2312,
+      "degree": 4,
+      "oracle_size": 2,
+      "oracle_value": 3.67544424533844,
+      "oracle": [
+        28,
+        1967
+      ],
+      "mcts_subset": [
+        28,
+        1967
+      ],
+      "mcts_value": 3.67544424533844,
+      "auc": {
+        "mcts": 1.0,
+        "solo": 1.0,
+        "loco": 1.0
+      },
+      "effect": {
+        "mcts": {
+          "size": 2,
+          "value": 3.67544424533844,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "solo": {
+          "size": 2,
+          "value": 3.67544424533844,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "loco": {
+          "size": 2,
+          "value": 3.67544424533844,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      },
+      "n_cache": 16
+    },
+    {
+      "dataset": "CiteSeer",
+      "target": 2316,
+      "degree": 11,
+      "oracle_size": 8,
+      "oracle_value": 2.492368698120117,
+      "oracle": [
+        28,
+        80,
+        392,
+        819,
+        923,
+        1678,
+        1921,
+        2383
+      ],
+      "mcts_subset": [
+        28,
+        80,
+        392,
+        819,
+        923,
+        1678,
+        1921,
+        2383
+      ],
+      "mcts_value": 2.492368698120117,
+      "auc": {
+        "mcts": 1.0,
+        "solo": 1.0,
+        "loco": 1.0
+      },
+      "effect": {
+        "mcts": {
+          "size": 8,
+          "value": 2.492368698120117,
+          "gap": 0.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "solo": {
+          "size": 0,
+          "value": 0.0,
+          "gap": -2.492368698120117,
+          "precision": 0.0,
+          "recall": 0.0
+        },
+        "loco": {
+          "size": 9,
+          "value": 2.4558563232421875,
+          "gap": -0.03651237487792969,
+          "precision": 0.8888888888888888,
+          "recall": 1.0
+        }
+      },
+      "n_cache": 2048
+    }
+  ],
+  "starts": [
+    {
+      "dataset": "Cora",
+      "target": 1708,
+      "oracle_size": 0,
+      "oracle_value": 0.0,
+      "starts": {
+        "full": {
+          "start_size": 6,
+          "size": 2,
+          "value": -0.8571790456771851,
+          "gap": -0.8571790456771851,
+          "covers_oracle": true
+        },
+        "empty": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": 0.0,
+          "covers_oracle": true
+        },
+        "solo_positive": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": 0.0,
+          "covers_oracle": true
+        }
       }
     },
-    "n_cache": 64
-  },
-  {
-    "dataset": "Cora",
-    "target": 1710,
-    "degree": 5,
-    "oracle_size": 1,
-    "oracle_value": 6.876291751861572,
-    "oracle": [
-      1358
-    ],
-    "mcts_subset": [
-      1358
-    ],
-    "mcts_value": 6.876291751861572,
-    "auc": {
-      "mcts": 1.0,
-      "solo": 1.0,
-      "loco": 1.0
-    },
-    "effect": {
-      "mcts": {
-        "size": 1,
-        "value": 6.876291751861572,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
-      },
-      "solo": {
-        "size": 3,
-        "value": 5.707038879394531,
-        "gap": -1.169252872467041,
-        "precision": 0.3333333333333333,
-        "recall": 1.0
-      },
-      "loco": {
-        "size": 3,
-        "value": 5.707038879394531,
-        "gap": -1.169252872467041,
-        "precision": 0.3333333333333333,
-        "recall": 1.0
+    {
+      "dataset": "Cora",
+      "target": 1710,
+      "oracle_size": 1,
+      "oracle_value": 6.876291751861572,
+      "starts": {
+        "full": {
+          "start_size": 5,
+          "size": 1,
+          "value": 6.876291751861572,
+          "gap": 0.0,
+          "covers_oracle": true
+        },
+        "empty": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": -6.876291751861572,
+          "covers_oracle": false
+        },
+        "solo_positive": {
+          "start_size": 3,
+          "size": 1,
+          "value": 6.876291751861572,
+          "gap": 0.0,
+          "covers_oracle": true
+        }
       }
     },
-    "n_cache": 32
-  },
-  {
-    "dataset": "Cora",
-    "target": 1713,
-    "degree": 4,
-    "oracle_size": 1,
-    "oracle_value": 4.723614454269409,
-    "oracle": [
-      88
-    ],
-    "mcts_subset": [
-      88
-    ],
-    "mcts_value": 4.723614454269409,
-    "auc": {
-      "mcts": 1.0,
-      "solo": 1.0,
-      "loco": 1.0
-    },
-    "effect": {
-      "mcts": {
-        "size": 1,
-        "value": 4.723614454269409,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
-      },
-      "solo": {
-        "size": 2,
-        "value": 3.9152352809906006,
-        "gap": -0.8083791732788086,
-        "precision": 0.5,
-        "recall": 1.0
-      },
-      "loco": {
-        "size": 2,
-        "value": 3.9152352809906006,
-        "gap": -0.8083791732788086,
-        "precision": 0.5,
-        "recall": 1.0
+    {
+      "dataset": "Cora",
+      "target": 1713,
+      "oracle_size": 1,
+      "oracle_value": 4.723614454269409,
+      "starts": {
+        "full": {
+          "start_size": 4,
+          "size": 1,
+          "value": 4.723614454269409,
+          "gap": 0.0,
+          "covers_oracle": true
+        },
+        "empty": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": -4.723614454269409,
+          "covers_oracle": false
+        },
+        "solo_positive": {
+          "start_size": 2,
+          "size": 1,
+          "value": 4.723614454269409,
+          "gap": 0.0,
+          "covers_oracle": true
+        }
       }
     },
-    "n_cache": 16
-  },
-  {
-    "dataset": "CiteSeer",
-    "target": 2312,
-    "degree": 4,
-    "oracle_size": 2,
-    "oracle_value": 3.67544424533844,
-    "oracle": [
-      28,
-      1967
-    ],
-    "mcts_subset": [
-      28,
-      1967
-    ],
-    "mcts_value": 3.67544424533844,
-    "auc": {
-      "mcts": 1.0,
-      "solo": 1.0,
-      "loco": 1.0
-    },
-    "effect": {
-      "mcts": {
-        "size": 2,
-        "value": 3.67544424533844,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
-      },
-      "solo": {
-        "size": 2,
-        "value": 3.67544424533844,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
-      },
-      "loco": {
-        "size": 2,
-        "value": 3.67544424533844,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
+    {
+      "dataset": "CiteSeer",
+      "target": 2312,
+      "oracle_size": 2,
+      "oracle_value": 3.67544424533844,
+      "starts": {
+        "full": {
+          "start_size": 4,
+          "size": 2,
+          "value": 3.67544424533844,
+          "gap": 0.0,
+          "covers_oracle": true
+        },
+        "empty": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": -3.67544424533844,
+          "covers_oracle": false
+        },
+        "solo_positive": {
+          "start_size": 2,
+          "size": 2,
+          "value": 3.67544424533844,
+          "gap": 0.0,
+          "covers_oracle": true
+        }
       }
     },
-    "n_cache": 16
-  },
-  {
-    "dataset": "CiteSeer",
-    "target": 2316,
-    "degree": 11,
-    "oracle_size": 8,
-    "oracle_value": 2.492368698120117,
-    "oracle": [
-      28,
-      80,
-      392,
-      819,
-      923,
-      1678,
-      1921,
-      2383
-    ],
-    "mcts_subset": [
-      28,
-      80,
-      392,
-      819,
-      923,
-      1678,
-      1921,
-      2383
-    ],
-    "mcts_value": 2.492368698120117,
-    "auc": {
-      "mcts": 1.0,
-      "solo": 1.0,
-      "loco": 1.0
-    },
-    "effect": {
-      "mcts": {
-        "size": 8,
-        "value": 2.492368698120117,
-        "gap": 0.0,
-        "precision": 1.0,
-        "recall": 1.0
-      },
-      "solo": {
-        "size": 0,
-        "value": 0.0,
-        "gap": -2.492368698120117,
-        "precision": 0.0,
-        "recall": 0.0
-      },
-      "loco": {
-        "size": 9,
-        "value": 2.4558563232421875,
-        "gap": -0.03651237487792969,
-        "precision": 0.8888888888888888,
-        "recall": 1.0
+    {
+      "dataset": "CiteSeer",
+      "target": 2316,
+      "oracle_size": 8,
+      "oracle_value": 2.492368698120117,
+      "starts": {
+        "full": {
+          "start_size": 11,
+          "size": 9,
+          "value": 2.4558563232421875,
+          "gap": -0.03651237487792969,
+          "covers_oracle": true
+        },
+        "empty": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": -2.492368698120117,
+          "covers_oracle": false
+        },
+        "solo_positive": {
+          "start_size": 0,
+          "size": 0,
+          "value": 0.0,
+          "gap": -2.492368698120117,
+          "covers_oracle": false
+        }
       }
-    },
-    "n_cache": 2048
-  }
-]
+    }
+  ]
+}
