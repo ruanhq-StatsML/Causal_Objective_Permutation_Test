@@ -1,0 +1,303 @@
+{
+  "generated_at_utc": "2026-09-28T07:21:21.291438+00:00",
+  "six_points": {
+    "1_problem_and_objects": {
+      "headline": "Two levers only: topology gate + critical-path budget executor",
+      "monitoring": "Batch covariate FSDS (reference vs live agent traces)"
+    },
+    "2_critical_path_budget": {
+      "formula": "L_b = clip(kappa * s_b * q_b * need_b, L_min, C_lat); span = max_b L_b",
+      "why_span_flat": "When one branch hits C_lat=520, span ~ uniform; savings are in non-critical branches",
+      "example_span_uniform": 520,
+      "example_span_fsds": 519,
+      "per_branch": [
+        {
+          "branch": "plan",
+          "uniform_L": 520,
+          "fsds_L": 292,
+          "uniform_checks": 2,
+          "fsds_checks": 1,
+          "fsds_tier": "medium"
+        },
+        {
+          "branch": "retrieve",
+          "uniform_L": 520,
+          "fsds_L": 519,
+          "uniform_checks": 2,
+          "fsds_checks": 1,
+          "fsds_tier": "medium"
+        },
+        {
+          "branch": "reason",
+          "uniform_L": 520,
+          "fsds_L": 447,
+          "uniform_checks": 2,
+          "fsds_checks": 1,
+          "fsds_tier": "small"
+        },
+        {
+          "branch": "act",
+          "uniform_L": 520,
+          "fsds_L": 429,
+          "uniform_checks": 2,
+          "fsds_checks": 1,
+          "fsds_tier": "large"
+        },
+        {
+          "branch": "verify",
+          "uniform_L": 520,
+          "fsds_L": 254,
+          "uniform_checks": 2,
+          "fsds_checks": 1,
+          "fsds_tier": "small"
+        }
+      ]
+    },
+    "3_total_tokens_28pct": {
+      "mechanism": "Water-fill then scale to total_token_budget; low shift\u00d7quality branches shrink",
+      "uniform_total": 2600,
+      "fsds_total_example_episode": 1941,
+      "eval_mean_reduction_pct": 0.19230769230769162,
+      "eval_mean_total_token_uniform": 2600.0,
+      "eval_mean_total_token_fsds": 1889.275,
+      "eval_total_token_reduction_pct": 27.33557692307692
+    },
+    "4_checks_halved": {
+      "uniform_formula": "2 checks per branch (fixed)",
+      "fsds_formula": "checks = round(1 + 2 * s_b * (1 - q_b)); min 1",
+      "uniform_checks_example": 10,
+      "fsds_checks_example": 5,
+      "eval_mean_checks_uniform": 10.0,
+      "eval_mean_checks_fsds": 5.0,
+      "checks_reduction_pct_eval": 50.0
+    },
+    "5_pareto_poc": {
+      "uniform_baseline": {
+        "name": "uniform_sot",
+        "mean_success": 0.7,
+        "mean_span_tokens": 520.0,
+        "mean_total_tokens": 2600.0,
+        "mean_cost_usd": 0.0356,
+        "mean_checks": 10.0
+      },
+      "success_epsilon": 0.03,
+      "points": [
+        {
+          "label": "fsds_k0.90_floor0",
+          "kappa": 0.9,
+          "need_floor_high": 0,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022544807500000003,
+          "mean_total_tokens": 1854.575,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.6718890449438,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k0.90_floor320",
+          "kappa": 0.9,
+          "need_floor_high": 320,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022726997500000002,
+          "mean_total_tokens": 1889.275,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.16011938202247,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k0.90_floor400",
+          "kappa": 0.9,
+          "need_floor_high": 400,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.02311135,
+          "mean_total_tokens": 1945.525,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 35.080477528089894,
+          "total_token_reduction_pct": 26.884615384615383,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.00_floor0",
+          "kappa": 1.0,
+          "need_floor_high": 0,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022544807500000003,
+          "mean_total_tokens": 1854.575,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.6718890449438,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.00_floor320",
+          "kappa": 1.0,
+          "need_floor_high": 320,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022726997500000002,
+          "mean_total_tokens": 1889.275,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.16011938202247,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.00_floor400",
+          "kappa": 1.0,
+          "need_floor_high": 400,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.02311135,
+          "mean_total_tokens": 1945.525,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 35.080477528089894,
+          "total_token_reduction_pct": 26.884615384615383,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.15_floor0",
+          "kappa": 1.15,
+          "need_floor_high": 0,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022544807500000003,
+          "mean_total_tokens": 1854.575,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.6718890449438,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.15_floor320",
+          "kappa": 1.15,
+          "need_floor_high": 320,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022726997500000002,
+          "mean_total_tokens": 1889.275,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.16011938202247,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_k1.15_floor400",
+          "kappa": 1.15,
+          "need_floor_high": 400,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.02311135,
+          "mean_total_tokens": 1945.525,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 35.080477528089894,
+          "total_token_reduction_pct": 26.884615384615383,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        },
+        {
+          "label": "fsds_default",
+          "kappa": 1.0,
+          "need_floor_high": 0,
+          "mean_success": 0.7,
+          "mean_cost_usd": 0.022544807500000003,
+          "mean_total_tokens": 1854.575,
+          "mean_span_tokens": 519.0,
+          "mean_checks": 5.0,
+          "success_delta_vs_uniform": 0.0,
+          "cost_reduction_pct_vs_uniform": 36.6718890449438,
+          "total_token_reduction_pct": 29.192307692307693,
+          "checks_reduction_pct": 50.0,
+          "kpi_pass": true
+        }
+      ],
+      "pareto_frontier_labels": [
+        "fsds_k0.90_floor0",
+        "fsds_k1.00_floor0",
+        "fsds_k1.15_floor0",
+        "fsds_default"
+      ],
+      "kpi_pass_count": 10,
+      "recommended": {
+        "label": "fsds_k0.90_floor0",
+        "kappa": 0.9,
+        "need_floor_high": 0,
+        "mean_success": 0.7,
+        "mean_cost_usd": 0.022544807500000003,
+        "mean_total_tokens": 1854.575,
+        "mean_span_tokens": 519.0,
+        "mean_checks": 5.0,
+        "success_delta_vs_uniform": 0.0,
+        "cost_reduction_pct_vs_uniform": 36.6718890449438,
+        "total_token_reduction_pct": 29.192307692307693,
+        "checks_reduction_pct": 50.0,
+        "kpi_pass": true
+      },
+      "interpretation": "KPI guard: success within epsilon of uniform. Among passing configs, pick max cost reduction (Pareto POC)."
+    },
+    "6_delivery_status": {
+      "code": "Python/fsds_sot + demos on branch cursor/fsds-sot-tot-manuscript-7451",
+      "next_production": [
+        "Wire logged Y (resolution, tool_ok) into KPI guard",
+        "Canary: accept intervention only if KPI pass",
+        "Panel dashboard on embedding features"
+      ],
+      "limitations": [
+        "Simulator success, not live LLM A/B yet",
+        "Span unchanged when max L at cap \u2014 use ReAct/weak-coupling SoT for latency story"
+      ]
+    }
+  },
+  "incremental_value": {
+    "policies": [
+      {
+        "name": "uniform_sot",
+        "mean_success": 0.7,
+        "mean_span_tokens": 520.0,
+        "mean_total_tokens": 2600.0,
+        "mean_cost_usd": 0.0356,
+        "mean_checks": 10.0
+      },
+      {
+        "name": "fsds_sot",
+        "mean_success": 0.7,
+        "mean_span_tokens": 519.0,
+        "mean_total_tokens": 1889.275,
+        "mean_cost_usd": 0.022726997500000002,
+        "mean_checks": 5.0
+      }
+    ],
+    "incremental": {
+      "success_delta": 0.0,
+      "span_reduction_pct": 0.19230769230769162,
+      "cost_reduction_pct": 36.16011938202247,
+      "checks_delta": -5.0
+    },
+    "core_objects": [
+      "Decomposability gate (suggested K, parallel vs sequential)",
+      "Critical-path budget executor (L_b, tier, checks from shift\u00d7quality)"
+    ]
+  }
+}

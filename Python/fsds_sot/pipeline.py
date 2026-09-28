@@ -41,6 +41,38 @@ class FSDSSoT:
 
     def __init__(self, *, seed: int = 2026):
         self.seed = seed
+        self._cov_cache: Optional[tuple] = None
+
+    def fit_plan_branches(
+        self,
+        branch_embeddings: np.ndarray,
+        branch_quality: Optional[np.ndarray] = None,
+        *,
+        total_token_budget: int = 4096,
+        latency_cap_tokens: int = 512,
+        need_weights: Optional[np.ndarray] = None,
+        min_tokens_by_branch: Optional[np.ndarray] = None,
+        budget_kappa: float = 1.0,
+    ) -> tuple[SoTPlan, DecomposabilityReport]:
+        """Budget + topology only (no batch covariate re-fit)."""
+        ref = branch_embeddings.mean(axis=0, keepdims=True)
+        shift_scores = np.linalg.norm(branch_embeddings - ref, axis=1)
+        shift_scores = shift_scores / (shift_scores.max() + 1e-9)
+        if branch_quality is None:
+            branch_quality = np.ones(branch_embeddings.shape[0]) * 0.7
+        decomp = evaluate_decomposability(branch_embeddings, shift_scores)
+        plan = allocate_branch_budgets(
+            shift_scores,
+            branch_quality,
+            total_token_budget=total_token_budget,
+            latency_cap_tokens=latency_cap_tokens,
+            need_weights=need_weights,
+            min_tokens_by_branch=min_tokens_by_branch,
+            kappa=budget_kappa,
+        )
+        plan.use_parallel = decomp.allow_parallel
+        plan.clusters = decomp.sequential_clusters
+        return plan, decomp
 
     def fit_plan(
         self,
@@ -51,29 +83,24 @@ class FSDSSoT:
         *,
         total_token_budget: int = 4096,
         latency_cap_tokens: int = 512,
+        need_weights: Optional[np.ndarray] = None,
+        min_tokens_by_branch: Optional[np.ndarray] = None,
+        budget_kappa: float = 1.0,
     ) -> tuple[SoTAttributionReport, SoTPlan, SoTEconomicsReport]:
         cov = covariate_attribution(X_old, X_new, seed=self.seed)
+        self._cov_cache = (X_old, X_new, cov)
         top_k = min(10, cov.vimp.size)
         top_features = np.argsort(-cov.vimp)[:top_k].tolist()
 
-        # Branch shift: projection of trace-level VIMP onto branch block (mean abs diff vs ref)
-        ref = branch_embeddings.mean(axis=0, keepdims=True)
-        shift_scores = np.linalg.norm(branch_embeddings - ref, axis=1)
-        shift_scores = shift_scores / (shift_scores.max() + 1e-9)
-
-        if branch_quality is None:
-            branch_quality = np.ones(branch_embeddings.shape[0]) * 0.7
-
-        decomp = evaluate_decomposability(branch_embeddings, shift_scores)
-
-        plan = allocate_branch_budgets(
-            shift_scores,
+        plan, decomp = self.fit_plan_branches(
+            branch_embeddings,
             branch_quality,
             total_token_budget=total_token_budget,
             latency_cap_tokens=latency_cap_tokens,
+            need_weights=need_weights,
+            min_tokens_by_branch=min_tokens_by_branch,
+            budget_kappa=budget_kappa,
         )
-        plan.use_parallel = decomp.allow_parallel
-        plan.clusters = decomp.sequential_clusters
 
         econ = estimate_economics(
             plan,

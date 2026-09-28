@@ -34,6 +34,8 @@ def allocate_branch_budgets(
     total_token_budget: int = 4096,
     latency_cap_tokens: int = 512,
     min_tokens: int = 64,
+    min_tokens_by_branch: np.ndarray | None = None,
+    need_weights: np.ndarray | None = None,
     check_base: int = 1,
     check_scale: float = 2.0,
     kappa: float = 1.0,
@@ -49,9 +51,14 @@ def allocate_branch_budgets(
     s = s / (s.sum() + 1e-9)
     q = np.clip(q, 0.05, 1.0)
 
-    raw = kappa * s * q
+    nw = np.ones_like(s) if need_weights is None else np.asarray(need_weights, dtype=float)
+    nw = nw / (nw.max() + 1e-9)
+    raw = kappa * s * q * nw
     raw = raw / (raw.max() + 1e-9)
     L = np.clip(raw * latency_cap_tokens, min_tokens, latency_cap_tokens).astype(int)
+    if min_tokens_by_branch is not None:
+        floors = np.asarray(min_tokens_by_branch, dtype=int)
+        L = np.maximum(L, np.clip(floors, min_tokens, latency_cap_tokens))
 
     # Respect total budget via proportional shrink if needed
     if L.sum() > total_token_budget:

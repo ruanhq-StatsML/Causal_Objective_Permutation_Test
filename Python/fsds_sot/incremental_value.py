@@ -125,13 +125,13 @@ def evaluate_policies_on_agentic(
             shift = shift / (shift.max() + 1e-9)
 
             if use_fsds:
-                _, plan, _ = controller.fit_plan(
-                    X_old,
-                    X_new,
+                plan, _ = controller.fit_plan_branches(
                     Z,
-                    branch_quality=q,
+                    q,
                     total_token_budget=2800,
                     latency_cap_tokens=520,
+                    need_weights=need,
+                    min_tokens_by_branch=np.where(need >= 0.95, 320, 0).astype(int),
                 )
             else:
                 plan = uniform_plan(shift, q, latency_cap_tokens=520, total_token_budget=2800)
