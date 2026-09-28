@@ -1,102 +1,117 @@
-"""Run the multimodal attribution wrapper on a small synthetic shift."""
+"""Upper wrapper around the existing VAE domain-shift VIMP pipeline.
+
+Image attribution calls ``run_vae_domain_shift.run_pipeline`` unchanged.
+Video attribution encodes clips with a ViViT and scores those embeddings
+with the same ``rf_domain_classifier``.
+"""
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import torch
+import torch.nn as nn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from multimodal_attribution import MultimodalAttribution
+from run_vae_domain_shift import rf_domain_classifier, run_pipeline
 
 
-def _feature_shift(n: int, p: int, shifted: list[int], delta: float, seed: int):
+class ViViTEmbedding(nn.Module):
+    """Tubelet ViViT. Returns one embedding per clip."""
+
+    def __init__(
+        self,
+        *,
+        image_size: int = 32,
+        num_frames: int = 8,
+        patch_size: int = 8,
+        tubelet_size: int = 2,
+        embed_dim: int = 64,
+        depth: int = 2,
+        num_heads: int = 4,
+    ):
+        super().__init__()
+        if image_size % patch_size or num_frames % tubelet_size:
+            raise ValueError("frame count and image size must divide the tubelet size")
+        self.tubelet = nn.Conv3d(
+            3,
+            embed_dim,
+            kernel_size=(tubelet_size, patch_size, patch_size),
+            stride=(tubelet_size, patch_size, patch_size),
+        )
+        n_tokens = (num_frames // tubelet_size) * (image_size // patch_size) ** 2
+        self.cls = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        self.pos = nn.Parameter(torch.zeros(1, n_tokens + 1, embed_dim))
+        layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=num_heads,
+            dim_feedforward=embed_dim * 4,
+            batch_first=True,
+            activation="gelu",
+            norm_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(layer, num_layers=depth, enable_nested_tensor=False)
+        self.norm = nn.LayerNorm(embed_dim)
+        nn.init.trunc_normal_(self.pos, std=0.02)
+        nn.init.trunc_normal_(self.cls, std=0.02)
+
+    def forward(self, clips: torch.Tensor) -> torch.Tensor:
+        tokens = self.tubelet(clips).flatten(2).transpose(1, 2)
+        cls = self.cls.expand(tokens.size(0), -1, -1)
+        x = torch.cat([cls, tokens], dim=1) + self.pos[:, : tokens.size(1) + 1]
+        return self.norm(self.encoder(x)[:, 0])
+
+
+def _video_batch(n: int, shift: float, seed: int) -> torch.Tensor:
     rng = np.random.default_rng(seed)
-    X_ref = rng.normal(size=(n, p))
-    X_query = rng.normal(size=(n, p))
-    X_query[:, shifted] += delta
-    return X_ref, X_query
+    clips = rng.normal(0.0, 0.3, size=(n, 3, 8, 32, 32)).astype(np.float32)
+    if shift:
+        clips[:, :, 4:, :8, :8] += shift
+    return torch.from_numpy(clips)
 
 
-def _images(n: int, shifted_patches: list[int], delta: float, seed: int, patch: int = 8):
-    rng = np.random.default_rng(seed)
-    height = width = 32
-    grid = height // patch
-    images_ref = rng.normal(0.45, 0.08, size=(n, 3, height, width))
-    images_query = rng.normal(0.45, 0.08, size=(n, 3, height, width))
-    yy, xx = np.mgrid[0:height, 0:width]
-    texture = 0.08 * np.sin(xx / 3.0) * np.cos(yy / 4.0)
-    images_ref += texture
-    images_query += texture
-    for patch_id in shifted_patches:
-        row, col = divmod(patch_id, grid)
-        r0, c0 = row * patch, col * patch
-        images_query[:, :, r0:r0 + patch, c0:c0 + patch] += delta
-    return np.clip(images_ref, 0, 1), np.clip(images_query, 0, 1)
-
-
-def _global_images(n: int, delta: float, seed: int):
-    rng = np.random.default_rng(seed)
-    images_ref = rng.normal(0.45, 0.08, size=(n, 3, 32, 32))
-    images_query = images_ref + delta + rng.normal(0, 0.02, size=images_ref.shape)
-    return np.clip(images_ref, 0, 1), np.clip(images_query, 0, 1)
+def attribute_videos(seed: int = 42) -> None:
+    device = torch.device("cpu")
+    model = ViViTEmbedding().to(device).eval()
+    ref = _video_batch(24, shift=0.0, seed=0).to(device)
+    query = _video_batch(24, shift=1.5, seed=1).to(device)
+    null = _video_batch(24, shift=0.0, seed=2).to(device)
+    with torch.no_grad():
+        z_ref = model(ref).cpu()
+        z_query = model(query).cpu()
+        z_null = model(null).cpu()
+    importance, oob = rf_domain_classifier(z_ref, z_query, seed=seed)
+    _, oob_null = rf_domain_classifier(z_ref, z_null, seed=seed)
+    rank = np.argsort(-importance)
+    print("ViViT embedding", tuple(z_ref.shape))
+    print(f"ViViT shifted OOB {oob:.4f} | null OOB {oob_null:.4f}")
+    print(f"ViViT top embedding dims {rank[:8].tolist()}")
 
 
 def main() -> None:
-    tabular_truth = [0, 1, 2]
-    token_truth = [5, 9]
-    image_truth = [0, 1]
-    X_ref, X_query = _feature_shift(240, 12, tabular_truth, delta=1.8, seed=1)
-    X_null_ref, X_null_query = _feature_shift(240, 12, [], delta=0.0, seed=2)
-    T_ref, T_query = _feature_shift(240, 16, token_truth, delta=1.6, seed=3)
-    img_ref, img_query = _images(64, image_truth, delta=0.55, seed=4)
-    glob_ref, glob_query = _global_images(64, delta=0.25, seed=5)
-
-    wrapper = MultimodalAttribution(n_estimators=60, seed=2026, top_k=(1, 2, 4, 8))
-    wrapper.add_features("tabular", X_ref, X_query, truth_idx=tabular_truth)
-    wrapper.add_features("tabular_null", X_null_ref, X_null_query, truth_idx=[0, 1, 2])
-    wrapper.add_features("tokens", T_ref, T_query, truth_idx=token_truth)
-    wrapper.add_images("image_local", img_ref, img_query, patch=8, truth_idx=image_truth)
-    wrapper.add_images("image_global", glob_ref, glob_query, patch=8, truth_idx=image_truth)
-
-    result = wrapper.run()
-    summary = result.summary.copy()
-    pd.set_option("display.max_columns", 20)
-    pd.set_option("display.width", 160)
-    print(summary.round(4).to_string(index=False))
-
-    out_dir = Path("/opt/cursor/artifacts")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(out_dir / "multimodal_attribution_summary.csv", index=False)
-
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
-    tab_imp = result.importance["tabular"]
-    colors = ["#c4512c" if i in tabular_truth else "#8aa0b4" for i in range(tab_imp.size)]
-    axes[0].bar(np.arange(tab_imp.size), tab_imp, color=colors)
-    axes[0].set_title("Tabular importance (shifted features in red)")
-    axes[0].set_xlabel("feature")
-    axes[0].set_ylabel("importance")
-    heat = result.example_heatmap["image_local"]
-    axes[1].imshow(heat, cmap="magma")
-    axes[1].set_title("Image perturbation heatmap")
-    axes[1].axis("off")
-    fig.tight_layout()
-    fig_path = out_dir / "multimodal_attribution_demo.png"
-    fig.savefig(fig_path, dpi=140)
-    plt.close(fig)
-    print(f"saved {fig_path}")
-
-    by_name = summary.set_index("modality")
-    assert by_name.loc["tabular", "recall_at_truth"] == 1.0
-    assert by_name.loc["tokens", "recall_at_truth"] == 1.0
-    assert by_name.loc["tabular", "oob_score"] > by_name.loc["tabular_null", "oob_score"] + 0.15
-    assert by_name.loc["image_local", "recall_at_truth"] == 1.0
-    assert by_name.loc["image_local", "importance_entropy"] < by_name.loc["image_global", "importance_entropy"]
-    assert by_name.loc["image_local", "mass_on_truth"] > by_name.loc["image_global", "mass_on_truth"]
-    print("DEMO_OK")
+    out_dir = Path("/opt/cursor/artifacts/vae_domain_shift_outputs")
+    args = argparse.Namespace(
+        train_dir="",
+        eval_dir="",
+        output_dir=str(out_dir),
+        image_size=64,
+        batch_size=8,
+        num_epochs=2,
+        latent_dim=32,
+        num_workers=0,
+        seed=42,
+        top_k=[1, 5, 10],
+        retrain=True,
+        cpu=True,
+        synthetic=True,
+        synthetic_n=16,
+    )
+    run_pipeline(args)
+    attribute_videos(seed=args.seed)
+    print("MULTIMODAL_ATTRIBUTION_OK")
 
 
 if __name__ == "__main__":
