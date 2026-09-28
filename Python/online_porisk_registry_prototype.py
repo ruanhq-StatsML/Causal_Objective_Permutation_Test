@@ -185,7 +185,7 @@ def main() -> None:
     Path("/opt/cursor/artifacts/online_porisk_registry_prototype.json").write_text(
         json.dumps(payload, indent=2), encoding="utf-8",
     )
-    repo = Path("Python/results")
+    repo = Path(__file__).resolve().parent / "results"
     repo.mkdir(parents=True, exist_ok=True)
     (repo / "online_porisk_registry_prototype.json").write_text(
         json.dumps(payload, indent=2), encoding="utf-8",
