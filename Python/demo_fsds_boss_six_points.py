@@ -274,7 +274,7 @@ L_b = \\mathrm{{clip}}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{{
 
 **在 KPI 非劣前提下，FSDS-SoT 将 agentic 合成 batch 的 $/episode 降低约 {cost_red:.0f}%，checks 减半，success 与 uniform 持平；延迟由 critical path 决定，需同时报 span 与 Σ tokens。**
 
-*Last refresh: timer iteration — see `generated_at_utc` in JSON.*
+*Final pre-review checkpoint — see `generated_at_utc` in JSON.*
 """
     DOCS.mkdir(parents=True, exist_ok=True)
     (DOCS / "BOSS_DELIVERY_6POINTS.md").write_text(md, encoding="utf-8")

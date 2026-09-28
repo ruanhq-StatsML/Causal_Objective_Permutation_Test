@@ -1,6 +1,6 @@
 # 老板交付 — FSDS Agent SoT 六点说明
 
-> 生成时间 (UTC): 2026-09-28T08:30:43.311340+00:00  
+> 生成时间 (UTC): 2026-09-28T09:30:34.819467+00:00  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  
 > 完整 JSON: `artifacts/boss_delivery_six_points.json`
 
