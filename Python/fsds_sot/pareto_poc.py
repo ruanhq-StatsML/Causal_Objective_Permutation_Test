@@ -81,7 +81,7 @@ def evaluate_config(
             need_weights=need,
             min_tokens_by_branch=floors,
             budget_kappa=kappa,
-            entropy_lambda=0.15,
+            entropy_lambda=0.05,
         )
         last_plan = plan
         s, sp, tot, c, ch = simulate_episode_outcome(plan, need, q, uniform_L=latency_cap, rng=rng)

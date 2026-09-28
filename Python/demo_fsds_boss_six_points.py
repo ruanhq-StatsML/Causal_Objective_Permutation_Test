@@ -70,8 +70,8 @@ def main() -> int:
         X1,
         seed=2026,
         success_epsilon=0.03,
-        kappas=[0.9, 1.0, 1.15],
-        need_floors=[0, 320, 400],
+        kappas=[0.85, 0.9, 1.0, 1.15],
+        need_floors=[0, 280, 320, 400],
     )
 
     plan_u, plan_f = _example_agentic_plan(X0, X1, Z[0], Q[0], need)

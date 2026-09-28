@@ -1,6 +1,6 @@
 # 老板交付 — FSDS Agent SoT 六点说明
 
-> 生成时间 (UTC): 2026-09-28T07:36:14.648456+00:00  
+> 生成时间 (UTC): 2026-09-28T08:00:52.169765+00:00  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  
 > 完整 JSON: `artifacts/boss_delivery_six_points.json`
 
@@ -77,7 +77,7 @@ L_b = \\mathrm{clip}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{\\m
 - **Guard**：相对 uniform，**success 下降 ≤ 3%** 的配置才进推荐集（`kpi_pass`）。
 - **扫描**：kappa × retrieve/act **L_floor**（保证高 need 枝不被削过头）。
 - **Uniform 基线**：success **0.700**，cost **$0.0356**/ep。
-- **推荐配置**：`fsds_k0.90_floor0` — success **0.700** (Δ **+0.000**)，cost ↓ **33.3%**，tokens ↓ **7.8%**，checks ↓ **50.0%**，KPI **PASS**。
+- **推荐配置**：`fsds_k0.90_floor0` — success **0.700** (Δ **+0.000**)，cost ↓ **33.7%**，tokens ↓ **8.7%**，checks ↓ **50.0%**，KPI **PASS**。
 - **Pareto 前沿标签数**：4；**KPI 通过配置数**：10。
 
 （细节见 JSON `six_points.5_pareto_poc.points`。）
