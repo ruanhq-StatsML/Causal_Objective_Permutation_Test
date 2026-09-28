@@ -76,6 +76,23 @@ def patch_of(token_index: int, grid) -> list:
     return [int(h), int(w)]
 
 
+def neighborhood_indices(adjacency, seeds) -> list:
+    """Closed 1-hop neighborhood: the seed nodes plus their neighbors."""
+    A = np.asarray(adjacency)
+    chosen = {int(s) for s in np.atleast_1d(seeds)}
+    for s in list(chosen):
+        chosen.update(int(v) for v in np.flatnonzero(A[int(s)]))
+    return sorted(chosen)
+
+
+def perturb_neighborhood(x_ref, x_new, neigh) -> np.ndarray:
+    """Put the reference features back on the neighborhood nodes of the new graph."""
+    pert = np.array(x_new, copy=True, dtype=float)
+    idx = np.asarray(list(neigh), dtype=int)
+    pert[idx] = np.asarray(x_ref, dtype=float)[idx]
+    return pert
+
+
 def _perturb_tokens(X: np.ndarray, W: np.ndarray, L) -> np.ndarray:
     """Replace the query-batch tokens in ``L`` with the reference-batch mean."""
     pert = np.array(X, copy=True, dtype=float)
@@ -311,6 +328,30 @@ def post_hoc_localization(X, Y, W, L, porisk: Optional[PORisk] = None) -> dict:
         "PORisk": porisk.PORisk_LOCO(sub, Y, W),
     }
     return {"base": base, "after": after, "delta": delta, "loco": loco}
+
+
+def graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, neigh) -> dict:
+    """MMD / PO-risk / HSIC drop after the neighborhood perturbation."""
+    y = np.concatenate([np.asarray(y_ref, dtype=float), np.asarray(y_new, dtype=float)])
+    w = np.concatenate([
+        np.zeros(len(x_ref), dtype=int),
+        np.ones(len(x_new), dtype=int),
+    ])
+
+    def pack(x_query):
+        return np.vstack([x_ref, x_query])
+
+    base = pack(x_new)
+    after = pack(perturb_neighborhood(x_ref, x_new, neigh))
+    mmd, hsic_fn, porisk = MMD(), HSIC(), window_porisk
+    return {
+        "neighborhood": list(neigh),
+        "delta": {
+            "MMD": mmd(base, w) - mmd(after, w),
+            "PORisk": porisk(base, y, w) - porisk(after, y, w),
+            "HSIC": hsic_fn(base, w) - hsic_fn(after, w),
+        },
+    }
 
 
 def mma_wrapper(z_ref, z_query, Y, grid, top_k: int = 4, porisk: Optional[PORisk] = None) -> dict:

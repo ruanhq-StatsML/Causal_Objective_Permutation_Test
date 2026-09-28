@@ -17,7 +17,14 @@ from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fsds_nonuniqueness import generate_concept_drift_dgp  # noqa: E402
-from mma_wrapper import mma_wrapper, online_bootstrap_ci, online_pfi, plot_online_porisk  # noqa: E402
+from mma_wrapper import (  # noqa: E402
+    graph_neighborhood_delta,
+    mma_wrapper,
+    neighborhood_indices,
+    online_bootstrap_ci,
+    online_pfi,
+    plot_online_porisk,
+)
 
 
 class ViViTEmbedding(nn.Module):
@@ -197,9 +204,46 @@ def _quadrant_means(tokens: np.ndarray, grid) -> np.ndarray:
     return np.column_stack(cols)
 
 
+def _graph_neighborhood_try() -> None:
+    """Shift one block. Perturb the 1-hop neighborhood of the moved node."""
+    import networkx as nx
+
+    rng = np.random.default_rng(0)
+    sizes = [12, 12, 12]
+    G = nx.stochastic_block_model(sizes, [[0.45, 0.02, 0.02], [0.02, 0.45, 0.02], [0.02, 0.02, 0.45]], seed=0)
+    A = nx.to_numpy_array(G)
+    membership = np.concatenate([np.full(s, k) for k, s in enumerate(sizes)])
+    x_ref = rng.normal(size=(len(G), 4))
+    x_new = x_ref + rng.normal(scale=0.05, size=x_ref.shape)
+    x_new[membership == 0] += 1.8
+    y_ref = x_ref[:, 0]
+    y_new = x_new[:, 0]
+    seed = int(np.argmax(np.linalg.norm(x_new - x_ref, axis=1)))
+    neigh = neighborhood_indices(A, [seed])
+    far_pool = np.flatnonzero(membership == 2)
+    far = far_pool[:len(neigh)].tolist()
+    hit = graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, neigh)
+    miss = graph_neighborhood_delta(x_ref, x_new, y_ref, y_new, far)
+    print(f"graph seed {seed} block {int(membership[seed])}")
+    print(f"graph neighborhood indices: {hit['neighborhood']}")
+    d, m = hit["delta"], miss["delta"]
+    print(
+        f"graph neighborhood delta  MMD={d['MMD']:+.5f}  "
+        f"PORisk={d['PORisk']:+.5f}  HSIC={d['HSIC']:+.5f}"
+    )
+    print(
+        f"graph other-block delta   MMD={m['MMD']:+.5f}  "
+        f"PORisk={m['PORisk']:+.5f}  HSIC={m['HSIC']:+.5f}"
+    )
+    assert int(membership[seed]) == 0
+    assert np.mean(membership[neigh] == 0) > 0.5
+    assert hit["delta"]["MMD"] > miss["delta"]["MMD"]
+
+
 def main() -> None:
     out_dir = Path("/opt/cursor/artifacts")
     out_dir.mkdir(parents=True, exist_ok=True)
+    _graph_neighborhood_try()
     _synthetic_token_check()
     _synthetic_online_pfi()
     _concept_online_porisk(str(out_dir / "online_porisk_concept_ci.png"))
