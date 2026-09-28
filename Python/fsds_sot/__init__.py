@@ -1,7 +1,8 @@
 """FSDS-powered Skeleton-of-Thought scheduling and monitoring."""
 
 from .pipeline import FSDSSoT, SoTPlan, SoTAttributionReport
-from .economics import SoTEconomicsReport, estimate_economics
+from .economics import SoTEconomicsReport, estimate_economics, net_economic_gain_usd
+from .mcts_search import optimize_budget_for_success
 from .closed_loop import (
     LoopState,
     LoopOutcome,
@@ -30,6 +31,8 @@ __all__ = [
     "SoTAttributionReport",
     "SoTEconomicsReport",
     "estimate_economics",
+    "net_economic_gain_usd",
+    "optimize_budget_for_success",
     "LoopState",
     "LoopOutcome",
     "LadderRung",

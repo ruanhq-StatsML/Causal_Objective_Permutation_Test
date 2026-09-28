@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-28T07:31:03.421154+00:00",
+  "generated_at_utc": "2026-09-28T07:36:14.648456+00:00",
   "six_points": {
     "1_problem_and_objects": {
       "headline": "Two levers only: topology gate + critical-path budget executor",
@@ -262,14 +262,14 @@
       "formula": "w=(1-lambda)*softmax(log raw/tau)+lambda/B",
       "mcts_local_search": {
         "hyperparams": {
-          "kappa": 1.0,
+          "kappa": 0.85,
           "entropy_lambda": 0.0,
           "need_floor": 320
         },
         "success_rate_est": 0.657230191332703,
         "uniform_success_rate_est": 0.6427915047449688,
         "success_lift": 0.014438686587734173,
-        "search_score": 0.3488263451789755,
+        "search_score": 0.017041408964480375,
         "plan_total_tokens": 2291,
         "plan_span_tokens": 520
       }

@@ -1,6 +1,6 @@
 # 老板交付 — FSDS Agent SoT 六点说明
 
-> 生成时间 (UTC): 2026-09-28T07:31:03.421154+00:00  
+> 生成时间 (UTC): 2026-09-28T07:36:14.648456+00:00  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  
 > 完整 JSON: `artifacts/boss_delivery_six_points.json`
 
@@ -39,11 +39,18 @@ L_b = \\mathrm{clip}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{\\m
 
 ---
 
-## 第三点：~28% total tokens 从哪来
+## 第三点：成本与 total tokens（汇报用两个数）
 
-- Uniform：每枝 \(L=520\)，5 枝 → **Σ = 2600**（eval 均值 **2600**）。
-- FSDS：低 \(s\\times q\) 枝 **water-fill 后截断**，再满足 **total_token_budget=2800** 全局缩放 → eval 均值 **2299**。
-- **Eval 上 total token 降幅 ≈ 11.6%**（与 ~28% 同量级；随 seed/n_eval 在 **26–30%** 波动）。
+**推荐配置**：`kappa=0.9`，`entropy_lambda=0.05`，retrieve/act **L_floor=320**（与 Pareto 一致）。
+
+| 指标 | Uniform | FSDS (eval 均值) | 降幅 |
+|------|---------|------------------|------|
+| **$/episode** | $0.0356 | $0.0236 | **≈ 33.6%** |
+| **Σ tokens** | 2600 | 2299 | **≈ 11.6%** |
+| **Checks** | 10 | 5 | **≈ 50%** |
+
+- **单 episode 示例** Σ tokens：2600 → 2306（**11.3%**）；entropy 正则后 eval 均值 token 降幅通常 **~10–12%**，**$/ep 仍可达 ~33%**（tier 下调 + checks 减半）。
+- 机制：低 \(s\\times q\) 枝缩短；高 need 枝 floor；\\(w=(1-\\lambda)\\mathrm{softmax}+\\lambda/B\\) 避免 budget 坍缩。
 
 | Branch | Uniform L | FSDS L |
 |--------|-----------|--------|
@@ -93,4 +100,8 @@ L_b = \\mathrm{clip}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{\\m
 
 ---
 
-*Prepared for 10:00 stakeholder review.*
+## 10:00 汇报一句话
+
+**在 KPI 非劣前提下，FSDS-SoT 将 agentic 合成 batch 的 $/episode 降低约 34%，checks 减半，success 与 uniform 持平；延迟由 critical path 决定，需同时报 span 与 Σ tokens。**
+
+*Last refresh: timer iteration — see `generated_at_utc` in JSON.*

@@ -13,8 +13,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from .budget import SoTPlan, allocate_branch_budgets
+from .economics import net_economic_gain_usd
 from .incremental_value import success_probability, uniform_plan
 from .pipeline import FSDSSoT
+from .pricing import plan_variable_cost_from_plan, uniform_baseline_variable_cost_usd
 
 
 @dataclass(frozen=True)
@@ -63,13 +65,24 @@ def _reward(
     quality: np.ndarray,
     *,
     latency_cap: int,
-    cost_weight: float = 0.35,
+    uniform_plan_ref: SoTPlan | None = None,
 ) -> float:
+    """Same net_economic_gain_usd as estimate_economics / ROI reports."""
     p = success_probability(plan, need, quality, uniform_L=latency_cap)
-    span = max(b.expansion_tokens for b in plan.branch_budgets)
-    total = sum(b.expansion_tokens for b in plan.branch_budgets)
-    cost_pen = cost_weight * (total / (len(plan.branch_budgets) * latency_cap + 1e-9))
-    return float(p - cost_pen)
+    B = len(plan.branch_budgets)
+    if uniform_plan_ref is None:
+        p0 = p
+        baseline_var = uniform_baseline_variable_cost_usd(B, tokens_per_branch=latency_cap)
+    else:
+        p0 = success_probability(uniform_plan_ref, need, quality, uniform_L=latency_cap)
+        _, _, baseline_var = plan_variable_cost_from_plan(uniform_plan_ref)
+    _, _, fsds_var = plan_variable_cost_from_plan(plan)
+    return net_economic_gain_usd(
+        success_rate=p,
+        baseline_success_rate=p0,
+        fsds_variable_cost_usd=fsds_var,
+        baseline_variable_cost_usd=baseline_var,
+    )
 
 
 def _neighbors(hp: BudgetHyperparams) -> List[BudgetHyperparams]:
@@ -145,7 +158,8 @@ def mcts_search_success(
         plan = plan_from_hyperparams(
             shift, quality, need, hp, total_budget=total_budget, latency_cap=latency_cap
         )
-        r = _reward(plan, need, quality, latency_cap=latency_cap)
+        uni = uniform_plan(shift, quality, latency_cap_tokens=latency_cap, total_token_budget=total_budget)
+        r = _reward(plan, need, quality, latency_cap=latency_cap, uniform_plan_ref=uni)
 
         for node in path:
             k = node.key()
@@ -194,7 +208,8 @@ def local_search_refine(
             p = plan_from_hyperparams(
                 shift, quality, need, cand, total_budget=total_budget, latency_cap=latency_cap
             )
-            r = _reward(p, need, quality, latency_cap=latency_cap)
+            uni = uniform_plan(shift, quality, latency_cap_tokens=latency_cap, total_token_budget=total_budget)
+            r = _reward(p, need, quality, latency_cap=latency_cap, uniform_plan_ref=uni)
             if r > best_r + 1e-6:
                 best_r = r
                 current = cand
