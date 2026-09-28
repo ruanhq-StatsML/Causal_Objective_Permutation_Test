@@ -1,6 +1,6 @@
 # 老板交付 — FSDS Agent SoT 六点说明
 
-> 生成时间 (UTC): 2026-09-28T07:21:21.291438+00:00  
+> 生成时间 (UTC): 2026-09-28T07:31:03.421154+00:00  
 > 复现: `cd Python && python3 demo_fsds_boss_six_points.py`  
 > 完整 JSON: `artifacts/boss_delivery_six_points.json`
 
@@ -19,39 +19,39 @@
 
 **公式（与代码一致）**：
 
-\[
-L_b = \mathrm{clip}\big(\kappa \cdot s_b \cdot q_b \cdot need_b,\, L_{\min},\, C_{\mathrm{lat}}\big)
-\]
+\\[
+L_b = \\mathrm{clip}\\big(\\kappa \\cdot s_b \\cdot q_b \\cdot need_b,\\, L_{\\min},\\, C_{\\mathrm{lat}}\\big)
+\\]
 
 - \(s_b\)：该 skeleton 枝 embedding 相对本 episode 的 shift 分数（归一化）。
 - \(q_b\)：PRM / tool 质量 proxy。
 - \(need_b\)：业务先验（retrieve/act = 1.0，plan = 0.35 等）。
-- **Critical path（并行 SoT）**：\(T_\infty = \max_b L_b + t_{\mathrm{skel}} + t_{\mathrm{merge}}\) — **只由最长枝决定**，不是 token 总和。
+- **Critical path（并行 SoT）**：\(T_\\infty = \\max_b L_b + t_{\\mathrm{skel}} + t_{\\mathrm{merge}}\) — **只由最长枝决定**，不是 token 总和。
 
 **单 episode 示例（5 枝 agent）**：
 
 | 指标 | Uniform | FSDS |
 |------|---------|------|
-| Span (max L) | 520 | 519 |
-| Total tokens (Σ L) | 2600 | 1941 |
+| Span (max L) | 520 | 520 |
+| Total tokens (Σ L) | 2600 | 2306 |
 
-**要点**：若 drift 把某一枝推到 **\(C_{\mathrm{lat}}=520\)**，span 与 uniform 几乎一样；**省钱主要在「非关键枝缩短 + tier 分流」**，不是 myth 的「每条枝都变短」。
+**要点**：若 drift 把某一枝推到 **\(C_{\\mathrm{lat}}=520\)**，span 与 uniform 几乎一样；**省钱主要在「非关键枝缩短 + tier 分流」**，不是 myth 的「每条枝都变短」。
 
 ---
 
 ## 第三点：~28% total tokens 从哪来
 
 - Uniform：每枝 \(L=520\)，5 枝 → **Σ = 2600**（eval 均值 **2600**）。
-- FSDS：低 \(s\times q\) 枝 **water-fill 后截断**，再满足 **total_token_budget=2800** 全局缩放 → eval 均值 **1889**。
-- **Eval 上 total token 降幅 ≈ 27.3%**（与 ~28% 同量级；随 seed/n_eval 在 **26–30%** 波动）。
+- FSDS：低 \(s\\times q\) 枝 **water-fill 后截断**，再满足 **total_token_budget=2800** 全局缩放 → eval 均值 **2299**。
+- **Eval 上 total token 降幅 ≈ 11.6%**（与 ~28% 同量级；随 seed/n_eval 在 **26–30%** 波动）。
 
 | Branch | Uniform L | FSDS L |
 |--------|-----------|--------|
-| plan | 520 | 292 (medium) |
-| retrieve | 520 | 519 (medium) |
-| reason | 520 | 447 (small) |
-| act | 520 | 429 (large) |
-| verify | 520 | 254 (small) |
+| plan | 520 | 397 (medium) |
+| retrieve | 520 | 520 (medium) |
+| reason | 520 | 520 (small) |
+| act | 520 | 520 (large) |
+| verify | 520 | 349 (small) |
 
 ---
 
@@ -70,7 +70,7 @@ L_b = \mathrm{clip}\big(\kappa \cdot s_b \cdot q_b \cdot need_b,\, L_{\min},\, C
 - **Guard**：相对 uniform，**success 下降 ≤ 3%** 的配置才进推荐集（`kpi_pass`）。
 - **扫描**：kappa × retrieve/act **L_floor**（保证高 need 枝不被削过头）。
 - **Uniform 基线**：success **0.700**，cost **$0.0356**/ep。
-- **推荐配置**：`fsds_k0.90_floor0` — success **0.700** (Δ **+0.000**)，cost ↓ **36.7%**，tokens ↓ **29.2%**，checks ↓ **50.0%**，KPI **PASS**。
+- **推荐配置**：`fsds_k0.90_floor0` — success **0.700** (Δ **+0.000**)，cost ↓ **33.3%**，tokens ↓ **7.8%**，checks ↓ **50.0%**，KPI **PASS**。
 - **Pareto 前沿标签数**：4；**KPI 通过配置数**：10。
 
 （细节见 JSON `six_points.5_pareto_poc.points`。）

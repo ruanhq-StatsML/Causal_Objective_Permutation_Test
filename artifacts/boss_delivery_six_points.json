@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-28T07:21:21.291438+00:00",
+  "generated_at_utc": "2026-09-28T07:31:03.421154+00:00",
   "six_points": {
     "1_problem_and_objects": {
       "headline": "Two levers only: topology gate + critical-path budget executor",
@@ -9,12 +9,12 @@
       "formula": "L_b = clip(kappa * s_b * q_b * need_b, L_min, C_lat); span = max_b L_b",
       "why_span_flat": "When one branch hits C_lat=520, span ~ uniform; savings are in non-critical branches",
       "example_span_uniform": 520,
-      "example_span_fsds": 519,
+      "example_span_fsds": 520,
       "per_branch": [
         {
           "branch": "plan",
           "uniform_L": 520,
-          "fsds_L": 292,
+          "fsds_L": 397,
           "uniform_checks": 2,
           "fsds_checks": 1,
           "fsds_tier": "medium"
@@ -22,7 +22,7 @@
         {
           "branch": "retrieve",
           "uniform_L": 520,
-          "fsds_L": 519,
+          "fsds_L": 520,
           "uniform_checks": 2,
           "fsds_checks": 1,
           "fsds_tier": "medium"
@@ -30,7 +30,7 @@
         {
           "branch": "reason",
           "uniform_L": 520,
-          "fsds_L": 447,
+          "fsds_L": 520,
           "uniform_checks": 2,
           "fsds_checks": 1,
           "fsds_tier": "small"
@@ -38,7 +38,7 @@
         {
           "branch": "act",
           "uniform_L": 520,
-          "fsds_L": 429,
+          "fsds_L": 520,
           "uniform_checks": 2,
           "fsds_checks": 1,
           "fsds_tier": "large"
@@ -46,7 +46,7 @@
         {
           "branch": "verify",
           "uniform_L": 520,
-          "fsds_L": 254,
+          "fsds_L": 349,
           "uniform_checks": 2,
           "fsds_checks": 1,
           "fsds_tier": "small"
@@ -56,11 +56,11 @@
     "3_total_tokens_28pct": {
       "mechanism": "Water-fill then scale to total_token_budget; low shift\u00d7quality branches shrink",
       "uniform_total": 2600,
-      "fsds_total_example_episode": 1941,
-      "eval_mean_reduction_pct": 0.19230769230769162,
+      "fsds_total_example_episode": 2306,
+      "eval_mean_reduction_pct": 0.0,
       "eval_mean_total_token_uniform": 2600.0,
-      "eval_mean_total_token_fsds": 1889.275,
-      "eval_total_token_reduction_pct": 27.33557692307692
+      "eval_mean_total_token_fsds": 2299.375,
+      "eval_total_token_reduction_pct": 11.562499999999998
     },
     "4_checks_halved": {
       "uniform_formula": "2 checks per branch (fixed)",
@@ -87,13 +87,13 @@
           "kappa": 0.9,
           "need_floor_high": 0,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022544807500000003,
-          "mean_total_tokens": 1854.575,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023738125,
+          "mean_total_tokens": 2326.7,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.6718890449438,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.31987359550562,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -102,13 +102,13 @@
           "kappa": 0.9,
           "need_floor_high": 320,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022726997500000002,
-          "mean_total_tokens": 1889.275,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023749375,
+          "mean_total_tokens": 2328.8,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.16011938202247,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.288272471910105,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -117,13 +117,13 @@
           "kappa": 0.9,
           "need_floor_high": 400,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.02311135,
-          "mean_total_tokens": 1945.525,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023798312500000002,
+          "mean_total_tokens": 2339.75,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 35.080477528089894,
-          "total_token_reduction_pct": 26.884615384615383,
+          "cost_reduction_pct_vs_uniform": 33.15080758426966,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -132,13 +132,13 @@
           "kappa": 1.0,
           "need_floor_high": 0,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022544807500000003,
-          "mean_total_tokens": 1854.575,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023738125,
+          "mean_total_tokens": 2326.7,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.6718890449438,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.31987359550562,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -147,13 +147,13 @@
           "kappa": 1.0,
           "need_floor_high": 320,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022726997500000002,
-          "mean_total_tokens": 1889.275,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023749375,
+          "mean_total_tokens": 2328.8,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.16011938202247,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.288272471910105,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -162,13 +162,13 @@
           "kappa": 1.0,
           "need_floor_high": 400,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.02311135,
-          "mean_total_tokens": 1945.525,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023798312500000002,
+          "mean_total_tokens": 2339.75,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 35.080477528089894,
-          "total_token_reduction_pct": 26.884615384615383,
+          "cost_reduction_pct_vs_uniform": 33.15080758426966,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -177,13 +177,13 @@
           "kappa": 1.15,
           "need_floor_high": 0,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022544807500000003,
-          "mean_total_tokens": 1854.575,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023738125,
+          "mean_total_tokens": 2326.7,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.6718890449438,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.31987359550562,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -192,13 +192,13 @@
           "kappa": 1.15,
           "need_floor_high": 320,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022726997500000002,
-          "mean_total_tokens": 1889.275,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023749375,
+          "mean_total_tokens": 2328.8,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.16011938202247,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.288272471910105,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -207,13 +207,13 @@
           "kappa": 1.15,
           "need_floor_high": 400,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.02311135,
-          "mean_total_tokens": 1945.525,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023798312500000002,
+          "mean_total_tokens": 2339.75,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 35.080477528089894,
-          "total_token_reduction_pct": 26.884615384615383,
+          "cost_reduction_pct_vs_uniform": 33.15080758426966,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         },
@@ -222,13 +222,13 @@
           "kappa": 1.0,
           "need_floor_high": 0,
           "mean_success": 0.7,
-          "mean_cost_usd": 0.022544807500000003,
-          "mean_total_tokens": 1854.575,
-          "mean_span_tokens": 519.0,
+          "mean_cost_usd": 0.023738125,
+          "mean_total_tokens": 2326.7,
+          "mean_span_tokens": 520.0,
           "mean_checks": 5.0,
           "success_delta_vs_uniform": 0.0,
-          "cost_reduction_pct_vs_uniform": 36.6718890449438,
-          "total_token_reduction_pct": 29.192307692307693,
+          "cost_reduction_pct_vs_uniform": 33.31987359550562,
+          "total_token_reduction_pct": 7.769230769230773,
           "checks_reduction_pct": 50.0,
           "kpi_pass": true
         }
@@ -245,18 +245,42 @@
         "kappa": 0.9,
         "need_floor_high": 0,
         "mean_success": 0.7,
-        "mean_cost_usd": 0.022544807500000003,
-        "mean_total_tokens": 1854.575,
-        "mean_span_tokens": 519.0,
+        "mean_cost_usd": 0.023738125,
+        "mean_total_tokens": 2326.7,
+        "mean_span_tokens": 520.0,
         "mean_checks": 5.0,
         "success_delta_vs_uniform": 0.0,
-        "cost_reduction_pct_vs_uniform": 36.6718890449438,
-        "total_token_reduction_pct": 29.192307692307693,
+        "cost_reduction_pct_vs_uniform": 33.31987359550562,
+        "total_token_reduction_pct": 7.769230769230773,
         "checks_reduction_pct": 50.0,
         "kpi_pass": true
       },
       "interpretation": "KPI guard: success within epsilon of uniform. Among passing configs, pick max cost reduction (Pareto POC)."
     },
+    "5b_entropy_mcts_success": {
+      "entropy_lambda_default": 0.15,
+      "formula": "w=(1-lambda)*softmax(log raw/tau)+lambda/B",
+      "mcts_local_search": {
+        "hyperparams": {
+          "kappa": 1.0,
+          "entropy_lambda": 0.0,
+          "need_floor": 320
+        },
+        "success_rate_est": 0.657230191332703,
+        "uniform_success_rate_est": 0.6427915047449688,
+        "success_lift": 0.014438686587734173,
+        "search_score": 0.3488263451789755,
+        "plan_total_tokens": 2291,
+        "plan_span_tokens": 520
+      }
+    },
+    "5c_roi_fields": [
+      "baseline_total_cost_usd",
+      "fsds_total_cost_usd",
+      "net_economic_gain_usd",
+      "roi_pct",
+      "expected_value_usd"
+    ],
     "6_delivery_status": {
       "code": "Python/fsds_sot + demos on branch cursor/fsds-sot-tot-manuscript-7451",
       "next_production": [
@@ -283,16 +307,16 @@
       {
         "name": "fsds_sot",
         "mean_success": 0.7,
-        "mean_span_tokens": 519.0,
-        "mean_total_tokens": 1889.275,
-        "mean_cost_usd": 0.022726997500000002,
+        "mean_span_tokens": 520.0,
+        "mean_total_tokens": 2299.375,
+        "mean_cost_usd": 0.0236370625,
         "mean_checks": 5.0
       }
     ],
     "incremental": {
       "success_delta": 0.0,
-      "span_reduction_pct": 0.19230769230769162,
-      "cost_reduction_pct": 36.16011938202247,
+      "span_reduction_pct": 0.0,
+      "cost_reduction_pct": 33.60375702247191,
       "checks_delta": -5.0
     },
     "core_objects": [
