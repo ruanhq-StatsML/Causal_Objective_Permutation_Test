@@ -1,11 +1,11 @@
 #!/bin/bash
-# One new draw of the four-dataset MCTS attribution every 30 minutes.
+# One new draw of the four-dataset MCTS attribution every hour.
 set -u
 cd /workspace
-LOG=/opt/cursor/artifacts/mcts_mma_halfhour.jsonl
+LOG=/opt/cursor/artifacts/mcts_mma_hourly.jsonl
 mkdir -p Python/results /opt/cursor/artifacts
-if [ ! -f "$LOG" ] && [ -f Python/results/mcts_mma_halfhour.jsonl ]; then
-  cp Python/results/mcts_mma_halfhour.jsonl "$LOG"
+if [ ! -f "$LOG" ] && [ -f Python/results/mcts_mma_hourly.jsonl ]; then
+  cp Python/results/mcts_mma_hourly.jsonl "$LOG"
 fi
 
 seconds_until_next() {
@@ -29,7 +29,7 @@ if log.exists():
 if last is None:
     print(0)
 else:
-    wait = (last + timedelta(seconds=1800) - now).total_seconds()
+    wait = (last + timedelta(seconds=3600) - now).total_seconds()
     print(int(max(0, wait)))
 PY
 }
@@ -40,13 +40,13 @@ while true; do
     echo "sleep ${wait_s}s until the next MCTS multimodal round"
     sleep "$wait_s"
   fi
-  python3 Python/mcts_mma_four_datasets.py --halfhour --log "$LOG"
+  python3 Python/mcts_mma_four_datasets.py --hourly --log "$LOG"
   git add \
-    Python/results/mcts_mma_halfhour.jsonl \
-    Python/results/mcts_mma_halfhour_summary.txt \
+    Python/results/mcts_mma_hourly.jsonl \
+    Python/results/mcts_mma_hourly_summary.txt \
     Python/results/mcts_mma_four.json
   if ! git diff --cached --quiet; then
-    git commit -m "Record the latest half-hour MCTS multimodal attribution round."
+    git commit -m "Record the latest hourly MCTS multimodal attribution round."
     git push -u origin HEAD || echo "push failed; the round is saved in Python/results"
   fi
 done

@@ -215,7 +215,7 @@ def load_rounds(path: Path) -> list:
 
 def write_summary(records, path: Path) -> None:
     lines = [
-        "MCTS + 多模态归因  每 30 分钟一轮",
+        "MCTS + 多模态归因  每小时一轮",
         "每一轮换一个抽样种子和 MCTS 种子，四个数据集和指标不变。",
         f"记录 {len(records)} 轮",
         "",
@@ -270,12 +270,12 @@ def publish(log_path: Path) -> None:
     records = load_rounds(log_path)
     if not records:
         return
-    summary = Path("/opt/cursor/artifacts/mcts_mma_halfhour_summary.txt")
+    summary = Path("/opt/cursor/artifacts/mcts_mma_hourly_summary.txt")
     write_summary(records, summary)
-    write_summary(records, RESULTS / "mcts_mma_halfhour_summary.txt")
-    plot_history(records, "/opt/cursor/artifacts/mcts_mma_halfhour.png")
+    write_summary(records, RESULTS / "mcts_mma_hourly_summary.txt")
+    plot_history(records, "/opt/cursor/artifacts/mcts_mma_hourly.png")
     _write_snapshot(records[-1]["rows"])
-    repo_log = RESULTS / "mcts_mma_halfhour.jsonl"
+    repo_log = RESULTS / "mcts_mma_hourly.jsonl"
     repo_log.write_text(log_path.read_text(encoding="utf-8"), encoding="utf-8")
 
 
@@ -297,7 +297,7 @@ def seed_logged_round(log_path: Path) -> None:
     print("SEEDED_ROUND_0", log_path)
 
 
-def run_halfhour(log_path: Path) -> None:
+def run_hourly(log_path: Path) -> None:
     records = load_rounds(log_path)
     round_id = 0 if not records else max(int(rec["round"]) for rec in records) + 1
     started = time.time()
@@ -319,16 +319,16 @@ def run_halfhour(log_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--halfhour", action="store_true")
+    parser.add_argument("--hourly", action="store_true")
     parser.add_argument("--seed-log", action="store_true")
-    parser.add_argument("--log", default="/opt/cursor/artifacts/mcts_mma_halfhour.jsonl")
+    parser.add_argument("--log", default="/opt/cursor/artifacts/mcts_mma_hourly.jsonl")
     args = parser.parse_args()
     log_path = Path(args.log)
     if args.seed_log:
         seed_logged_round(log_path)
         return
-    if args.halfhour:
-        run_halfhour(log_path)
+    if args.hourly:
+        run_hourly(log_path)
         return
     rows = [run_one(*pack) for pack in load_four()]
     _print_rows(rows)
