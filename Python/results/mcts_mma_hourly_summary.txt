@@ -1,0 +1,15 @@
+MCTS + 多模态归因  每小时一轮
+每一轮换一个抽样种子和 MCTS 种子，四个数据集和指标不变。
+记录 2 轮
+
+round 0  2026-09-29T14:57:26+08:00  0.82s
+  digits     AUC mcts 0.792 loco 1.000 solo 0.917  MMD mcts +0.0231 loco +0.0221 solo +0.0239  prec mcts 0.75 tokens [0, 4, 5, 12]
+  mnist      AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.7210 loco +0.7210 solo +0.7210  prec mcts 1.00 tokens [0, 1, 4, 5]
+  fashion    AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.4166 loco +0.4166 solo +0.4166  prec mcts 1.00 tokens [0, 1, 4, 5]
+  olivetti   AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.8706 loco +0.8706 solo +0.8706  prec mcts 1.00 tokens [0, 1, 4, 5]
+
+round 1  2026-09-29T22:09:26+08:00  0.79s
+  digits     AUC mcts 0.729 loco 0.854 solo 0.750  MMD mcts +0.0047 loco +0.0144 solo +0.0144  prec mcts 0.50 tokens [0, 4, 7, 12]
+  mnist      AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.8095 loco +0.8095 solo +0.8095  prec mcts 1.00 tokens [0, 1, 4, 5]
+  fashion    AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.3368 loco +0.3368 solo +0.3368  prec mcts 1.00 tokens [0, 1, 4, 5]
+  olivetti   AUC mcts 1.000 loco 1.000 solo 1.000  MMD mcts +0.8343 loco +0.8343 solo +0.8343  prec mcts 1.00 tokens [0, 1, 4, 5]

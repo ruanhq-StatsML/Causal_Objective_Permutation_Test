@@ -22,6 +22,12 @@ def _as_2d(X):
         return Xa.reshape(-1, 1) #(n, ) -> (n, 1)
     return Xa
 
+def _as_2d_float(X):
+    return _as_2d(X)
+
+def _as_1d_float(y):
+    return _as_1d(y)
+
 def _standardize_cols(X):
     cen = np.mean(X, axis = 0)
     sc = np.std(X, axis = 0, ddof = 0)
