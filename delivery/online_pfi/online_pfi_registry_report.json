@@ -1,0 +1,101 @@
+{
+  "software": {
+    "model_registry": "Python/model_registry_class.py",
+    "permute_refit_test": "Python/DRPerm.py",
+    "r_risk_loco": "Python/R_risk_loco.py",
+    "online_stream_wrapper": "Python/fsds_sot/online_pfi_registry.py",
+    "note": "fsds_sot/online_pfi.py is sklearn RF-PFI dashboard only; NOT Model Registry."
+  },
+  "stream": {
+    "steps": [
+      {
+        "step": 0,
+        "prediction_delta": {
+          "delta_mu_mean": 0.021491037943538016,
+          "delta_tau_mean": 0.014250780790318373,
+          "delta_pseudo_mean": -0.003220784829326738,
+          "po_risk_observed": 0.007487945396179964,
+          "mean_mu_ref": 0.6791324963924963,
+          "mean_mu_live": 0.7006235343360343,
+          "mean_tau_ref": -0.008514106808029259,
+          "mean_tau_live": 0.005736673982289114
+        },
+        "drperm": {
+          "statistic": 0.0072466673638434,
+          "p_value": 0.03225806451612903,
+          "reject": true,
+          "alpha": 0.05,
+          "model_outcome": "rf_regressor",
+          "model_propensity_score": "rf_classifier"
+        },
+        "top_feature_idx": null
+      },
+      {
+        "step": 1,
+        "prediction_delta": {
+          "delta_mu_mean": -0.05085484448557975,
+          "delta_tau_mean": -0.0030097783794975734,
+          "delta_pseudo_mean": 4.570461864999379e-05,
+          "po_risk_observed": 0.0022668401959890683,
+          "mean_mu_ref": 0.6559778935225994,
+          "mean_mu_live": 0.6051230490370196,
+          "mean_tau_ref": -0.005170704823512473,
+          "mean_tau_live": -0.008180483203010047
+        },
+        "drperm": {
+          "statistic": 0.0026474603174034485,
+          "p_value": 1.0,
+          "reject": false,
+          "alpha": 0.05,
+          "model_outcome": "rf_regressor",
+          "model_propensity_score": "rf_classifier"
+        },
+        "top_feature_idx": null
+      },
+      {
+        "step": 2,
+        "prediction_delta": {
+          "delta_mu_mean": -0.0215726956703427,
+          "delta_tau_mean": 0.0075919757266924535,
+          "delta_pseudo_mean": -0.0023084975767161432,
+          "po_risk_observed": 0.0038806185214040217,
+          "mean_mu_ref": 0.641907051129698,
+          "mean_mu_live": 0.6203343554593553,
+          "mean_tau_ref": -0.010581690257931464,
+          "mean_tau_live": -0.00298971453123901
+        },
+        "drperm": {
+          "statistic": 0.004058911836125224,
+          "p_value": 0.8709677419354839,
+          "reject": false,
+          "alpha": 0.05,
+          "model_outcome": "rf_regressor",
+          "model_propensity_score": "rf_classifier"
+        },
+        "top_feature_idx": null
+      },
+      {
+        "step": 3,
+        "prediction_delta": {
+          "delta_mu_mean": -0.0862582946710152,
+          "delta_tau_mean": 0.0016575029137610407,
+          "delta_pseudo_mean": 0.017808986335289875,
+          "po_risk_observed": 0.003979958220441033,
+          "mean_mu_ref": 0.6090681832981832,
+          "mean_mu_live": 0.522809888627168,
+          "mean_tau_ref": -0.020837453436190173,
+          "mean_tau_live": -0.019179950522429132
+        },
+        "drperm": {
+          "statistic": 0.004303089753007283,
+          "p_value": 0.9032258064516129,
+          "reject": false,
+          "alpha": 0.05,
+          "model_outcome": "rf_regressor",
+          "model_propensity_score": "rf_classifier"
+        },
+        "top_feature_idx": null
+      }
+    ]
+  }
+}

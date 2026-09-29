@@ -5,6 +5,15 @@
 
 ---
 
+## 0. 重要：两套实现（别混）
+
+| 轨道 | 路径 | 是否 Model Registry + refit/predict 差值 |
+|------|------|------------------------------------------|
+| **你的逻辑（主仓库）** | `docs/FSDS_MODEL_REGISTRY_ONLINE_PFI.md` | **是** — `online_pfi_registry.py` + `DRPerm.py` |
+| **Agent 快览 dashboard** | `fsds_sot/online_pfi.py` | **否** — sklearn RF VIMP，仅监测/feature 热力图 |
+
+---
+
 ## 1. 你给的逻辑（整理成可执行栈）
 
 **目标**：在 **连续 agent 流量** 上，不用等离线大 batch，就能 **监测 drift → 归因到特征维 → 触发调度**。

@@ -10,7 +10,14 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, Grad
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 #from utils import *
-from model_registry_class import ModelRegistry
+from model_registry_class import ModelRegistry, _as_1d
+
+
+def make_folds(n, n_folds=5, seed=2026):
+    rng = np.random.default_rng(seed)
+    indices = np.arange(n)
+    rng.shuffle(indices)
+    return np.array_split(indices, n_folds)
 '''
 Permutation Test for Distribution Shift via PO-risk(Pseudo-Outcome Risk) followed by the permute-then-refit procedure:
 Hyperparameters:
