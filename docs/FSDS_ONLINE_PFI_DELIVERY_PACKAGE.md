@@ -14,6 +14,22 @@
 
 ---
 
+## 0. 你要的：**Model Registry → refit → predict → 差值**（A 轨，主逻辑）
+
+| 步骤 | 代码 |
+|------|------|
+| Registry | `Python/model_registry_class.py` |
+| Cross-fit refit + predict | `Python/DRPerm.py`（`mu_hat`, `e_hat`） |
+| 再 refit → `tau_hat` | `DRPerm.py` / `online_pfi_registry.prediction_deltas_on_window` |
+| **预测差** Δμ, Δτ | `delta_mu_mean`, `delta_tau_mean` in JSON |
+| Permute-refit p | `DRPerm(..., n_perm=...)` → `p_value` |
+| Online 窗口 | `Python/fsds_sot/online_pfi_registry.py` |
+| **跑结果** | `python3 demo_fsds_online_pfi_registry.py` → `delivery/online_pfi/online_pfi_registry_report.json` |
+
+`fsds_sot/online_pfi.py` 只是 **B 轨** sklearn RF-VIMP dashboard，**不走** Model Registry。
+
+---
+
 ## 1. 你给的逻辑（整理成可执行栈）
 
 **目标**：在 **连续 agent 流量** 上，不用等离线大 batch，就能 **监测 drift → 归因到特征维 → 触发调度**。

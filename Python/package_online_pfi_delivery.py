@@ -17,6 +17,7 @@ PY = Path(__file__).resolve().parent
 
 def main() -> int:
     subprocess.run([sys.executable, str(PY / "demo_fsds_online_pfi_viz.py")], check=True, cwd=PY)
+    subprocess.run([sys.executable, str(PY / "demo_fsds_online_pfi_registry.py")], check=True, cwd=PY)
 
     DEL.mkdir(parents=True, exist_ok=True)
     copies = [
@@ -25,6 +26,8 @@ def main() -> int:
         (ROOT / "docs" / "FSDS_ONLINE_PFI_DELIVERY_PACKAGE.md", DEL / "README_DELIVERY.md"),
         (ROOT / "docs" / "FSDS_ONLINE_PFI.md", DEL / "FSDS_ONLINE_PFI.md"),
         (ROOT / "FSDS_online_PFI_delivery.tex", DEL / "FSDS_online_PFI_delivery.tex"),
+        (DEL / "online_pfi_registry_report.json", DEL / "online_pfi_registry_report.json"),
+        (ROOT / "docs" / "FSDS_MODEL_REGISTRY_ONLINE_PFI.md", DEL / "FSDS_MODEL_REGISTRY_ONLINE_PFI.md"),
     ]
     for src, dst in copies:
         if src.exists():
