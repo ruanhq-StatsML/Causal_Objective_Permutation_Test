@@ -15,6 +15,8 @@ from .closed_loop import (
     suggest_intervention,
     summarize_loop,
 )
+from .online_pfi import OnlinePFIReport, OnlinePFIStep, run_online_pfi_stream
+from .plot_online_pfi import plot_online_pfi_dashboard
 from .applications import (
     AgentPattern,
     SegmentTrace,
@@ -50,4 +52,8 @@ __all__ = [
     "build_self_consistency_trace",
     "fit_agent_plan",
     "pattern_playbook",
+    "OnlinePFIReport",
+    "OnlinePFIStep",
+    "run_online_pfi_stream",
+    "plot_online_pfi_dashboard",
 ]

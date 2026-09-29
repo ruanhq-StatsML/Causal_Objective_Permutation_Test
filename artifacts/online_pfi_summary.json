@@ -1,0 +1,59 @@
+{
+  "where_in_repo": {
+    "stream_logic": "Python/fsds_sot/online_pfi.py",
+    "visualization": "Python/fsds_sot/plot_online_pfi.py",
+    "batch_snapshot_analogue": "Python/fsds_sot/attribution.py (Panel 4 in viz.py)",
+    "rap_branch_onlineRFPerm": "commit 9a6149a Python/online_drift_detectors.py (RAP, not merged here)"
+  },
+  "stream_steps": 7,
+  "final_step": {
+    "step": 6,
+    "n_ref": 60,
+    "n_live": 35,
+    "domain_auc": 1.0,
+    "mmd2": 0.07776401413090797,
+    "overlap_ess": 0.7926674529055148,
+    "c2st_pvalue": 0.024390243902439025,
+    "top_features": [
+      27,
+      26,
+      17,
+      22,
+      2,
+      4,
+      1,
+      0
+    ],
+    "vimp": [
+      0.0,
+      0.0,
+      0.0052631578947368585,
+      0.0,
+      0.003947368421052644,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.013157894736842118,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.007894736842105288,
+      0.0,
+      0.0,
+      0.0,
+      0.08157894736842104,
+      0.16052631578947368
+    ]
+  },
+  "artifact_png": "/workspace/artifacts/07_online_pfi_dashboard.png"
+}
