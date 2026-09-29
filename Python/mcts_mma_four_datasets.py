@@ -9,9 +9,13 @@ MMD is the score ``FSDS_runner`` already uses.
 
 from __future__ import annotations
 
+import argparse
 import gzip
 import json
+import time
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import torch
@@ -31,6 +35,8 @@ from mma_wrapper import (
 GRID = (1, 4, 4)
 N_TOKENS = 16
 TRUTH = [h * 4 + w for h in range(2) for w in range(2)]
+TZ = ZoneInfo("Asia/Shanghai")
+RESULTS = Path(__file__).resolve().parent / "results"
 
 
 def _idx_images(path: str, n: int, seed: int) -> np.ndarray:
@@ -58,11 +64,17 @@ def _plant(images: np.ndarray, patch: int, amount: float) -> np.ndarray:
     return out
 
 
-def load_four(n_each: int = 24):
-    digits = load_digits().images[: 2 * n_each]
-    olivetti = fetch_olivetti_faces(shuffle=True, random_state=0).images[: 2 * n_each]
-    mnist = _idx_images("/tmp/imgdata/mnist.gz", 2 * n_each, seed=1)
-    fashion = _idx_images("/tmp/imgdata/fashion.gz", 2 * n_each, seed=2)
+def load_four(n_each: int = 24, seed: int = 0):
+    """Seed 0 is the draw already reported. Later rounds resample the same sizes."""
+    digits_all = load_digits().images
+    if seed == 0:
+        digits = digits_all[: 2 * n_each]
+    else:
+        rng = np.random.default_rng(10_000 + seed)
+        digits = digits_all[rng.choice(len(digits_all), size=2 * n_each, replace=False)]
+    olivetti = fetch_olivetti_faces(shuffle=True, random_state=seed).images[: 2 * n_each]
+    mnist = _idx_images("/tmp/imgdata/mnist.gz", 2 * n_each, seed=1 if seed == 0 else 1000 + seed)
+    fashion = _idx_images("/tmp/imgdata/fashion.gz", 2 * n_each, seed=2 if seed == 0 else 2000 + seed)
     specs = [
         ("digits", digits, 2, 1.5),
         ("mnist", mnist, 7, 0.6),
@@ -112,19 +124,19 @@ def _deltas(tokens, y, w, chosen: set, gamma: float, base_mmd: float) -> dict:
     }
 
 
-def run_one(name: str, ref, query, y) -> dict:
+def run_one(name: str, ref, query, y, mcts_seed: int = 0) -> dict:
     tokens = np.vstack([ref, query])
     w = np.array([0] * len(ref) + [1] * len(query), dtype=int)
     flat = tokens.reshape(len(tokens), -1)
     gamma = 1.0 / max(np.median(np.sum((flat[:, None] - flat[None, :]) ** 2, axis=-1)[np.triu_indices(len(flat), 1)]), 1e-8)
     base = mmd2_unbiased(flat[w == 0], flat[w == 1], gamma)
     value_fn = _drop_value(tokens, w, gamma, base)
-    search.random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
+    search.random.seed(mcts_seed)
+    np.random.seed(mcts_seed)
+    torch.manual_seed(mcts_seed)
     roots = []
     for trial in range(4):
-        search.random.seed(10 + trial)
+        search.random.seed(mcts_seed + 10 + trial)
         roots.append(search.mcts_search(value_fn, set(range(N_TOKENS)), n_iterations=80))
     attr, _visits = search.merge_attribution(roots)
     loco = {i: float(v) for i, v in enumerate(MMD().MMD_LOCO(tokens, w))}
@@ -170,8 +182,7 @@ def plot_rows(rows, path: str) -> None:
     plt.close(fig)
 
 
-def main() -> None:
-    rows = [run_one(*pack) for pack in load_four()]
+def _print_rows(rows) -> None:
     for row in rows:
         print(
             f"{row['dataset']:10s} AUC mcts {row['auc']['mcts']:.3f} "
@@ -180,12 +191,149 @@ def main() -> None:
             f"solo {row['solo']['MMD']:+.4f}  "
             f"prec mcts {row['mcts']['precision']:.2f}"
         )
+
+
+def _write_snapshot(rows) -> None:
     out = Path("/opt/cursor/artifacts/mcts_mma_four.png")
+    out.parent.mkdir(parents=True, exist_ok=True)
     plot_rows(rows, str(out))
     payload = json.dumps(rows, indent=2)
     Path("/opt/cursor/artifacts/mcts_mma_four.json").write_text(payload, encoding="utf-8")
-    Path(__file__).resolve().parent.joinpath("results", "mcts_mma_four.json").write_text(payload, encoding="utf-8")
-    print("MCTS_MMA_OK", out)
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / "mcts_mma_four.json").write_text(payload, encoding="utf-8")
+
+
+def load_rounds(path: Path) -> list:
+    if not path.exists():
+        return []
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rows.append(json.loads(line))
+    return rows
+
+
+def write_summary(records, path: Path) -> None:
+    lines = [
+        "MCTS + 多模态归因  每 30 分钟一轮",
+        "每一轮换一个抽样种子和 MCTS 种子，四个数据集和指标不变。",
+        f"记录 {len(records)} 轮",
+        "",
+    ]
+    for rec in records:
+        spent = rec.get("seconds")
+        spent_txt = "" if spent is None else f"  {spent}s"
+        lines.append(f"round {rec['round']}  {rec['time']}{spent_txt}")
+        for row in rec["rows"]:
+            lines.append(
+                f"  {row['dataset']:10s} AUC mcts {row['auc']['mcts']:.3f} "
+                f"loco {row['auc']['loco']:.3f} solo {row['auc']['solo']:.3f}  "
+                f"MMD mcts {row['mcts']['MMD']:+.4f} loco {row['loco']['MMD']:+.4f} "
+                f"solo {row['solo']['MMD']:+.4f}  prec mcts {row['mcts']['precision']:.2f} "
+                f"tokens {row['mcts']['tokens']}"
+            )
+        lines.append("")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def plot_history(records, path: str) -> None:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7), sharex=True)
+    for ax, name in zip(axes.ravel(), ("digits", "mnist", "fashion", "olivetti")):
+        xs, mcts, loco, solo = [], [], [], []
+        for rec in records:
+            row = next(item for item in rec["rows"] if item["dataset"] == name)
+            xs.append(rec["round"])
+            mcts.append(row["auc"]["mcts"])
+            loco.append(row["auc"]["loco"])
+            solo.append(row["auc"]["solo"])
+        ax.plot(xs, mcts, "o-", label="mcts", color="#1f77b4")
+        ax.plot(xs, loco, "o-", label="loco", color="#ff7f0e")
+        ax.plot(xs, solo, "o-", label="solo", color="#2ca02c")
+        ax.set_ylim(0, 1.05)
+        ax.set_title(name)
+        ax.set_ylabel("selection AUC")
+        ax.legend(fontsize=8)
+    for ax in axes[1]:
+        ax.set_xlabel("round")
+    fig.tight_layout()
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
+def publish(log_path: Path) -> None:
+    records = load_rounds(log_path)
+    if not records:
+        return
+    summary = Path("/opt/cursor/artifacts/mcts_mma_halfhour_summary.txt")
+    write_summary(records, summary)
+    write_summary(records, RESULTS / "mcts_mma_halfhour_summary.txt")
+    plot_history(records, "/opt/cursor/artifacts/mcts_mma_halfhour.png")
+    _write_snapshot(records[-1]["rows"])
+    repo_log = RESULTS / "mcts_mma_halfhour.jsonl"
+    repo_log.write_text(log_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+
+def seed_logged_round(log_path: Path) -> None:
+    """Keep the finished four-dataset run as round 0. Later rounds append."""
+    if load_rounds(log_path):
+        return
+    rows = json.loads((RESULTS / "mcts_mma_four.json").read_text(encoding="utf-8"))
+    record = {
+        "round": 0,
+        "time": "2026-09-29T13:57:23+08:00",
+        "seconds": None,
+        "rows": rows,
+    }
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    publish(log_path)
+    print("SEEDED_ROUND_0", log_path)
+
+
+def run_halfhour(log_path: Path) -> None:
+    records = load_rounds(log_path)
+    round_id = 0 if not records else max(int(rec["round"]) for rec in records) + 1
+    started = time.time()
+    rows = [run_one(*pack, mcts_seed=round_id) for pack in load_four(seed=round_id)]
+    record = {
+        "round": round_id,
+        "time": datetime.now(TZ).isoformat(timespec="seconds"),
+        "seconds": round(time.time() - started, 2),
+        "rows": rows,
+    }
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    publish(log_path)
+    print(f"round {round_id}  {record['time']}  {record['seconds']}s")
+    _print_rows(rows)
+    print("MCTS_MMA_ROUND_OK", log_path)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--halfhour", action="store_true")
+    parser.add_argument("--seed-log", action="store_true")
+    parser.add_argument("--log", default="/opt/cursor/artifacts/mcts_mma_halfhour.jsonl")
+    args = parser.parse_args()
+    log_path = Path(args.log)
+    if args.seed_log:
+        seed_logged_round(log_path)
+        return
+    if args.halfhour:
+        run_halfhour(log_path)
+        return
+    rows = [run_one(*pack) for pack in load_four()]
+    _print_rows(rows)
+    _write_snapshot(rows)
+    print("MCTS_MMA_OK", "/opt/cursor/artifacts/mcts_mma_four.png")
 
 
 if __name__ == "__main__":
