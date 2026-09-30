@@ -17,6 +17,9 @@ cp "$ROOT/Python/demo_fsds_feature_store_attribution.py" "$STAGE/Python/"
 if [ -d "$ROOT/delivery/data/feature_store" ]; then
   cp -a "$ROOT/delivery/data/feature_store" "$STAGE/data/"
 fi
+if [ -f "$ROOT/delivery/data/README_DATA.md" ]; then
+  cp "$ROOT/delivery/data/README_DATA.md" "$STAGE/data/README_DATA.md"
+fi
 cp "$ROOT/Python/DRPerm.py" "$STAGE/Python/"
 cp "$ROOT/Python/model_registry_class.py" "$STAGE/Python/"
 cp "$ROOT/docs/FSDS_TWO_LAYER_MODALITY_ATTRIBUTION.md" "$STAGE/docs/"
