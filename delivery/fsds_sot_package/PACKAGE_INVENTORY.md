@@ -15,9 +15,13 @@ This zip bundles **`Python/fsds_sot/`** plus the **minimum repo-root glue** need
 | `Python/DRPerm.py` | **Upstream repo** — DRPerm / PO-risk permute-refit test |
 | `Python/model_registry_class.py` | **Upstream repo** — RF/XGB/MLP registry for nuisances & τ |
 | `docs/FSDS_TWO_LAYER_MODALITY_ATTRIBUTION.md` | Two-layer + token perturb notes |
+| `Python/feature_store/*` | **Feature-store use case** (from merchant prototype branch): user/order/merchant layers |
+| `Python/demo_fsds_feature_store_attribution.py` | Export CSV dataset + LOGO-MMD + multilevel tree + cross-level L1/L2 |
+| `data/feature_store/*.csv` | Bundled relational tables + merchant/user feature matrices |
+| `Python/feature_store/LAYERS.md` | Schema: user → order → item → merchant |
 | `artifacts/` | Empty placeholder for demo JSON output |
 
-**Not in zip (same GitHub repo, other folders):** `Python/R_risk_loco.py`, `Python/RRPerm.py`, `R/*`, merchant prototype scripts on branch `cursor/fsds-merchant-prototype-1905`, Online PFI delivery under `delivery/online_pfi/`.
+**Not in zip (same GitHub repo, other folders):** `Python/R_risk_loco.py`, `Python/RRPerm.py`, `R/*`, remaining merchant-branch scripts (`fsds_metric_graph`, …), Online PFI under `delivery/online_pfi/`.
 
 ---
 
@@ -44,7 +48,18 @@ This zip bundles **`Python/fsds_sot/`** plus the **minimum repo-root glue** need
 | `online_pfi.py` | Lightweight rolling **RF-PFI** (sklearn shortcut, not Registry) | B-track dashboard; optional for monitoring |
 | `plot_online_pfi.py` | Online PFI heatmap / dashboard | Delivery with Online PFI pack |
 
-### C. SoT / agent scheduling (application — **new on SoT branch**)
+### C. Feature-store multi-layer attribution (**extracted** from `cursor/fsds-merchant-prototype-1905`)
+
+| Module | Responsibility |
+|--------|----------------|
+| `feature_store/merchant_prototype.py` | Relational gen; **merchant** + **user** rollups; PO-risk + LOCO (concept drift path) |
+| `feature_store/logo_mmd.py` | **LOGO-MMD** on merchant grain (covariate shift P(X)) |
+| `feature_store/multilevel_localization.py` | **L1** raw attr → **L2** agg family → **L3** leaf (BB-FDR tree) |
+| `feature_store/cross_level.py` | **L1** merchant attribute + **L2** product vertical (conditional) |
+
+Run: `python3 demo_fsds_feature_store_attribution.py` → `delivery/data/feature_store/*.csv` + `artifacts/feature_store/feature_store_attribution_report.json`.
+
+### D. SoT / agent scheduling (application — **new on SoT branch**)
 
 | Module | Responsibility |
 |--------|----------------|
@@ -68,7 +83,7 @@ This zip bundles **`Python/fsds_sot/`** plus the **minimum repo-root glue** need
 | **This repo (canonical)** | `DRPerm`, Model Registry, R/RRPerm theory | `Python/DRPerm.py`, `Python/model_registry_class.py`; called from `online_pfi_registry.py` |
 | **This repo — SoT branch** | Agentic DGP, SoT pipeline, online PFI, closed loop | `fsds_sot/*` except modality block |
 | **This repo — SoT branch (modality delivery)** | 3 dataloaders, two-layer LOGO, token perturb audit | §2A modules + demos |
-| **Branch `cursor/fsds-merchant-prototype-1905`** (not zipped) | Merchant rollup, `fsds_logo_mmd`, multilevel localization, PO-risk LOCO at scale | **Conceptual lineage** for hierarchical LOGO / MMD; not copied file-for-file into `fsds_sot` |
+| **Branch `cursor/fsds-merchant-prototype-1905`** | Merchant rollup, LOGO-MMD, multilevel tree, cross-level | **Vendored** into `Python/feature_store/` + CSV dataset in zip |
 | **Your external script** | Qwen (or other) text embeddings | `qwen_episode_encoder.py` (you add; not in public repo) |
 
 ---

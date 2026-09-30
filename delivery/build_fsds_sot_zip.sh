@@ -7,11 +7,16 @@ STAGE="$ROOT/delivery/.fsds_sot_staging"
 OUT="$ROOT/delivery/fsds_sot_delivery.zip"
 
 rm -rf "$STAGE"
-mkdir -p "$STAGE/Python" "$STAGE/docs" "$STAGE/artifacts"
+mkdir -p "$STAGE/Python" "$STAGE/docs" "$STAGE/artifacts" "$STAGE/data"
 
 cp -a "$ROOT/Python/fsds_sot" "$STAGE/Python/"
+cp -a "$ROOT/Python/feature_store" "$STAGE/Python/"
 cp "$ROOT/Python/demo_fsds_modality_attribution.py" "$STAGE/Python/"
 cp "$ROOT/Python/demo_fsds_token_perturbation.py" "$STAGE/Python/"
+cp "$ROOT/Python/demo_fsds_feature_store_attribution.py" "$STAGE/Python/"
+if [ -d "$ROOT/delivery/data/feature_store" ]; then
+  cp -a "$ROOT/delivery/data/feature_store" "$STAGE/data/"
+fi
 cp "$ROOT/Python/DRPerm.py" "$STAGE/Python/"
 cp "$ROOT/Python/model_registry_class.py" "$STAGE/Python/"
 cp "$ROOT/docs/FSDS_TWO_LAYER_MODALITY_ATTRIBUTION.md" "$STAGE/docs/"
