@@ -1,0 +1,32 @@
+{
+  "package": "fsds_datasets",
+  "rebuild": "bash delivery/build_datasets_zip.sh",
+  "branch": "cursor/fsds-sot-tot-manuscript-7451",
+  "github_note": "Each zip is under GitHub 100MB limit; raw files also live in-repo under paths below.",
+  "downloads": {
+    "feature_store": "delivery/fsds_datasets_feature_store.zip",
+    "dgp_meta": "delivery/fsds_datasets_dgp_meta.zip",
+    "dgp_outputs_comprehensive": "delivery/fsds_datasets_dgp_outputs_comprehensive.zip",
+    "dgp_outputs_onesided": "delivery/fsds_datasets_dgp_outputs_onesided.zip"
+  },
+  "feature_store": {
+    "path_in_repo": "delivery/data/feature_store/",
+    "files": [
+      "users.csv",
+      "items.csv",
+      "merchants.csv",
+      "orders.csv",
+      "merchant_features.csv",
+      "user_features.csv"
+    ]
+  },
+  "dgp_simulation": {
+    "path_in_repo": "Python/datasets/DGP_Simulation_BothCSCD/",
+    "files": [
+      "DGP_whole_meta_comprehensive.csv",
+      "DGP_whole_meta_onesided_37.csv",
+      "DGP_whole_outputs.npy",
+      "DGP_whole_outputs_onesided.npy"
+    ]
+  }
+}

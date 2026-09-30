@@ -63,3 +63,27 @@ It was **not** found under this workspace path. Typical next step:
 2. Point the demo or a thin loader at that path.
 
 Share the **filename or GitHub path** if it lives in another repo — we can wire it into the zip and document it here.
+
+---
+
+## Download (GitHub)
+
+All datasets are **committed on branch** `cursor/fsds-sot-tot-manuscript-7451` and bundled in:
+
+| Asset | Path |
+|-------|------|
+| `delivery/fsds_datasets_feature_store.zip` | Feature-store CSVs + manifest |
+| `delivery/fsds_datasets_dgp_meta.zip` | DGP meta CSVs |
+| `delivery/fsds_datasets_dgp_outputs_comprehensive.zip` | `DGP_whole_outputs.npy` |
+| `delivery/fsds_datasets_dgp_outputs_onesided.zip` | `DGP_whole_outputs_onesided.npy` |
+
+In-repo paths (no zip): `delivery/data/feature_store/`, `Python/datasets/DGP_Simulation_BothCSCD/`.
+
+Rebuild zips: `bash delivery/build_datasets_zip.sh`
+
+Raw downloads (branch `cursor/fsds-sot-tot-manuscript-7451`):
+
+- https://github.com/ruanhq-StatsML/Causal_Objective_Permutation_Test/raw/cursor/fsds-sot-tot-manuscript-7451/delivery/fsds_datasets_feature_store.zip
+- https://github.com/ruanhq-StatsML/Causal_Objective_Permutation_Test/raw/cursor/fsds-sot-tot-manuscript-7451/delivery/fsds_datasets_dgp_meta.zip
+- https://github.com/ruanhq-StatsML/Causal_Objective_Permutation_Test/raw/cursor/fsds-sot-tot-manuscript-7451/delivery/fsds_datasets_dgp_outputs_comprehensive.zip
+- https://github.com/ruanhq-StatsML/Causal_Objective_Permutation_Test/raw/cursor/fsds-sot-tot-manuscript-7451/delivery/fsds_datasets_dgp_outputs_onesided.zip

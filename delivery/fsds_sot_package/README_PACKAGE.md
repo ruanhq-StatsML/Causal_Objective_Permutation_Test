@@ -33,3 +33,5 @@ Outputs: `../artifacts/modality_attribution_report.json`, `../artifacts/token_pe
 Branch: `cursor/fsds-sot-tot-manuscript-7451`.
 
 **Full module list & provenance (extract vs new):** see `PACKAGE_INVENTORY.md` and `MODULE_LIST.txt` in this folder (also inside the zip).
+
+**Datasets:** `delivery/fsds_datasets_*.zip` (feature-store + DGP; split for GitHub 100MB limit) — see `delivery/data/README_DATA.md`.
