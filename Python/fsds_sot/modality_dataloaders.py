@@ -39,7 +39,7 @@ def _episodes_to_list(episodes: Sequence[AgenticEpisode]) -> List[AgenticEpisode
 
 def text_dataloader(episodes: Sequence[AgenticEpisode], *, dim: int = 16, seed: int = 0) -> ModalityBatch:
     """
-    Text modality via token bag-of-hashes (see ``text_tokens``; swap encoder in prod).
+    Text modality: tokens → ``qwen_episode_encoder.encode_episode_texts`` (see ``text_encoder``).
     """
     try:
         from .text_tokens import text_features_from_episodes

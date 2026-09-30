@@ -1,0 +1,27 @@
+"""
+Copy to ``qwen_episode_encoder.py`` and paste your Qwen embedding script here.
+
+Required API (do not rename):
+
+    def encode_episode_texts(texts, *, batch_size=32) -> np.ndarray:
+        # texts: list of strings (episode trace text after token join / perturb)
+        # return: (n, d) float embedding matrix
+"""
+from __future__ import annotations
+
+from typing import Sequence
+
+import numpy as np
+
+# --- Example skeleton (replace with your script) ---
+# from sentence_transformers import SentenceTransformer
+# _MODEL = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+#
+# def encode_episode_texts(texts: Sequence[str], *, batch_size: int = 32) -> np.ndarray:
+#     return np.asarray(_MODEL.encode(list(texts), batch_size=batch_size), dtype=float)
+
+
+def encode_episode_texts(texts: Sequence[str], *, batch_size: int = 32) -> np.ndarray:
+    raise NotImplementedError(
+        "Copy qwen_episode_encoder.py.example → qwen_episode_encoder.py and use your Qwen embed script."
+    )

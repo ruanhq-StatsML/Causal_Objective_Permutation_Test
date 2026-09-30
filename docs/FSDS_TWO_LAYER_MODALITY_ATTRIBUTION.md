@@ -36,7 +36,8 @@ Module `fsds_sot/token_perturbation_audit.py` (with `text_tokens.py`):
 
 1. Episode → token sequence (`BR_*`, `Q_*`, tool/latency tags).
 2. Perturb live batch: **mask**, **replace**, **shuffle**, **drop** (global fraction), or **mask token position i** / **mask prefix group** (`BR_retrieve`, …).
-3. Re-encode tokens → `X_live'`, stack with ref → **MMD²** and **PO-risk** (`prediction_deltas_on_window`, same Registry path as DRPerm).
+3. Re-encode via **your Qwen script**: copy `qwen_episode_encoder.py.example` → `qwen_episode_encoder.py` with `encode_episode_texts(texts) -> (n,d)`. Optional: `FSDS_TEXT_ENCODER_MODULE=...`. Hash fallback is demo-only.
+4. Stack `X_live'` with ref → **MMD²** and **PO-risk** (`prediction_deltas_on_window`).
 
 Demo: `python3 demo_fsds_token_perturbation.py` → `artifacts/token_perturbation_report.json`.
 

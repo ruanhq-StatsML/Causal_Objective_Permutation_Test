@@ -1,8 +1,8 @@
 """
 Token-level text representation for agent episodes + perturbations.
 
-Production: swap ``episode_to_tokens`` / ``tokens_to_feature_matrix`` for your
-tokenizer + sentence encoder. Perturbation → re-encode → MMD / PO-risk is unchanged.
+Token perturbation stays here; **embeddings** go through ``text_encoder.encode_token_lists``
+(your ``qwen_episode_encoder.encode_episode_texts`` — not bag-of-hash in production).
 """
 
 from __future__ import annotations
@@ -58,18 +58,13 @@ def tokens_to_feature_matrix(
     dim: int = 16,
     seed: int = 0,
 ) -> np.ndarray:
-    """
-    Bag-of-token hashing into ``dim`` dims (stable, fast; replace with encoder).
-    """
-    rows = []
-    for toks in token_lists:
-        vec = np.zeros(dim, dtype=float)
-        for t in toks:
-            idx = abs(hash((seed, t))) % dim
-            vec[idx] += 1.0
-        n = max(len(toks), 1)
-        rows.append(vec / n)
-    return np.vstack(rows)
+    """Join tokens → strings → Qwen (or user encoder); hash only if encoder missing."""
+    try:
+        from .text_encoder import encode_token_lists
+    except ImportError:
+        from fsds_sot.text_encoder import encode_token_lists
+
+    return encode_token_lists(token_lists, dim=dim, seed=seed)
 
 
 def text_features_from_episodes(
