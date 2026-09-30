@@ -1,0 +1,10 @@
+{
+  "package": "fsds_sot_delivery",
+  "zip_path": "delivery/fsds_sot_delivery.zip",
+  "rebuild": "bash delivery/build_fsds_sot_zip.sh",
+  "entry_demos": [
+    "Python/demo_fsds_modality_attribution.py",
+    "Python/demo_fsds_token_perturbation.py"
+  ],
+  "core_module": "Python/fsds_sot"
+}
