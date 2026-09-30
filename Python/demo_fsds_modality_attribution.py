@@ -31,6 +31,7 @@ def main() -> int:
         live,
         seed=seed,
         include_registry_deltas=True,
+        include_token_perturbation=True,
     )
     payload = report.to_dict()
 

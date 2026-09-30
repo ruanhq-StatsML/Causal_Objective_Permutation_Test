@@ -39,18 +39,14 @@ def _episodes_to_list(episodes: Sequence[AgenticEpisode]) -> List[AgenticEpisode
 
 def text_dataloader(episodes: Sequence[AgenticEpisode], *, dim: int = 16, seed: int = 0) -> ModalityBatch:
     """
-    Text modality: synthetic episode captions hashed to fixed dim (replace with
-    real tokenizer / sentence encoder in production).
+    Text modality via token bag-of-hashes (see ``text_tokens``; swap encoder in prod).
     """
-    rng = np.random.default_rng(seed)
-    # Stable pseudo-text from branch names + quality
-    rows = []
-    for ep in episodes:
-        caption = " ".join(f"{n}:{ep.branch_quality[i]:.2f}" for i, n in enumerate(ep.branch_names))
-        h = abs(hash(caption)) % (2**31)
-        rng_ep = np.random.default_rng(h)
-        rows.append(rng_ep.normal(size=dim))
-    X = np.vstack(rows)
+    try:
+        from .text_tokens import text_features_from_episodes
+    except ImportError:
+        from fsds_sot.text_tokens import text_features_from_episodes
+
+    X = text_features_from_episodes(episodes, dim=dim, seed=seed)
     names = [f"text_h{i}" for i in range(dim)]
     return ModalityBatch("text", X, names)
 

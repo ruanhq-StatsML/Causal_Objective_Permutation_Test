@@ -68,6 +68,7 @@ class ModalityAttributionReport:
     two_layer_text: TwoLayerAttribution
     two_layer_embedding_branches: Optional[TwoLayerAttribution] = None
     registry_deltas: Optional[Dict[str, float]] = None
+    token_perturbation: Optional[Any] = None
 
     def _summary_dict(self, s: ModalitySummary) -> Dict[str, Any]:
         d = asdict(s)
@@ -95,6 +96,8 @@ class ModalityAttributionReport:
             d["two_layer_embedding_branches"] = self.two_layer_embedding_branches.to_dict()
         if self.registry_deltas is not None:
             d["registry_deltas"] = self.registry_deltas
+        if self.token_perturbation is not None:
+            d["token_perturbation"] = self.token_perturbation
         return d
 
 
@@ -177,6 +180,7 @@ def run_modality_attribution(
     n_estimators: int = 100,
     top_k: int = 8,
     include_registry_deltas: bool = False,
+    include_token_perturbation: bool = False,
 ) -> ModalityAttributionReport:
     ref_map, live_map = _load_batches(
         ref_episodes, live_episodes, text_dim=text_dim, seed=seed
@@ -272,6 +276,17 @@ def run_modality_attribution(
             top_k_layer2=8,
         )
 
+    token_perturbation_report: Optional[Any] = None
+    if include_token_perturbation:
+        from .token_perturbation_audit import run_token_perturbation_audit
+
+        token_perturbation_report = run_token_perturbation_audit(
+            ref_episodes,
+            live_episodes,
+            dim=text_dim,
+            seed=seed + 5,
+        ).to_dict()
+
     registry_deltas: Optional[Dict[str, float]] = None
     if include_registry_deltas:
         from .online_pfi_registry import prediction_deltas_on_window
@@ -294,6 +309,7 @@ def run_modality_attribution(
         two_layer_text=two_layer_text,
         two_layer_embedding_branches=two_layer_emb,
         registry_deltas=registry_deltas,
+        token_perturbation=token_perturbation_report,
     )
 
 

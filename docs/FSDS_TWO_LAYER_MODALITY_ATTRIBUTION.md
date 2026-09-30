@@ -29,3 +29,15 @@ Modules:
 - `fsds_sot/attribution.py` — `covariate_attribution`, `mmd_logo_group_delta`, `domain_logo_group_delta`
 
 Report keys: `two_layer_concat`, `two_layer_text`, `two_layer_embedding_branches`.
+
+## Token perturbation → re-calculate MMD / PO-risk
+
+Module `fsds_sot/token_perturbation_audit.py` (with `text_tokens.py`):
+
+1. Episode → token sequence (`BR_*`, `Q_*`, tool/latency tags).
+2. Perturb live batch: **mask**, **replace**, **shuffle**, **drop** (global fraction), or **mask token position i** / **mask prefix group** (`BR_retrieve`, …).
+3. Re-encode tokens → `X_live'`, stack with ref → **MMD²** and **PO-risk** (`prediction_deltas_on_window`, same Registry path as DRPerm).
+
+Demo: `python3 demo_fsds_token_perturbation.py` → `artifacts/token_perturbation_report.json`.
+
+Enable in full modality report: `run_modality_attribution(..., include_token_perturbation=True)` → JSON key `token_perturbation`.
