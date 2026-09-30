@@ -41,6 +41,7 @@ def main() -> int:
         reverse=True,
     )
     payload["modality_rank_by_global_vimp"] = slice_rank
+    payload["layer1_modality_rank_logo"] = payload["two_layer_concat"]["layer1_rank"]
 
     out = ART / "modality_attribution_report.json"
     out.write_text(json.dumps(payload, indent=2), encoding="utf-8")

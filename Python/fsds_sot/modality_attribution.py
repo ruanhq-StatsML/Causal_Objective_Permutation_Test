@@ -9,6 +9,11 @@ Pipeline (your spec):
   5. **Text-only** track: same steps on ``text_dataloader`` only.
 
 Optional: Model Registry prediction deltas on stacked X with outcome Y (success).
+
+**Two-layer delivery** (hierarchical LOGO):
+  Layer 1 — leave-one-modality-out on concat (or text sub-groups on text-only).
+  Layer 2 — leave-one-feature-out (VIMP + MMD-LOCO) within each group.
+  See ``hierarchical_attribution.run_two_layer_hierarchical``.
 """
 
 from __future__ import annotations
@@ -20,6 +25,12 @@ import numpy as np
 
 from .agentic_dgp import AgenticEpisode
 from .attribution import CovariateAttribution, covariate_attribution, rbf_mmd2
+from .hierarchical_attribution import (
+    TwoLayerAttribution,
+    embedding_branch_group_slices,
+    run_two_layer_hierarchical,
+    text_half_group_slices,
+)
 from .modality_dataloaders import (
     ModalityBatch,
     concatenate_modalities,
@@ -53,6 +64,9 @@ class ModalityAttributionReport:
     feature_names: List[str]
     modality_slices: Dict[str, slice]
     fine_grain: Dict[str, List[Dict[str, float]]]
+    two_layer_concat: TwoLayerAttribution
+    two_layer_text: TwoLayerAttribution
+    two_layer_embedding_branches: Optional[TwoLayerAttribution] = None
     registry_deltas: Optional[Dict[str, float]] = None
 
     def _summary_dict(self, s: ModalitySummary) -> Dict[str, Any]:
@@ -74,7 +88,11 @@ class ModalityAttributionReport:
             "feature_names": self.feature_names,
             "modality_slices": {k: [sl.start, sl.stop] for k, sl in self.modality_slices.items()},
             "fine_grain": self.fine_grain,
+            "two_layer_concat": self.two_layer_concat.to_dict(),
+            "two_layer_text": self.two_layer_text.to_dict(),
         }
+        if self.two_layer_embedding_branches is not None:
+            d["two_layer_embedding_branches"] = self.two_layer_embedding_branches.to_dict()
         if self.registry_deltas is not None:
             d["registry_deltas"] = self.registry_deltas
         return d
@@ -211,9 +229,7 @@ def run_modality_attribution(
         top_features=_top_k_features(names, global_cov.vimp, global_cov.mmd_loco, k=top_k),
     )
 
-    # Modality scores from global concat slices (finer ranking uses same vimp/loco)
     fine_grain: Dict[str, List[Dict[str, float]]] = {}
-    modality_from_global: Dict[str, ModalitySummary] = {}
     for key, sl in slices.items():
         block_names = names[sl.start : sl.stop]
         vimp = global_cov.vimp[sl]
@@ -221,15 +237,39 @@ def run_modality_attribution(
         mmd_block = rbf_mmd2(X_ref[:, sl], X_live[:, sl])
         tops = _top_k_features(block_names, vimp, loco, k=max(top_k, 12))
         fine_grain[key] = tops
-        modality_from_global[key] = ModalitySummary(
-            modality=key,
-            n_features=sl.stop - sl.start,
-            mmd2=mmd_block,
-            domain_auc=global_cov.domain_auc,
-            modality_vimp_mass=float(vimp.sum()),
-            overlap_ok=global_cov.overlap_ok,
-            overlap_ess=global_cov.overlap_ess,
-            top_features=tops[:top_k],
+
+    two_layer_concat = run_two_layer_hierarchical(
+        X_ref,
+        X_live,
+        names,
+        slices,
+        n_estimators=n_estimators,
+        seed=seed + 2,
+        top_k_layer2=max(top_k, 12),
+    )
+    text_slices = text_half_group_slices(text_ref.shape[1])
+    two_layer_text = run_two_layer_hierarchical(
+        text_ref,
+        text_live,
+        text_names,
+        text_slices,
+        n_estimators=n_estimators,
+        seed=seed + 3,
+        top_k_layer2=max(top_k, 12),
+    )
+
+    emb_names = ref_map["embedding"].feature_names
+    branch_slices = embedding_branch_group_slices(emb_names)
+    two_layer_emb: Optional[TwoLayerAttribution] = None
+    if branch_slices:
+        two_layer_emb = run_two_layer_hierarchical(
+            ref_map["embedding"].X,
+            live_map["embedding"].X,
+            emb_names,
+            branch_slices,
+            n_estimators=n_estimators,
+            seed=seed + 4,
+            top_k_layer2=8,
         )
 
     registry_deltas: Optional[Dict[str, float]] = None
@@ -250,6 +290,9 @@ def run_modality_attribution(
         feature_names=names,
         modality_slices=slices,
         fine_grain=fine_grain,
+        two_layer_concat=two_layer_concat,
+        two_layer_text=two_layer_text,
+        two_layer_embedding_branches=two_layer_emb,
         registry_deltas=registry_deltas,
     )
 
