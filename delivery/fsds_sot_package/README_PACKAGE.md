@@ -27,3 +27,5 @@ python3 demo_fsds_token_perturbation.py
 Outputs: `../artifacts/modality_attribution_report.json`, `../artifacts/token_perturbation_report.json` (create `artifacts/` at repo root if missing).
 
 Branch: `cursor/fsds-sot-tot-manuscript-7451`.
+
+**Full module list & provenance (extract vs new):** see `PACKAGE_INVENTORY.md` and `MODULE_LIST.txt` in this folder (also inside the zip).

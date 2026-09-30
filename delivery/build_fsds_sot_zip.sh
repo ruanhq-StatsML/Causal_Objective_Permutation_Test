@@ -16,9 +16,12 @@ cp "$ROOT/Python/DRPerm.py" "$STAGE/Python/"
 cp "$ROOT/Python/model_registry_class.py" "$STAGE/Python/"
 cp "$ROOT/docs/FSDS_TWO_LAYER_MODALITY_ATTRIBUTION.md" "$STAGE/docs/"
 cp "$PKG/README_PACKAGE.md" "$STAGE/README.md"
+cp "$PKG/PACKAGE_INVENTORY.md" "$STAGE/PACKAGE_INVENTORY.md"
+cp "$PKG/MODULE_LIST.txt" "$STAGE/MODULE_LIST.txt"
+cp "$PKG/MANIFEST.json" "$STAGE/MANIFEST.json"
 touch "$STAGE/artifacts/.gitkeep"
 
 rm -f "$OUT"
-(cd "$STAGE" && zip -rq "$OUT" .)
+(cd "$STAGE" && zip -rq "$OUT" . -x '*__pycache__*' '*.pyc')
 rm -rf "$STAGE"
 echo "Wrote $OUT ($(du -h "$OUT" | cut -f1))"
