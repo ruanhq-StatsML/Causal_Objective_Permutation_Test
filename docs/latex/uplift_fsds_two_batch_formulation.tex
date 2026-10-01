@@ -249,6 +249,81 @@ PO-risk / DRPerm & \multicolumn{2}{c}{stacked $\mathcal{D}_{\mathrm{ref}}\cup\ma
 \end{tabular}
 \end{center}
 
+\subsection{Cross-batch interpretation and business recommendations}
+\label{sec:cross-batch-business}
+
+\paragraph{Why interpretation is tricky.}
+In the two-batch contract, \textbf{the same symbol can mean different things on REF versus LIVE}.
+$\mathrm{AUUC}_{\mathrm{ref}}$ is an \emph{in-calibration} check on held-out REF rows; $\mathrm{AUUC}_{\mathrm{live}}$ is \emph{deployment} ranking quality under a frozen $\hat\tau$.
+A large $\Delta_{\mathrm{AUUC}}$ therefore \textbf{does not} by itself say ``uplift went down''---it says the ranker calibrated on REF \textbf{sorts LIVE worse than it sorted REF holdout}.
+Domain quintiles $Q_k$ are \textbf{LIVE users only}, but bins are defined by $\hat s(x)=\mathbb P(W{=}1\mid X)$ trained on \textbf{REF$\cup$LIVE}; high $Q_k$ means ``more LIVE-like relative to REF,'' not a product segment name.
+Layer~1 (AUUC) and Layer~2 ($\widehat{\tau}^{\mathrm{obs}}$, $\bar{\hat\tau}$) can \textbf{conflict on the same slice}: high observed ATE with low AUUC means ``treatment contrast looks large but ordering by $\hat\tau$ is wrong''---\textbf{cap by Layer~1}, do not increase treat intensity from Layer~2 alone.
+Finally, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}$ and MMD summarise \textbf{covariate shift between batches}; PO-risk summarises \textbf{$Y\mid X$ shift on the stack}---AUUC moves under either, so \textbf{regime must be read before subset rules}.
+
+\paragraph{Mandatory read order (ops).}
+\begin{enumerate}\itemsep2pt
+  \item SRM on $T$ in each batch --- if fail, stop; fix logging/assignment.
+  \item $\mathrm{ESS}_{\mathrm{ovlp}}$ --- if fail, \textsc{RefreshRef} only; no LOCO- or ATE-driven caps.
+  \item $\widehat{\mathrm{MMD}}^2$ and $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}$ --- classify \textbf{covariate} vs \textbf{stable-$X$} path.
+  \item $\Delta_{\mathrm{AUUC}}$, LOCO, quintile AUUC --- \textbf{Layer~1} business actions.
+  \item DRPerm $p$ --- if reject, enable \textbf{Layer~2} budget rules on empirical ATE pairs.
+  \item Compare $\bar{\hat\tau}_k$ vs $\widehat{\tau}^{\mathrm{obs}}_k$ --- \textsc{Relearn} vs \textsc{Reallocate}.
+\end{enumerate}
+
+\paragraph{Common misreadings vs recommended action.}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.26\linewidth}p{0.34\linewidth}p{0.32\linewidth}@{}}
+\toprule
+\textbf{What teams often conclude} & \textbf{Cross-batch truth} & \textbf{Business recommendation} \\
+\midrule
+``$\Delta_{\mathrm{AUUC}}$ big $\Rightarrow$ relearn today'' &
+Often mix or ranking on new support; $Y\mid X$ may be stable &
+\textsc{Reallocate} (cap quintile / overlap-only); \textsc{Relearn} only after trial or PO reject + $\bar{\hat\tau}\not\approx\widehat{\tau}^{\mathrm{obs}}$ \\
+\midrule
+``Domain RF AUC high $\Rightarrow$ model broken'' &
+$X$ shifted; ranker may be fine on overlap &
+\textsc{RefreshRef} or match cohort; \textsc{Reallocate} on high-$\hat s$ low-AUUC slices; recalibrate $e(T\mid X)$ \\
+\midrule
+``Highest empirical ATE quintile $\Rightarrow$ push spend there'' &
+ATE is LIVE-only; AUUC may be worst on that slice &
+If $p>\alpha$: \textsc{Monitor} ATE contrast only; if cap rule fired on AUUC, \textbf{do not} override with ATE \\
+\midrule
+``PO-risk reject $\Rightarrow$ relearn immediately'' &
+Concept confirmed; ranking fix may be REALLOCATE &
+\textsc{Reallocate} toward high-$\widehat{\tau}^{\mathrm{obs}}$ slice \emph{after} SRM/ESS; \textsc{Relearn} if $\bar{\hat\tau}$ misaligned \\
+\midrule
+``LOCO top group $\Rightarrow$ drop features in prod'' &
+LOCO says ranking \emph{depends} on group; drop breaks LIVE AUUC &
+\textsc{HoldFeature} / do not ablate without replacement; segment trim, not silent column drop \\
+\midrule
+``$\mathrm{AUUC}_{\mathrm{ovlp}}\gg \mathrm{AUUC}_{\mathrm{live}}$ $\Rightarrow$ all clear'' &
+Core support ranks OK; tail LIVE-like users hurt global &
+\textsc{Reallocate}: narrow targeting to overlap band; extend REF with tail when stable \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Plain-language business recommendations (policy engine).}
+Use \textbf{priority order} when multiple rules fire; lower number wins unless gates block downstream rules.
+\begin{itemize}\itemsep3pt
+  \item[\textsc{RefreshRef} (P0).]
+  ``Pause subset-driven targeting changes. Refresh or match the REF calibration cohort (or restrict analysis to ESS overlap) before applying LOCO or ATE-based caps.''
+  \item[\textsc{Reallocate} --- Layer~1 (P1).]
+  ``Reduce or pause uplift targeting on LIVE domain quintile $Q_{k^\star}$ with lowest $\mathrm{AUUC}_k$; continue in the paired better quintile from the top pairwise AUUC contrast. If $\mathrm{AUUC}_{\mathrm{ovlp}}$ exceeds global LIVE AUUC, restrict scores to overlap-support users only.''
+  \item[\textsc{Reallocate} --- Layer~2 (P1, PO gated).]
+  ``PO-risk rejected at level $\alpha$: shift today's treat/holdout budget toward the quintile with higher \emph{observed} pairwise empirical ATE (top $|\Delta\widehat{\tau}^{\mathrm{obs}}|$ pair), subject to SRM and minimum slice size. Do not apply if Layer~1 cap contradicts the same quintile.''
+  \item[\textsc{HoldFeature} (P2).]
+  ``Covariate shift localized to feature group $g$ (LOGO-MMD or LOCO): down-weight or exclude $g$ in \emph{targeting rules} and segment definitions until REF includes the shifted support; do not drop $g$ from the ranker without a replacement feature block.''
+  \item[\textsc{Relearn} (P3).]
+  ``After a REALLOCATE trial window: if DRPerm remains significant and mean $\bar{\hat\tau}_k$ systematically disagrees with $\widehat{\tau}^{\mathrm{obs}}_k$ on LIVE quintiles, schedule prod uplift model retrain on extended REF labels.''
+  \item[\textsc{Monitor} (P4).]
+  ``Report Layer~2 ATE pairwise contrasts for analytics only when PO-risk is not rejected; continue scheduled two-batch FSDS + LOCO--AUUC.''
+\end{itemize}
+
+\paragraph{Compound insight (one sentence for leadership).}
+\textbf{Domain RF AUC and MMD say whether LIVE is a new population on $X$; $\Delta_{\mathrm{AUUC}}$ and LOCO say whether the REF ranker still sorts that population; PO-risk says whether outcomes moved; quintile AUUC says where to cap; quintile ATE says where uplift moved---but spend follows ATE only when PO-risk confirms concept and AUUC does not forbid the same slice.}
+
 \paragraph{Implementation.}
 \texttt{loco\_auuc.loco\_auuc\_monitor} (Layer~1 LOCO);
 \texttt{run\_uplift\_subset\_localization} (gates, quintiles, pairwise, rules);

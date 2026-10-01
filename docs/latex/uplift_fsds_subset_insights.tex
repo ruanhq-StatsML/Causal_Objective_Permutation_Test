@@ -188,6 +188,12 @@ Optional cross-check: pairwise on $\mathbb E[\hat\tau(X)\mid Q_k]$ flags slices 
 \paragraph{Ops read (one sentence).}
 Under concept drift, global AUUC is the alarm; \textbf{pairwise empirical ATE on domain quintiles} is the post-hoc map of \emph{which user subset's uplift jumped today}; pairwise AUUC says where the \emph{existing ranker} still fails on those users.
 
+\subsection{Cross-batch business recommendations (interpretation)}
+
+Two-batch monitoring is easy to misread: $\Delta_{\mathrm{AUUC}}$ compares REF holdout to LIVE deployment (ranking drift, not uplift level); domain quintiles are LIVE rows scored by $\mathbb P(W{=}1\mid X)$ from REF$\cup$LIVE; Layer~1 AUUC and Layer~2 ATE can disagree on the same slice.
+\textbf{Always} run gates (SRM, ESS, MMD, domain RF AUC) before subset rules; \textbf{cap by AUUC before spending by ATE}; apply ATE-based REALLOCATE only when PO-risk rejects.
+Full misreading table and policy-engine sentences: Section~\ref{sec:cross-batch-business} in \verb|uplift_fsds_two_batch_formulation.tex|.
+
 \subsection{Main insights (paper-ready)}
 
 \begin{itemize}

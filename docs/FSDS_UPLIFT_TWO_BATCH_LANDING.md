@@ -176,7 +176,25 @@ AUUC alone cannot split the first column; **FSDS + PO-risk** do. Subset tools ru
 
 ---
 
-## 7. Minimal contract for eng / policy
+## 7. Cross-batch interpretation (tricky) → business recommendations
+
+**Read this before acting on subset rules.**
+
+| Pitfall | What cross-batch actually means | Do this |
+|---------|----------------------------------|---------|
+| Big ΔAUUC → relearn now | Ranking on LIVE vs REF holdout broke; not necessarily Y\|X | REALLOCATE (quintile / overlap) first |
+| High domain RF AUC → model dead | **X** shifted between batches | Refresh/match REF; cap LIVE-like quintiles; recalibrate e(T\|X) |
+| Highest ATE quintile → spend there | L2 level on LIVE; AUUC may be worst on same slice | **Cap if L1 says so**; ATE-only move only if PO reject |
+| PO reject → immediate relearn | Concept; ranking may fix with REALLOCATE | Shift budget per pairwise ATE, then relearn if τ̂ ≠ ATE |
+| LOCO top group → drop column | LOCO = dependence, not “remove safely” | HOLD_FEATURE; no silent ablation |
+
+**Mandatory order:** SRM(T) → ESS → MMD + **domain RF AUC** → L1 (AUUC, LOCO, pairwise AUUC) → PO-risk → L2 ATE (if PO reject) → RELEARN only after REALLOCATE + τ̂ vs ATE check.
+
+LaTeX (full table + policy sentences): `docs/latex/uplift_fsds_two_batch_formulation.tex`, §Cross-batch interpretation (`sec:cross-batch-business`).
+
+---
+
+## 8. Minimal contract for eng / policy
 
 **Inputs per run:**
 
