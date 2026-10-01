@@ -1,29 +1,30 @@
-% Paste block for manuscript / slides. Full section: uplift_fsds_loco_auuc.tex
-% Benchmark tables: uplift_fsds_benchmark_results.tex
+% Straightforward use case: embed batch FSDS + swap ranking metric to AUUC.
+% Tables: \input{uplift_fsds_benchmark_results.tex}
 
-\paragraph{Uplift monitoring via embedded FSDS + LOCO--AUUC (use case).}
-Same batch FSDS stack as elsewhere on $X$ and on $Y\mid X$ (PO-risk); the only swap in the ranking layer is \textbf{MSE $\rightarrow$ AUUC} on a refit-on-REF meta-learner $\hat\tau(X,T,Y)$.
-SRM on treatment $T$ gates validity; ESS$_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$ or domain RF AUC$(X)$ gates LOCO attributions.
+\paragraph{Monitoring an uplift model (direct FSDS use case).}
+Split data into a \textbf{reference} window (REF) and a \textbf{live} window (LIVE).
+Use the same batch FSDS you already use---nothing new except the \textbf{ranking score}: for uplift we track \textbf{AUUC} instead of MSE.
 
-\paragraph{Key insight (AUUC sensitivity).}
-LOCO--AUUC with embedded FSDS is \textbf{sensitive to both covariate shift and concept drift} through one primary metric: $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$.
-\begin{itemize}\itemsep2pt
-  \item \textbf{Covariate shift:} $\widehat{\mathrm{MMD}}^2(X)$ and $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$ rise; overlap ESS often stays high---yet $\mathrm{AUUC}_{\mathrm{live}}$ drops or flips sign (ranking on LIVE fails while REF may look stable).
-  \item \textbf{Concept drift:} MMD on $X$ flat or modest; PO-risk / DRPerm on $Y\mid X$ may reject; $\Delta_{\mathrm{AUUC}}$ widens and LOCO Spearman $\rho$ on $\mathrm{drop}_{\mathrm{ref}}$ vs.\ $\mathrm{drop}_{\mathrm{live}}$ goes to $\pm 1$ (targeting drivers reallocate across feature groups).
-\end{itemize}
-Layer~1 FSDS disambiguates the failure mode; AUUC signals that uplift ranking broke; LOCO--AUUC localizes where to REALLOCATE before RELEARN---no second monitoring framework.
+\medskip
+\noindent\textbf{Step 1 --- Did $X$ change?}\quad
+Run FSDS on features: $\widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}})$ and domain RF AUC$(X)$.
+Check SRM on treatment $T$ (balance in REF and LIVE).
+Optional: ESS overlap on $\hat e(W{=}1\mid X)$ before trusting feature attributions.
 
-\noindent\textbf{FSDS on $X$:}\
-$\widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}})$,
-$\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$,
-$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$.
+\medskip
+\noindent\textbf{Step 2 --- Is uplift ranking still good?}\quad
+Train a meta-learner $\hat\tau$ on REF only.
+Report $\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, and the gap $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$.
+\textbf{LOCO--AUUC:} drop a feature group, retrain on REF, recompute AUUC; large $\mathrm{drop}_{\mathrm{live}}$ means that group matters for ranking on LIVE.
 
-\noindent\textbf{LOCO--AUUC:}\
-$\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}$;
-group LOCO: $\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$,
-$\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
+\medskip
+\noindent\textbf{Step 3 (optional) --- Did $Y\mid X$ change?}\quad
+Same window: PO-risk / DRPerm with batch label $W$ (REF vs LIVE), as in standard FSDS.
 
-\noindent\textbf{FSDS PO-risk on $Y\mid X$:}\
-$\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$,
-$\mathrm{PO\text{-}risk}=n^{-1}\sum_i \hat\tau_Y(X_i)^2$,
-DRPerm on batch $W$; PO-LOCO $\mathrm{VIMP}_j$.
+\medskip
+\noindent\textbf{Main takeaway.}\quad
+\textbf{AUUC goes down under both covariate shift and concept drift.}
+If MMD / domain AUC on $X$ is up, suspect population shift first.
+If $X$ looks stable but AUUC is down, suspect concept drift and check PO-risk.
+LOCO--AUUC tells which feature groups to fix before retraining the production model.
+Production may use Dragon-Net; the monitor can use a cheap Registry X-learner---same procedure.

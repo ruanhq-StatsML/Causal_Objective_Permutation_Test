@@ -1,77 +1,26 @@
-% Uplift monitoring = embed standard batch FSDS + LOCO--AUUC (feature-level X).
-% W = REF/LIVE batch; T = uplift treatment. Figure: artifacts/uplift_fsds_monitor_flow_en.png
+% Full section (plain language). Figure: uplift_fsds_monitor_flow_en.png
 
-\section{Uplift model monitoring (embedded FSDS + LOCO--AUUC)}
+\section{Uplift model monitoring: embedded FSDS + LOCO--AUUC}
 
-\paragraph{Motivation and value.}
-Uplift models fail silently under batch shift: $P(X)$ may change while offline metrics on a frozen holdout look fine, or $\hat\tau(X)$ may stop ranking incremental users on LIVE even when covariates appear stable.
-Reusing the \emph{same} batch FSDS toolkit already applied to traces and scores avoids a second monitoring stack.
-Layer~1 (MMD, domain RF AUC on $X$, overlap) answers \emph{whether inputs shifted}; Layer~2 (AUUC + LOCO--AUUC with refit-on-REF meta-learners) answers \emph{whether targeting quality degraded and which feature groups drive it}; Layer~3 (PO-risk / DRPerm on stacked batches) answers \emph{whether $Y\mid X$ or batch--outcome interaction changed} when AUUC falls but $X$-shift signals are ambiguous.
-Checks are coupled to actions: REALLOCATE targeting and propensity calibration before full $\tau$ relearn; ESS overlap or domain AUC gate attributions so LOCO is not interpreted under mix shift.
-The monitor probe (Registry T/X/R) is deliberately cheap to retrain inside LOCO; production scorers (e.g.\ Dragon-Net) may differ and are confirmed only on alert.
-This is a direct, feature-specific operationalization of FSDS---no separate multimodal objective---suitable for hourly windows and audit trails (SRM on $T$, bootstrap AUUC on LIVE).
+\paragraph{What this is.}
+A \textbf{straightforward use case}: monitor an uplift model with the \textbf{same batch FSDS pipeline} as elsewhere.
+REF = calibration batch; LIVE = current deployment batch.
+The only special piece is the ranking metric---\textbf{AUUC instead of MSE}---plus LOCO that \textbf{retrains} the meta-learner on REF after each feature-group drop.
 
-\paragraph{Key insight (AUUC sensitivity).}
-$\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$ react to \textbf{both covariate shift and concept drift}: under covariate shift, MMD$^2$ and domain RF AUC on $X$ increase while ESS overlap may remain high, but ranking on LIVE degrades (AUUC drops or changes sign); under concept drift, $X$-shift signals can be flat while AUUC gaps widen, PO-risk on $Y\mid X$ may reject, and LOCO Spearman across REF vs.\ LIVE flips ($\rho=\pm 1$).
-Batch FSDS on $X$ and PO-risk identify \emph{which} mode dominates; AUUC identifies \emph{that} targeting quality broke; LOCO--AUUC identifies \emph{where} to act---with MSE replaced by AUUC only in the ranking layer.
+\paragraph{Three steps.}
+\begin{enumerate}\itemsep4pt
+  \item \textbf{FSDS on $X$.} MMD$^2$, domain RF AUC$(X)$, SRM on $T$, optional ESS overlap before LOCO.
+  \item \textbf{LOCO--AUUC.} Meta-learner on REF $\rightarrow$ AUUC on REF holdout and LIVE; LOCO drops localize feature groups.
+  \item \textbf{PO-risk (optional).} Same REF/LIVE stack; tests $Y\mid X$ / concept drift when AUUC falls but $X$ is flat.
+\end{enumerate}
 
-\paragraph{Windows and validity.}
-Reference batch $\mathcal{D}_{\mathrm{ref}}$ (calibration) and live batch $\mathcal{D}_{\mathrm{live}}$ (deployment).
-Batch label $W_i\in\{0,1\}$; uplift treatment $T_i\in\{0,1\}$; outcome $Y_i$; features $X_i\in\mathbb{R}^p$.
-\textbf{SRM} on $T$ in REF train and LIVE: treatment balance is required before interpreting AUUC.
+\paragraph{Why AUUC matters.}
+$\mathrm{AUUC}_{\mathrm{live}}$ drops when \textbf{covariate shift} hurts ranking on LIVE (often with MMD/domain AUC up, ESS still OK)
+and when \textbf{concept drift} changes the treatment effect surface (often with flat MMD, PO-risk significant, LOCO Spearman flipping).
+FSDS on $X$ and PO-risk tell you \emph{which} case you face; AUUC tells you ranking broke; LOCO tells you \emph{where} to act.
 
-\paragraph{Layer 1 --- $X$ (batch FSDS, embedded).}
-\[
-  \widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}}),
-  \qquad
-  \widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X),
-  \qquad
-  \mathrm{ESS}_{\mathrm{ovlp}}\bigl(\hat e(W{=}1\mid X)\bigr).
-\]
-Domain RF AUC and MMD$^2$ quantify covariate shift; ESS overlap (or extreme domain AUC $\approx 1$) gates whether LOCO--AUUC attributions are trustworthy---if support is poor, refresh or stratify $\mathcal{D}_{\mathrm{ref}}$ first.
-
-\paragraph{Layer 2 --- ranking (LOCO--AUUC).}
-Fit meta-learner $\hat\tau$ on \emph{REF train only} from $(X,T,Y)$.
-Primary metric: AUUC (aligned with \texttt{sklift.uplift\_auc\_score}):
-\[
-  \mathrm{AUUC}_{\mathrm{ref}},\quad \mathrm{AUUC}_{\mathrm{live}},\quad
-  \Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}.
-\]
-\textbf{Group LOCO--AUUC:} drop feature group $g$, retrain $\hat\tau$ on REF, recompute AUUC on REF eval and LIVE:
-\[
-  \mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)},\qquad
-  \rho=\mathrm{Spearman}\bigl(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}}\bigr).
-\]
-
-\paragraph{Layer 3 --- $Y\mid X$ (FSDS PO-risk, same window).}
-Cross-fit $\hat\mu(X)$, $\hat e(W\mid X)$ on $\mathcal{D}_{\mathrm{ref}}\cup\mathcal{D}_{\mathrm{live}}$;
-$\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$; pseudo-outcome learner $\hat\tau_Y(X)$ from Model Registry:
-\[
-  \mathrm{PO\text{-}risk}=\frac{1}{n}\sum_{i=1}^n \hat\tau_Y(X_i)^2.
-\]
-\textbf{DRPerm} (permute $W$, refit) tests global shift; \textbf{PO-LOCO} localizes features via
-$\mathrm{VIMP}_j=\mathrm{PO\text{-}risk}^{\mathrm{full}}-\mathrm{PO\text{-}risk}^{(-j)}$.
-
-\paragraph{Diagnosis and response (summary).}
-\begin{center}
-\small
-\begin{tabular}{@{}p{0.28\linewidth}p{0.32\linewidth}p{0.32\linewidth}@{}}
-\toprule
-Signal & Typical read & First response \\
-\midrule
-MMD or $\widehat{\mathrm{AUC}}_{\mathrm{dom}}\uparrow$, ESS OK, $\mathrm{AUUC}_{\mathrm{live}}\downarrow$ &
-Covariate shift; ranking loss on LIVE &
-LOCO blocks; recalibrate $e(T\mid X)$; cap segments; AUUC on overlap support \\
-ESS low or domain AUC $\approx 1$ &
-Mix / new population &
-Refresh REF; stratify; defer LOCO-driven cuts \\
-MMD flat, AUUC$\downarrow$, PO-risk reject &
-Concept / $Y\mid X$ or $\tau$ surface &
-PO-LOCO + LOCO--AUUC; extend labels; retrain prod $\hat\tau$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent Implementation: \texttt{loco\_auuc.monitor.run\_uplift\_monitor}; PO-risk via \texttt{online\_pfi\_registry}; workflow figure \texttt{uplift\_fsds\_monitor\_flow\_en.png}.
+\paragraph{Notation (compact).}
+$W\in\{0,1\}$ batch (REF/LIVE); $T\in\{0,1\}$ uplift treatment; $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$;
+$\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$ after dropping group $g$ and retraining on REF.
 
 \input{uplift_fsds_benchmark_results.tex}
