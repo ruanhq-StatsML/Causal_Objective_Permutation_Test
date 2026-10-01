@@ -1,5 +1,29 @@
 # Uplift model monitoring: LOCO × AUUC under batch shift
 
+## Core idea: meta-learner as the **monitor probe**, not necessarily the prod scorer
+
+Production may serve **DragonNet / TARNet / vendor τ̂**. FSDS monitoring still needs a model that (i) **retrains cheaply on REF** after every LOCO drop and (ii) exposes **AUUC** on REF eval + LIVE. That probe is a **meta-learner** (T-/X-/R-learner or **Model Registry** components: `model_mu`, `model_tau`, `model_e`).
+
+**You do not monitor by “evaluating the frozen prod checkpoint once.”** You monitor by **repeated refit-on-REF** inside the same window protocol; the meta-learner is the object being refit.
+
+| Role | Model | Treatment / label | Output |
+|------|--------|-------------------|--------|
+| **Prod (optional)** | Neural / any | Train on REF (or full history) | Live **scores** for targeting |
+| **Monitor probe** | Registry **X-learner** (typical) | **T** = uplift arm; fit only on **REF train** | **AUUC**, LOCO drops, diagnosis |
+| **Concept probe** | Registry **PO-risk** | **W** = REF vs LIVE batch; **Y** = outcome | DRPerm p-value, PO-LOCO on **X** |
+
+Pass `learner_factory` into `run_uplift_monitor` — e.g. `lambda: make_registry_learner("xlearner", model_mu="ridge_regressor", model_tau="ridge_regressor", model_e="logistic_classifier")`. Every LOCO step calls the same factory (see `loco.py`).
+
+**Recommended ops pattern**
+
+1. Fix a **REF** window (calibration batch) and rolling **LIVE**.
+2. **Hourly/daily**: meta-learner → `run_uplift_monitor` → MMD(X), AUUC\_ref/live, LOCO, label.
+3. **Same window**: `prediction_deltas_on_window` + optional `DRPerm` for **Y\|X** (PO-risk uses the **same registry**, batch indicator **W**, not uplift **T**).
+4. **Alert ladder**: MMD↑ → X drift; AUUC\_live↓ + stable MMD → ranking; DRPerm reject + flat MMD → concept; LOCO Spearman↓ → feature reallocation.
+5. **Prod coupling**: if prod is neural, run monitor meta-learner in parallel; **disagreement** (meta AUUC OK, prod AUUC bad, or LOCO top features differ) triggers deep LOCO on prod or relearn — do not replace cheap monitor with full neural LOCO every hour.
+
+Meta-learner choice: **Registry Logistic/Ridge X** for speed; **RF X** if nonlinear but still tabular. Match registry keys to your DRPerm/PO-risk config so uplift and concept layers are one stack.
+
 ## Why not reuse batch FSDS alone?
 
 Batch FSDS (MMD, domain AUC, overlap on **X**) answers: *did the input population change?*
