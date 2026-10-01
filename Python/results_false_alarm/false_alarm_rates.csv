@@ -1,0 +1,15 @@
+driver,detector,false_alarm_rate,ci_lo,ci_hi,reps,alpha,calibrated,verdict
+A: multiplicity (Fisher),Fisher-ANY,1.0,0.9904873594003194,1.0,400,0.05,False,inflated
+A: multiplicity (Fisher),Fisher-BH,0.06,0.0406476805246611,0.0877234432030579,400,0.05,True,calibrated
+A: multiplicity (Fisher),Fisher-GROUP-BH,0.05,0.0325971756266401,0.0759642009130725,400,0.05,True,calibrated
+A: multiplicity (Fisher),Fisher-MAXPERM,0.06,0.0406476805246611,0.0877234432030579,400,0.05,True,calibrated
+A: multiplicity (RF-OOB-perm),RFPerm-ANY,0.725,0.618557347158301,0.8108237715226401,80,0.05,False,inflated
+A: multiplicity (RF-OOB-perm),RFPerm-BH,0.0,0.0,0.0458197362645751,80,0.05,False,conservative
+A: multiplicity (RF-OOB-perm),RFPerm-GROUP-BH,0.0,0.0,0.0458197362645751,80,0.05,False,conservative
+A: multiplicity (RF-OOB-perm),RFPerm-MAXPERM,0.0375,0.0128343363007887,0.1045489197439432,80,0.05,True,calibrated
+B: window dependence (Stouffer),Stouffer-DISJOINT,0.045,0.0337993348428463,0.059683142870769,1000,0.05,True,calibrated
+B: window dependence (Stouffer),Stouffer-SLIDING,0.331,0.3025290042542964,0.3607644874679036,1000,0.05,False,inflated
+C: global permute-then-refit,MMD,0.05,0.0273823490286449,0.0895790562978438,200,0.05,True,calibrated
+C: global permute-then-refit,domain-AUC,0.03,0.0138201258307483,0.0638951197324733,200,0.05,True,calibrated
+C: global permute-then-refit,R-risk (RRPerm),0.0833333333333333,0.0361199240504858,0.1806916846811248,60,0.05,True,calibrated
+C: global permute-then-refit,PO-risk (DRPerm),0.0666666666666666,0.0262282741431979,0.1592557989376772,60,0.05,True,calibrated

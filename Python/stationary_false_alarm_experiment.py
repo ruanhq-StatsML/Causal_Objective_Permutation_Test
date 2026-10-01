@@ -494,17 +494,21 @@ def summarize(results: list[dict[str, bool]], driver: str, alpha: float) -> pd.D
     rows = []
     for key in results[0]:
         k = int(sum(r[key] for r in results))
+        far = k / reps
         lo, hi = wilson_ci(k, reps)
+        calibrated = bool(lo <= alpha <= hi)
+        verdict = "calibrated" if calibrated else ("inflated" if far > alpha else "conservative")
         rows.append(
             {
                 "driver": driver,
                 "detector": key,
-                "false_alarm_rate": k / reps,
+                "false_alarm_rate": far,
                 "ci_lo": lo,
                 "ci_hi": hi,
                 "reps": reps,
                 "alpha": alpha,
-                "calibrated": bool(lo <= alpha <= hi),
+                "calibrated": calibrated,
+                "verdict": verdict,
             }
         )
     return pd.DataFrame(rows)
@@ -566,24 +570,31 @@ def _plot(df: pd.DataFrame, alpha: float, path: str):
     far = df["false_alarm_rate"].values
     lo = far - df["ci_lo"].values
     hi = df["ci_hi"].values - far
-    colors = ["#d1495b" if not c else "#2e8b57" for c in df["calibrated"]]
+    palette = {"calibrated": "#2e8b57", "inflated": "#d1495b", "conservative": "#4a7fb5"}
+    colors = [palette.get(v, "#888888") for v in df.get("verdict", ["calibrated"] * len(df))]
 
     fig, ax = plt.subplots(figsize=(11, 7))
     y = np.arange(len(labels))[::-1]
-    ax.barh(y, far, xerr=[lo, hi], color=colors, alpha=0.85, capsize=3)
+    ax.barh(y, far, xerr=[lo, hi], color=colors, alpha=0.88, capsize=3)
     ax.axvline(alpha, color="black", ls="--", lw=1.5, label=f"nominal alpha = {alpha}")
     ax.set_yticks(y)
     ax.set_yticklabels(labels, fontsize=9)
     ax.set_xlabel("False-alarm rate (type-I error) under stationary H0")
-    ax.set_title("Where false alarms come from in the online feature-blending pipeline\n"
-                 "green = calibrated (CI covers alpha), red = inflated")
-    # driver separators
+    ax.set_title("Where false alarms come from in the online feature-blending pipeline")
+    from matplotlib.patches import Patch
+
+    handles = [
+        plt.Line2D([0], [0], color="black", ls="--", lw=1.5, label=f"nominal alpha = {alpha}"),
+        Patch(color=palette["calibrated"], label="calibrated (CI covers alpha)"),
+        Patch(color=palette["inflated"], label="inflated (FAR > alpha)"),
+        Patch(color=palette["conservative"], label="conservative (FAR < alpha)"),
+    ]
     prev = None
     for yi, drv in zip(y, df["driver"]):
         if drv != prev:
-            ax.text(0.60, yi + 0.0, drv, fontsize=8, color="gray", va="center")
+            ax.axhline(yi + 0.5, color="0.85", lw=0.8)
             prev = drv
-    ax.legend(loc="lower right")
+    ax.legend(handles=handles, loc="lower right", fontsize=8)
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
