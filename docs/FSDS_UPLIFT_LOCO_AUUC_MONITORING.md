@@ -28,10 +28,51 @@ An uplift/CATE model adds a second object: **ranking quality** — does \(\hat\t
 5. **Diagnostics**: MMD on X (ref vs live), batch overlap ESS, `auuc_gap = AUUC_ref − AUUC_live`, Spearman(`drop_ref`, `drop_live`).
 6. **Act**: see diagnosis labels in `loco_auuc.monitor.diagnose_shift`.
 
+## Three layers (feature-specific; no separate multimodal math)
+
+| Layer | Object | Monitor | Attribution |
+|-------|--------|---------|-------------|
+| **1. \(X\)** | Covariates | MMD²(ref, live), domain AUC on \(X\), overlap ESS on \(\hat e(W{=}1\mid X)\) | Online PFI / permutation VIMP on \(X\) |
+| **2. Ranking** | \(\hat\tau(X)\) vs treatment \(T\) | **AUUC** on REF eval + LIVE; `auuc_gap` | **LOCO–AUUC** (retrain on REF after each group drop) |
+| **3. \(Y\mid X\)** | Outcome + batch | **PO-risk** + **DRPerm** p-value; \(\Delta\mu\), \(\Delta\tilde Y\) | **PO-LOCO** / PO-LOGO (leave feature or group out, refit PO learner) |
+
+Treatment \(T\) is the uplift arm (email, policy). Batch indicator \(W\in\{0,1\}\) is REF vs LIVE — same FSDS convention as `DRPerm.py` and `online_pfi_registry.py`.
+
+## PO-risk / pseudo-outcome learner: \(Y\mid X\) shift
+
+**What it detects.** MMD only sees \(P(X)\). AUUC only sees whether \(\hat\tau\) still ranks well under \(T\). Neither fully specifies **concept drift**: \(P(Y\mid X)\) or the interaction of outcome residuals with the LIVE batch changed while \(X\) looks stable.
+
+**Construction (Model Registry, cross-fitted).**
+
+1. Stack REF and LIVE: \((X,Y,W)\), \(W=0\) on REF, \(W=1\) on LIVE.
+2. Cross-fit \(\hat\mu(X)\approx\mathbb E[Y\mid X]\), \(\hat e(X)\approx\mathbb P(W{=}1\mid X)\).
+3. Pseudo-outcome \(\tilde Y = (Y-\hat\mu(X))(W-\hat e(X))\).
+4. Fit **pseudo-outcome learner** \(\hat\tau_Y(X)\) (same registry outcome model, e.g. RF/ridge) on \(\tilde Y\).
+5. **PO-risk** \(= \frac1n\sum_i \hat\tau_Y(X_i)^2\) — large when batch-associated outcome structure varies with \(X\) beyond what \(\hat e\) explains.
+
+**How to evaluate (same window as AUUC).**
+
+| Metric | Meaning | Code |
+|--------|---------|------|
+| `po_risk_observed` | Global concept / batch–\(Y\) interaction signal | `prediction_deltas_on_window` |
+| DRPerm `p_value` | Permute \(W\), refit → significance of PO-risk | `run_online_registry_stream` / `DRPerm` |
+| `delta_mu_mean` | Shift in \(\mathbb E[Y\mid X]\) predictions (live − ref) | registry deltas |
+| `delta_pseudo_mean` | Shift in mean pseudo-outcome | registry deltas |
+| `delta_tau_mean` | Shift in mean \(\hat\tau_Y(X)\) | registry deltas |
+| PO-LOCO VIMP | Feature driving PO-risk (observed − leave-one-out PO-risk) | `merchant_prototype.po_risk_loco` pattern |
+
+**Joint diagnosis with AUUC + MMD.**
+
+- MMD↑, AUUC\_live↓, PO-risk not significant → prioritize propensity / support / covariate ranking fix; LOCO–AUUC on \(X\) blocks.
+- MMD flat, AUUC↓, **DRPerm reject** → **\(Y\mid X\)** or effect surface changed; use **PO-LOCO** for outcome-side features, **LOCO–AUUC** for targeting-side features; relearn labels / \(\tau\) model.
+- MMD↑ and PO-risk reject → mixed shift; stratify REF, then rerun both attributions.
+
+LaTeX (paste into manuscript): `docs/latex/uplift_fsds_monitoring_po.tex`.
+
 ## Link to FSDS-SoT stack
 
 - **L0 batch FSDS** on trace/score features including \(\hat\tau\) summaries → early warning.
-- **Group LOCO** mirrors **modality LOGO** (drop whole blocks).
+- **Group LOCO** = feature groups only (same math as any tabular \(X\)).
 - **Registry PO-risk** (`online_pfi_registry`) when \(Y\) is business outcome (conversion, SAR hit).
 - **Closed-loop ladder**: REALLOCATE targeting rules before RELEARN CATE model.
 
