@@ -1,0 +1,31 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{hyperref}
+
+\title{Two-Batch Uplift Monitoring:\\
+FSDS-Isomorphic Formulation with LOCO--AUUC and Two-Layer Localization}
+\author{Uplift FSDS monitoring note}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We formalise uplift model monitoring under a \textbf{two-batch} contract:
+REF calibrates a frozen ranker $\hat\tau$; LIVE is the deployment window.
+Batch indicator $W$ aligns with standard FSDS on covariates; treatment $T$ enters AUUC and slice-wise empirical ATE.
+Layer~1 (AUUC, LOCO--AUUC, domain-quintile pairwise comparisons) localises \emph{ranking} failure;
+Layer~2 (empirical ATE and mean $\hat\tau$ on LIVE slices) localises \emph{effect movement}, gated by PO-risk (DRPerm) on stacked batches.
+The pipeline outputs direct targeting policies without a hierarchical feature tree.
+\end{abstract}
+
+\input{uplift_fsds_two_batch_formulation.tex}
+
+\section{Empirical two-batch scenarios}
+\input{uplift_fsds_benchmark_results.tex}
+
+\section{Operational subset insights (summary tables)}
+\input{uplift_fsds_subset_insights.tex}
+
+\end{document}

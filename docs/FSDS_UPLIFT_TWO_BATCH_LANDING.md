@@ -13,6 +13,8 @@ Everything in `loco_auuc` is built for this pair. Batch indicator **W** (0=REF, 
 - **Two-layer localization** (AUUC vs uplift) both **define slices on LIVE** but use **REF∪LIVE** only where batch comparison is required (domain scores, PO-risk).
 - Outputs are **plain business rules**, not a second serving stack — easy to wire to caps, holdouts, and relearn tickets.
 
+**LaTeX (full formulation):** compile `docs/latex/uplift_fsds_two_batch_standalone.tex` (inputs `uplift_fsds_two_batch_formulation.tex` + benchmark + subset tables).
+
 See also: [two layers](./FSDS_UPLIFT_TWO_LAYERS.md), [X vs Y|X](./FSDS_UPLIFT_X_vs_YgivenX.md), benchmark narratives in `artifacts/uplift_two_layer_business_insights.md`.
 
 ---

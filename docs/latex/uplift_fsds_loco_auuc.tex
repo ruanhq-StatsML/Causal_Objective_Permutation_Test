@@ -19,9 +19,12 @@ $\mathrm{AUUC}_{\mathrm{live}}$ drops when \textbf{covariate shift} hurts rankin
 and when \textbf{concept drift} changes the treatment effect surface (often with flat MMD, PO-risk significant, LOCO Spearman flipping).
 FSDS on $X$ and PO-risk tell you \emph{which} case you face; AUUC tells you ranking broke; LOCO tells you \emph{where} to act.
 
-\paragraph{Notation (compact).}
-$W\in\{0,1\}$ batch (REF/LIVE); $T\in\{0,1\}$ uplift treatment; $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$;
-$\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$ after dropping group $g$ and retraining on REF.
+\paragraph{Formal two-batch specification.}
+Full LaTeX formulation (FSDS isomorphism, Layer~1/2, PO-risk, policy map):
+\verb|docs/latex/uplift_fsds_two_batch_formulation.tex|;
+standalone PDF source: \verb|uplift_fsds_two_batch_standalone.tex|.
+
+\input{uplift_fsds_two_batch_formulation.tex}
 
 \input{uplift_fsds_subset_insights.tex}
 
