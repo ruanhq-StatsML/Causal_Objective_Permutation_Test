@@ -78,6 +78,12 @@ Overlap AUUC $\gg$ global & band + pairwise AUUC & on overlap only & narrow targ
 Gates (SRM, ESS, MMD) $\rightarrow$ Layer~1 global + LOCO + quintile/pairwise AUUC $\rightarrow$ regime (X vs Y$|$X) $\rightarrow$ Layer~2 slice uplift + pairwise ATE (and $\bar{\hat\tau}$) when concept or budget question $\rightarrow$ actions: rank-based REALLOCATE from L1, effect-based REALLOCATE from L2, RELEARN when PO-risk persists and $\bar{\hat\tau}\not\approx\widehat{\tau}^{\mathrm{obs}}$ across slices.
 Markdown reference: \verb|docs/FSDS_UPLIFT_TWO_LAYERS.md|.
 
+\paragraph{Two-batch landing (REF vs LIVE).}
+All monitoring assumes \textbf{two batches}: REF calibrates $\hat\tau$; LIVE is scored with REF-frozen weights.
+Batch indicator $W\in\{0,1\}$ (REF vs LIVE) is \textbf{not} treatment $T$.
+FSDS gates (MMD, domain AUC, ESS on $\hat e(W|X)$), LOCO--AUUC (retrain only on REF), domain quintiles (train $\mathbb P(W{=}1\mid X)$ on REF$\cup$LIVE, slice \textbf{LIVE}), and PO-risk (stacked REF$\cup$LIVE) share this contract.
+Deployment playbook: \verb|docs/FSDS_UPLIFT_TWO_BATCH_LANDING.md|.
+
 \paragraph{Windows and notation.}
 REF (calibration) vs LIVE (deployment); batch $W\in\{0,1\}$; uplift treatment $T$; meta-learner $\hat\tau$ fit on REF train only.
 Optional feature \textbf{groups} $\mathcal{G}=\{g_1,\ldots,g_G\}$; if $\mathcal{G}=\emptyset$, LOCO runs \textbf{per feature} (one column dropped at a time).

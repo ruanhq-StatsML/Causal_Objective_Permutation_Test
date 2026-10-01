@@ -1,5 +1,7 @@
 # Two layers: AUUC (ranking) vs uplift (effect)
 
+**Scope:** both layers are defined for **two-batch** monitoring (REF vs LIVE). See [FSDS_UPLIFT_TWO_BATCH_LANDING.md](./FSDS_UPLIFT_TWO_BATCH_LANDING.md) for the full ops playbook.
+
 Uplift monitoring uses **two layers**. They share the same LIVE slices (domain quintiles, optional overlap band) but answer **different questions**. Do not merge them into one metric.
 
 ## Layer 1 — AUUC movement (ranking / targeting quality)
