@@ -1,0 +1,96 @@
+% Comprehensive subset-insight logic for uplift monitoring (tabular FSDS use case).
+% No hierarchical feature tree required. \input from uplift_fsds_loco_auuc.tex or standalone.
+% Requires: amsmath, booktabs
+
+\section{Subset insights for uplift monitoring}
+
+\paragraph{Goal.}
+Global $\mathrm{AUUC}_{\mathrm{live}}$ or $\Delta_{\mathrm{AUUC}}$ flags a problem; \textbf{subset localization} answers \emph{where} on LIVE (which features or which users/slices).
+This mirrors distribution-shift FSDS for predictive models, with \textbf{MSE replaced by AUUC} on the ranking layer.
+We do \textbf{not} use a hierarchical feature tree here---flat groups, per-feature LOCO, and population quintiles are enough for the uplift tabular use case.
+
+\paragraph{Windows and notation.}
+REF (calibration) vs LIVE (deployment); batch $W\in\{0,1\}$; uplift treatment $T$; meta-learner $\hat\tau$ fit on REF train only.
+Optional feature \textbf{groups} $\mathcal{G}=\{g_1,\ldots,g_G\}$; if $\mathcal{G}=\emptyset$, LOCO runs \textbf{per feature} (one column dropped at a time).
+
+\subsection{Workflow (order matters when mixture on $X$ is stable)}
+
+\begin{enumerate}
+  \item \textbf{Validity.} SRM on $T$; FSDS globals on $X$: $\widehat{\mathrm{MMD}}^2$, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$; ESS$_{\mathrm{ovlp}}(\hat e(W|X))$ before trusting attributions.
+  \item \textbf{Global ranking.} $\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$.
+  \item \textbf{LOCO--AUUC} (always when $\Delta_{\mathrm{AUUC}}$ or $\mathrm{AUUC}_{\mathrm{live}}$ fails SLA):
+  for each dropped set $g$ (group or single feature $j$), retrain $\hat\tau$ on REF, recompute AUUC on LIVE:
+  \[
+    \mathrm{drop}_{\mathrm{live}}^{(g)} = \mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}} - \mathrm{AUUC}_{\mathrm{live}}^{(-g)}.
+  \]
+  Large $|\mathrm{drop}_{\mathrm{live}}^{(g)}|$ $\Rightarrow$ ranking on LIVE \emph{depends} on that feature subset.
+  \item \textbf{Subset localization on LIVE} (after Step 3 when global alert fires):
+  \begin{itemize}
+    \item \emph{Population slices:} domain-quintile AUUC---partition LIVE by $\hat s(x)=\mathbb P(W{=}1\mid X=x)$; AUUC on each quintile $Q_1,\ldots,Q_5$.
+    \item \emph{Pairwise AUUC:} for slices $A,B$, report $\Delta_{A,B}=\mathrm{AUUC}_A-\mathrm{AUUC}_B$; rank pairs by $|\Delta_{A,B}|$ for business rules (cap the worse slice).
+    \item \emph{Support slice (optional):} AUUC on LIVE with $\hat e(W|X)\in[\ell,u]$ (overlap band) vs global LIVE.
+  \end{itemize}
+  \item \textbf{Optional $Y\mid X$ (concept).} PO-risk / DRPerm on stacked REF$\cup$LIVE when Step~1 shows $X$ stable but Step~2 gap is large.
+  \item \textbf{Business rules.} Plain sentences: REALLOCATE (cap quintile / overlap-only targeting), HOLD\_FEATURE (high LOCO or LOGO-MMD group), REFRESH\_REF (ESS low), RELEARN (concept after REALLOCATE trial).
+\end{enumerate}
+
+\paragraph{When covariate mixture on $X$ is stable ($\widehat{\mathrm{MMD}}^2$ and domain AUC flat).}
+User mixture on inputs looks unchanged; a large $\Delta_{\mathrm{AUUC}}$ is then read as \textbf{ranking or concept drift}, not a new population.
+\textbf{Do LOCO--AUUC first} (Step 3) to localize \emph{feature}-level drivers; \textbf{then} quintile + pairwise subset localization (Step 4) to localize \emph{who} on LIVE still ranks poorly under the \emph{same} $\hat\tau$.
+Add PO-risk (Step 5) if LOCO points to outcome-side change.
+Quintiles remain useful because $\hat\tau$ ranking can differ by slice even when $P(X)$ is stable.
+
+\paragraph{When covariate mixture shifts ($\widehat{\mathrm{MMD}}^2$ or domain AUC $\uparrow$).}
+Run LOGO-MMD on groups (if $\mathcal{G}\neq\emptyset$): drop group $g$, recompute MMD on $X\setminus g$; large $\mathrm{MMD}_{\mathrm{full}}-\mathrm{MMD}_{\setminus g}$ $\Rightarrow$ group $g$ carries shift on $X$.
+Then LOCO--AUUC and quintile AUUC as above (ranking may break on shifted support).
+
+\subsection{Two complementary subset errors (ranking layer)}
+
+\begin{center}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.34\linewidth}p{0.36\linewidth}@{}}
+\toprule
+\textbf{Insight type} & \textbf{Mechanism} & \textbf{Ops read} \\
+\midrule
+Feature / LOCO--AUUC &
+Per-feature or per-group drop, retrain on REF &
+Which columns \emph{not} to drop from targeting; which block to refresh \\
+Population / quintile AUUC &
+AUUC on LIVE slice $Q_k$ &
+Which user segment to cap or continue \\
+Pairwise AUUC &
+$\arg\max_{A,B}|\mathrm{AUUC}_A-\mathrm{AUUC}_B|$ &
+Direct A vs B rule (e.g.\ cap $Q_4$, keep $Q_5$) \\
+Overlap-band AUUC &
+AUUC on comparable-support LIVE &
+Global red but core support green $\Rightarrow$ narrow targeting \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Regime summary (what to run first)}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Signal & Regime & Primary subset tools \\
+\midrule
+ESS$_{\mathrm{ovlp}}$ low & Mix / incomparable & Refresh REF; no LOCO-driven cuts \\
+MMD or domain AUC $\uparrow$, gap $\uparrow$ & Covariate + ranking & LOGO-MMD (if groups), quintile + pairwise \\
+MMD flat, gap $\uparrow$ & Mixture stable, ranking/concept & \textbf{LOCO--AUUC first}, then quintile + pairwise; PO-risk \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Main insights (paper-ready)}
+
+\begin{itemize}
+  \item $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$ are \textbf{sensitive to both covariate shift and concept drift}; FSDS on $X$ and PO-risk separate the regime.
+  \item \textbf{LOCO--AUUC} localizes error to \emph{features} (groups optional; default per-column if no groups).
+  \item \textbf{Domain-quintile AUUC} and \textbf{pairwise comparisons} localize error to \emph{population slices} on LIVE.
+  \item When \textbf{$X$-mixture is stable}, interpret large gap via LOCO--AUUC $\rightarrow$ subset quintiles $\rightarrow$ optional PO-risk---not via hierarchical trees.
+  \item Output is \textbf{business rules} (REALLOCATE / HOLD\_FEATURE / REFRESH\_REF / RELEARN), not a second model stack.
+\end{itemize}
+
+\noindent Implementation: \texttt{loco\_auuc.loco\_auuc\_monitor} (LOCO); \texttt{run\_uplift\_subset\_localization} (quintiles, pairwise, rules).
+Empirical tables: \verb|docs/latex/uplift_fsds_benchmark_results.tex|.
