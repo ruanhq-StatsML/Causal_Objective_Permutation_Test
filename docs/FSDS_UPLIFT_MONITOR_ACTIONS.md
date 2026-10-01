@@ -3,6 +3,7 @@
 **Two layers:** Layer 1 = AUUC / LOCO / pairwise AUUC (ranking). Layer 2 = empirical ATE + mean τ̂ per slice (effect). When to use which: [FSDS_UPLIFT_TWO_LAYERS.md](./FSDS_UPLIFT_TWO_LAYERS.md).
 
 **English flow figure:** `artifacts/uplift_fsds_monitor_flow_en.png` (alias: `uplift_fsds_monitor_flow.png`).  
+Two-batch REF/LIVE · FSDS gates (MMD, **domain RF AUC**, ESS) · post-hoc L1 AUUC · L2 uplift slices · PO-risk → compound business rules.  
 Generate: `cd Python && python3 plot_uplift_fsds_monitor_flow.py`.
 
 ## Post-hoc subset localization
