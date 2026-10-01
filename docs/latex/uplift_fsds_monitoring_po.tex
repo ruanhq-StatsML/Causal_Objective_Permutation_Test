@@ -1,19 +1,21 @@
-% Short paste block (no \section). Full version: uplift_fsds_loco_auuc.tex
+% Short paste block. Full section + justification: uplift_fsds_loco_auuc.tex
 
-\noindent\textbf{FSDS on $X$:}\ 
+\paragraph{Value (embedded FSDS).}
+One monitoring stack: batch FSDS on $X$ detects input shift; LOCO--AUUC on a refit-on-REF meta-learner detects ranking decay and localizes feature groups; PO-risk/DRPerm on the same REF/LIVE window detects $Y\mid X$ concept shift when AUUC falls without clear $X$ drift---enabling REALLOCATE-before-RELEARN ops instead of silent uplift degradation.
+
+\noindent\textbf{Validity:} SRM on uplift treatment $T$ (REF \& LIVE).
+
+\noindent\textbf{FSDS on $X$:}\
 $\widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}})$,
-$\widehat{\mathrm{AUC}}_{\mathrm{dom}}(X)$,
-$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$.
+$\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$,
+$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$ (support gate for LOCO).
 
 \noindent\textbf{LOCO--AUUC:}\
-meta-learner $\hat\tau$ fit on REF train only;
-$\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$;
-drop group $g$, retrain on REF:
-$\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$;
-$\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
+meta-learner $\hat\tau$ on REF train;
+$\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}$;
+group LOCO retrain $\Rightarrow$ $\mathrm{drop}_{\mathrm{live}}^{(g)}$, $\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
 
 \noindent\textbf{FSDS PO-risk on $Y\mid X$:}\
 $\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$,
 $\mathrm{PO\text{-}risk}=n^{-1}\sum_i \hat\tau_Y(X_i)^2$,
-DRPerm on $W$;
-PO-LOCO $\mathrm{VIMP}_j=\mathrm{PO\text{-}risk}^{\mathrm{full}}-\mathrm{PO\text{-}risk}^{(-j)}$.
+DRPerm on $W$; PO-LOCO $\mathrm{VIMP}_j$.
