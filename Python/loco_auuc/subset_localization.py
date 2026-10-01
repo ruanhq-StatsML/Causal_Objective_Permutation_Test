@@ -28,6 +28,8 @@ from .posthoc_localization import (
     auuc_live_on_overlap_support,
     mmd_subset_by_groups,
     pairwise_auuc_compare,
+    pairwise_slice_uplift_compare,
+    slice_uplift_on_live,
 )
 
 
@@ -170,6 +172,33 @@ def business_rules_from_localization(
             )
         )
 
+    uplift_pair = loc.get("pairwise_empirical_ate", [])
+    if uplift_pair and loc.get("po_risk_concept_mode"):
+        top = uplift_pair[0]
+        rules.append(
+            BusinessRule(
+                1,
+                "REALLOCATE",
+                f"Concept drift (PO-risk): observed uplift differs by slice — "
+                f"higher empirical ATE in '{top['higher_uplift_subset']}' vs pairwise partner "
+                f"(ΔATE={top['delta_a_minus_b']:.4f} on {top['metric']}); "
+                f"shift today's targeting budget toward the high-uplift slice after SRM/overlap checks.",
+                top,
+            )
+        )
+    elif uplift_pair and not loc.get("po_risk_concept_mode"):
+        top = uplift_pair[0]
+        rules.append(
+            BusinessRule(
+                4,
+                "MONITOR",
+                f"Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast "
+                f"{top['subset_a']} vs {top['subset_b']} (ΔATE={top['delta_a_minus_b']:.4f}) — "
+                f"do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.",
+                top,
+            )
+        )
+
     if not rules:
         rules.append(
             BusinessRule(
@@ -219,6 +248,7 @@ def run_uplift_subset_localization(
     e_batch_live: Optional[np.ndarray] = None,
     mmd2_x: Optional[float] = None,
     overlap_ess: float = 0.2,
+    po_risk_reject: bool = False,
     seed: int = 42,
 ) -> Dict[str, Any]:
     """
@@ -291,6 +321,12 @@ def run_uplift_subset_localization(
     pairwise_quintile = pairwise_auuc_compare(quintiles)
     pairwise_all = pairwise_auuc_compare(slice_rows)
 
+    slice_uplift = slice_uplift_on_live(
+        X_ref_pool, X_live, t_live, y_live, tau_live, seed=seed
+    )
+    pairwise_ate = pairwise_slice_uplift_compare(slice_uplift, metric="empirical_ate")
+    pairwise_tau = pairwise_slice_uplift_compare(slice_uplift, metric="mean_tau_hat")
+
     loco_high = sorted(
         loco_out["loco_rows"],
         key=lambda r: -abs(r.get("drop_live", 0)),
@@ -315,6 +351,10 @@ def run_uplift_subset_localization(
         "domain_quintile_auuc": quintiles,
         "pairwise_auuc_quintiles": pairwise_quintile[:10],
         "pairwise_auuc_slices": pairwise_all[:10],
+        "concept_slice_uplift_live": slice_uplift,
+        "pairwise_empirical_ate": pairwise_ate[:10],
+        "pairwise_mean_tau_by_slice": pairwise_tau[:10],
+        "po_risk_concept_mode": bool(po_risk_reject),
         "overlap_support_auuc": overlap_row,
         "diagnosis": diag,
         "subset_insight_regime": regime,
@@ -325,6 +365,12 @@ def run_uplift_subset_localization(
             "top_logo_mmd_group": logo_mmd[0]["group"] if logo_mmd else None,
             "top_loco_live_group": loco_high[0]["feature"] if loco_high else None,
             "x_stable_but_gap_large": regime == "x_stable_gap_large_check_loco_and_po_risk",
+            "top_empirical_ate_quintile": max(
+                (r for r in slice_uplift if np.isfinite(r.get("empirical_ate", np.nan))),
+                key=lambda r: r["empirical_ate"],
+                default=None,
+            ),
+            "largest_pairwise_ate_gap": pairwise_ate[0] if pairwise_ate else None,
         },
     }
     loc["business_rules"] = [r.to_dict() for r in business_rules_from_localization(loc)]

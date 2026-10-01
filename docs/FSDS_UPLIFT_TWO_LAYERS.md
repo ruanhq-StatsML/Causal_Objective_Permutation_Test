@@ -78,6 +78,14 @@ Two complementary views (both on the **same quintiles**):
 4. **Layer 2:** `slice_uplift_on_live` → pairwise empirical ATE; optional pairwise mean \(\hat\tau\).
 5. **Act:** Layer 1 → rank-based REALLOCATE / HOLD_FEATURE; Layer 2 → effect-based REALLOCATE; PO-risk + mismatch → RELEARN.
 
+Benchmark run (4 datasets, business rules JSON + narrative):
+
+```bash
+cd Python && python3 run_uplift_subset_benchmark.py
+```
+
+Outputs: `artifacts/uplift_two_layer_benchmark.json`, `artifacts/uplift_two_layer_business_insights.md`.
+
 Code: `run_uplift_subset_localization` returns both layers in one dict (`auuc_*`, `pairwise_auuc_*`, `concept_slice_uplift_live`, `pairwise_empirical_ate`, `pairwise_mean_tau_by_slice`). Set `po_risk_reject=True` to emit REALLOCATE rules on the top ATE pair.
 
 LaTeX: `docs/latex/uplift_fsds_subset_insights.tex`, subsection *Two monitoring layers*.
