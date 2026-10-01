@@ -1,5 +1,7 @@
 # Uplift subset insights (no groups required)
 
+**Two layers (read first):** [FSDS_UPLIFT_TWO_LAYERS.md](./FSDS_UPLIFT_TWO_LAYERS.md) — Layer 1 = AUUC/ranking; Layer 2 = empirical ATE + mean τ̂ (effect). Same quintiles, different questions.
+
 **Question:** Global AUUC dropped — **on which subset?**
 
 ## Two intuitive slice errors (ranking layer)
