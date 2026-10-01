@@ -1,0 +1,55 @@
+% Uplift monitoring = standard batch FSDS on X + LOCO--AUUC on tau-hat.
+% Feature-level tabular X only. W = REF/LIVE batch; T = uplift treatment arm.
+
+\section{Uplift model monitoring (FSDS + LOCO--AUUC)}
+
+\paragraph{Windows.}
+Reference batch $\mathcal{D}_{\mathrm{ref}}$ (calibration) and live batch $\mathcal{D}_{\mathrm{live}}$ (deployment).
+Batch label $W_i\in\{0,1\}$; uplift treatment $T_i\in\{0,1\}$; outcome $Y_i$; features $X_i\in\mathbb{R}^p$.
+
+\paragraph{Layer 1 --- $X$ (batch FSDS).}
+Same as elsewhere in FSDS: covariate shift on inputs,
+\[
+  \widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}}),
+  \qquad
+  \widehat{\mathrm{AUC}}_{\mathrm{dom}}(X),
+  \qquad
+  \mathrm{ESS}_{\mathrm{ovlp}}\bigl(\hat e(W{=}1\mid X)\bigr).
+\]
+If $\mathrm{ESS}_{\mathrm{ovlp}}$ is low, stratify or refresh $\mathcal{D}_{\mathrm{ref}}$ before attributions.
+
+\paragraph{Layer 2 --- ranking (LOCO--AUUC).}
+Fit a meta-learner $\hat\tau$ (T/X/R or Model Registry) on \emph{REF train only}, using $(X,T,Y)$.
+Primary metric: area under the uplift curve (AUUC), aligned with \texttt{sklift.uplift\_auc\_score}:
+\[
+  \mathrm{AUUC}_{\mathrm{ref}},\quad \mathrm{AUUC}_{\mathrm{live}},\quad
+  \Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}.
+\]
+\textbf{LOCO--AUUC} (group $g\subseteq\{1,\ldots,p\}$): remove columns in $g$, retrain $\hat\tau$ on REF train, predict on REF eval and LIVE, recompute AUUC:
+\[
+  \mathrm{drop}_{\mathrm{ref}}^{(g)}=\mathrm{AUUC}_{\mathrm{ref}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{ref}}^{(-g)},\quad
+  \mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}.
+\]
+Stability: $\rho=\mathrm{Spearman}\bigl(\{\mathrm{drop}_{\mathrm{ref}}^{(g)}\},\{\mathrm{drop}_{\mathrm{live}}^{(g)}\}\bigr)$.
+Production $\hat\tau$ may differ (e.g.\ Dragon-Net); the monitor probe is the refit-on-REF meta-learner inside LOCO.
+
+\paragraph{Layer 3 --- $Y\mid X$ (FSDS PO-risk, optional same window).}
+Stack $\mathcal{D}_{\mathrm{ref}}\cup\mathcal{D}_{\mathrm{live}}$. Cross-fit $\hat\mu(X)\approx\mathbb{E}[Y\mid X]$, $\hat e(X)\approx\mathbb{P}(W{=}1\mid X)$.
+Pseudo-outcome $\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$; registry learner $\hat\tau_Y(X)$ regresses $\tilde Y$ on $X$:
+\[
+  \mathrm{PO\text{-}risk}=\frac{1}{n}\sum_{i=1}^n \hat\tau_Y(X_i)^2.
+\]
+\textbf{DRPerm}: permute $W$, refit nuisances and $\hat\tau_Y$; test PO-risk.
+\textbf{PO-LOCO}: $\mathrm{VIMP}_j=\mathrm{PO\text{-}risk}^{\mathrm{full}}-\mathrm{PO\text{-}risk}^{(-j)}$ after dropping feature $j$ and refitting.
+
+\paragraph{Joint readout.}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+MMD & $\Delta_{\mathrm{AUUC}}$ / $\mathrm{AUUC}_{\mathrm{live}}$ & PO-risk / DRPerm \\
+\midrule
+$\uparrow$ & live $\downarrow$ & not sig.\ $\Rightarrow$ covariate shift, ranking loss \\
+flat & $\downarrow$ & reject $\Rightarrow$ concept / $Y\mid X$; PO-LOCO + LOCO--AUUC \\
+\bottomrule
+\end{tabular}
+\end{center}

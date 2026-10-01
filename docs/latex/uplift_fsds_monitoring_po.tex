@@ -1,38 +1,19 @@
-% Paste-ready snippet: feature-level uplift monitoring (no multimodal).
-% Stack REF ($W=0$) and LIVE ($W=1$) batches; treatment $T$ enters only the uplift/AUUC path.
+% Short paste block (no \section). Full version: uplift_fsds_loco_auuc.tex
 
-\paragraph{Covariates $X$ (batch shift).}
-\[
-  \widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}}, X_{\mathrm{live}})
-  \quad\text{and}\quad
-  \widehat{\mathrm{AUC}}_{\mathrm{dom}}(X)
-\]
-flag input-population drift; high overlap ESS on $\hat e(W{=}1\mid X)$ is required before trusting attributions.
+\noindent\textbf{FSDS on $X$:}\ 
+$\widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}})$,
+$\widehat{\mathrm{AUC}}_{\mathrm{dom}}(X)$,
+$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$.
 
-\paragraph{Uplift ranking (primary).}
-Train $\hat\tau$ on REF with treatment $T$; sort by $\hat\tau$ on REF eval and LIVE:
-\[
-  \mathrm{AUUC}_{\mathrm{ref}},\;
-  \mathrm{AUUC}_{\mathrm{live}},\;
-  \Delta_{\mathrm{AUUC}} = \mathrm{AUUC}_{\mathrm{ref}} - \mathrm{AUUC}_{\mathrm{live}}.
-\]
-If $\Delta_{\mathrm{AUUC}}$ is large, \textbf{group LOCO--AUUC}: drop feature group $g$, retrain on REF, recompute AUUC; importance $\mathrm{drop}_{\mathrm{live}}^{(g)} = \mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}} - \mathrm{AUUC}_{\mathrm{live}}^{(-g)}$; stability $\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}}, \mathrm{drop}_{\mathrm{live}})$.
+\noindent\textbf{LOCO--AUUC:}\
+meta-learner $\hat\tau$ fit on REF train only;
+$\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$;
+drop group $g$, retrain on REF:
+$\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$;
+$\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
 
-\paragraph{Outcome / concept $Y\mid X$ (FSDS PO-risk).}
-Cross-fit nuisances on stacked data $(X,Y,W)$:
-$\hat\mu(X)\approx \mathbb E[Y\mid X]$, $\hat e(X)\approx \mathbb P(W{=}1\mid X)$;
-pseudo-outcome $\tilde Y = (Y-\hat\mu(X))\,(W-\hat e(X))$;
-pseudo-outcome learner $\hat\tau_Y(X)$ from Model Registry regresses $\tilde Y$ on $X$.
-\[
-  \mathrm{PO\text{-}risk} = \frac{1}{n}\sum_{i=1}^n \hat\tau_Y(X_i)^2,
-  \qquad
-  \Delta_\mu = \overline{\hat\mu}_{\mathrm{live}} - \overline{\hat\mu}_{\mathrm{ref}},
-  \qquad
-  \Delta_{\tilde Y} = \overline{\tilde Y}_{\mathrm{live}} - \overline{\tilde Y}_{\mathrm{ref}}.
-\]
-\textbf{DRPerm}: permute $W$, refit $\hat e$ and $\hat\tau_Y$, p-value on PO-risk (global $Y\mid X$ / batch interaction shift).
-\textbf{PO-LOCO}: leave feature $j$ out, refit nuisances + $\hat\tau_Y$; $\mathrm{VIMP}_j = \mathrm{PO\text{-}risk}^{\mathrm{full}} - \mathrm{PO\text{-}risk}^{(-j)}$.
-
-\paragraph{Read jointly (feature-specific use case).}
-MMD$\uparrow$, AUUC$_{\mathrm{live}}\downarrow$, PO-risk ns $\Rightarrow$ covariate-driven ranking loss.
-MMD flat, AUUC$\downarrow$, PO-risk reject $\Rightarrow$ concept drift in $Y\mid X$ / effect surface; PO-LOCO names features; LOCO--AUUC names ranking drivers.
+\noindent\textbf{FSDS PO-risk on $Y\mid X$:}\
+$\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$,
+$\mathrm{PO\text{-}risk}=n^{-1}\sum_i \hat\tau_Y(X_i)^2$,
+DRPerm on $W$;
+PO-LOCO $\mathrm{VIMP}_j=\mathrm{PO\text{-}risk}^{\mathrm{full}}-\mathrm{PO\text{-}risk}^{(-j)}$.
