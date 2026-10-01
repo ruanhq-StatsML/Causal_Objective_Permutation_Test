@@ -100,6 +100,14 @@ LaTeX (paste into manuscript): `docs/latex/uplift_fsds_monitoring_po.tex`.
 - **Registry PO-risk** (`online_pfi_registry`) when \(Y\) is business outcome (conversion, SAR hit).
 - **Closed-loop ladder**: REALLOCATE targeting rules before RELEARN CATE model.
 
+## Flowchart & action playbook
+
+![FSDS uplift monitor flow](../artifacts/uplift_fsds_monitor_flow.png)
+
+When **AUUC_live** drops, use diagnosis + **ESS_ovlp** to choose actions (REALLOCATE before RELEARN): see **`docs/FSDS_UPLIFT_MONITOR_ACTIONS.md`**.
+
+Generate figure: `cd Python && python3 plot_uplift_fsds_monitor_flow.py`.
+
 ## Code
 
 ```bash
