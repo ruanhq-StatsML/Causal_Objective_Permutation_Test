@@ -21,12 +21,14 @@ def main() -> int:
     result = run_full_benchmark(quick=args.quick)
     write_benchmark_outputs(result, args.out)
     DOCS.mkdir(parents=True, exist_ok=True)
-    from loco_auuc.benchmark import write_monitoring_paper
+    from loco_auuc.benchmark import write_monitoring_paper, write_uplift_fsds_benchmark_tex
 
     write_monitoring_paper(result, DOCS / "loco_auuc_monitoring.tex")
+    write_uplift_fsds_benchmark_tex(result, DOCS / "uplift_fsds_benchmark_results.tex")
     print("Wrote", args.out / "loco_auuc_benchmark.json")
     print("Wrote", args.out / "loco_auuc_benchmark.tex")
     print("Wrote", DOCS / "loco_auuc_monitoring.tex")
+    print("Wrote", DOCS / "uplift_fsds_benchmark_results.tex")
     return 0
 
 

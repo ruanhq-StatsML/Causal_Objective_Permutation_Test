@@ -1,0 +1,68 @@
+% Auto-generated from loco_auuc_benchmark.json — 2026-10-01
+\paragraph{Empirical monitoring benchmarks.}
+Four REF/LIVE scenarios: Hillstrom (real email uplift); Hillstrom with injected covariate shift on $X$;
+synthetic covariate shift ($f_0$ offset on LIVE); synthetic concept shift (new driver $f_3$ on LIVE).
+Layer~1 reports Online PFI on $X$ (MMD$^2$, domain RF AUC, overlap ESS); Layer~2 is group LOCO--AUUC
+(2 blocks, 6 retrains per learner). AUUC matches \texttt{sklift}; $|\Delta\mathrm{sklift}|=0$ on all runs below.
+Monitor overlap ESS on stacked REF/LIVE is high ($\gtrsim 0.7$) in most rows---LOCO attributions are gated in.
+\subparagraph{hillstrom.}
+FSDS on $X$: MMD$^2$=0.0014, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}=$0.9381, ESS$_{\mathrm{ovlp}}=$0.690.
+\begin{center}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule Learner & AUUC$_{\mathrm{ref}}$ & AUUC$_{\mathrm{live}}$ & gap & ESS & $\rho$ & LOCO (s) \\
+\midrule
+registry\_logistic\_x & -0.0004 & 0.0486 & -0.0490 & 0.982 & 1.00 & 0.50 \\
+sklearn\_xlearner & -0.0449 & 0.0154 & -0.0603 & 0.982 & 1.00 & 2.77 \\
+registry\_rf\_x & -0.0451 & 0.0017 & -0.0468 & 0.982 & 1.00 & 1.82 \\
+tarnet & -0.0227 & -0.0131 & -0.0096 & 0.982 & 1.00 & 7.58 \\
+dragonnet & -0.0105 & 0.0463 & -0.0568 & 0.982 & 1.00 & 7.76 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\subparagraph{hillstrom\_covariate\_drift.}
+FSDS on $X$: MMD$^2$=0.0039, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}=$1.0000, ESS$_{\mathrm{ovlp}}=$1.000.
+\begin{center}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule Learner & AUUC$_{\mathrm{ref}}$ & AUUC$_{\mathrm{live}}$ & gap & ESS & $\rho$ & LOCO (s) \\
+\midrule
+registry\_logistic\_x & 0.0152 & -0.0236 & 0.0388 & 1.000 & 1.00 & 0.43 \\
+sklearn\_xlearner & 0.0144 & -0.0181 & 0.0325 & 1.000 & 1.00 & 3.02 \\
+registry\_rf\_x & -0.0341 & -0.0093 & -0.0248 & 1.000 & 1.00 & 1.75 \\
+tarnet & -0.0241 & 0.0284 & -0.0525 & 1.000 & 1.00 & 5.91 \\
+dragonnet & 0.0147 & -0.0164 & 0.0311 & 1.000 & 1.00 & 7.02 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\subparagraph{synthetic\_covariate.}
+FSDS on $X$: MMD$^2$=0.0029, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}=$0.9999, ESS$_{\mathrm{ovlp}}=$0.753.
+\begin{center}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule Learner & AUUC$_{\mathrm{ref}}$ & AUUC$_{\mathrm{live}}$ & gap & ESS & $\rho$ & LOCO (s) \\
+\midrule
+registry\_logistic\_x & -0.0515 & 0.0231 & -0.0746 & 0.715 & 1.00 & 0.64 \\
+sklearn\_xlearner & -0.0160 & 0.0112 & -0.0272 & 0.715 & -1.00 & 6.81 \\
+registry\_rf\_x & -0.0277 & 0.0386 & -0.0663 & 0.715 & 1.00 & 2.60 \\
+tarnet & -0.0392 & 0.0106 & -0.0498 & 0.715 & 1.00 & 4.56 \\
+dragonnet & -0.0566 & 0.0297 & -0.0863 & 0.715 & 1.00 & 5.27 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\subparagraph{synthetic\_concept.}
+FSDS on $X$: MMD$^2$=0.0015, $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}=$1.0000, ESS$_{\mathrm{ovlp}}=$0.893.
+\begin{center}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule Learner & AUUC$_{\mathrm{ref}}$ & AUUC$_{\mathrm{live}}$ & gap & ESS & $\rho$ & LOCO (s) \\
+\midrule
+registry\_logistic\_x & 0.0620 & -0.0328 & 0.0949 & 0.909 & 1.00 & 0.59 \\
+sklearn\_xlearner & 0.0088 & -0.0026 & 0.0114 & 0.909 & -1.00 & 6.77 \\
+registry\_rf\_x & -0.0820 & -0.0080 & -0.0741 & 0.909 & -1.00 & 2.58 \\
+tarnet & -0.0590 & 0.0257 & -0.0847 & 0.909 & -1.00 & 4.50 \\
+dragonnet & 0.0261 & -0.0554 & 0.0815 & 0.909 & -1.00 & 5.42 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent\emph{Readout.} Hillstrom: low MMD, high monitor ESS ($\approx 0.98$); Registry Logistic-X and DragonNet achieve highest AUUC$_{\mathrm{live}}$, meta LOCO $\approx 10\times$ faster. Covariate-drifting Hillstrom/synthetic: domain AUC $\rightarrow 1$, AUUC$_{\mathrm{live}}$ often flips sign. Synthetic concept: AUUC gap widens with LOCO Spearman $\pm 1$ across blocks---feature-level reallocation visible.
