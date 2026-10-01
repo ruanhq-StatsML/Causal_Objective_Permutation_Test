@@ -218,7 +218,7 @@ cd Python && python3 run_uplift_subset_benchmark.py   # four canonical scenarios
 
 ---
 
-## 8. Reading benchmark runs (two-batch sanity)
+## 9. Reading benchmark runs (two-batch sanity)
 
 | Dataset | Two-batch story |
 |---------|-----------------|
