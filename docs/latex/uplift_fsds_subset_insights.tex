@@ -4,6 +4,29 @@
 
 \section{Subset insights for uplift monitoring}
 
+\paragraph{Two axes (everything else follows from these).}
+Monitoring splits into \textbf{(A) did $P(X)$ or the REF/LIVE mixture on $X$ change?} and \textbf{(B) did the outcome mechanism $Y\mid X$ (and treatment interaction) change?}
+They drive different signals, different trustworthy subset tools, and different business rules.
+AUUC is sensitive to \emph{both}, but \emph{cannot} tell them apart alone---FSDS on $X$ answers (A); PO-risk / DRPerm on stacked batches answers (B).
+When (A) and (B) co-occur, run validity gates first (ESS), then localize features (LOCO, LOGO-MMD) and slices (quintiles) before RELEARN.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.18\linewidth}p{0.36\linewidth}p{0.36\linewidth}@{}}
+\toprule
+ & \textbf{$Y\mid X$ stable} & \textbf{$Y\mid X$ shifted (PO-risk reject)} \\
+\midrule
+\textbf{$X$ stable}\newline (MMD/AUC flat) &
+Ranking/$\hat\tau$ issue on same support:\newline LOCO--AUUC + quintiles trusted;\newline gap $\approx$ pure targeting drift &
+Concept + ranking:\newline LOCO names feature drivers;\newline PO-LOCO names outcome drivers;\newline RELEARN after REALLOCATE \\
+\midrule
+\textbf{$X$ shifted}\newline (MMD/AUC $\uparrow$) &
+Covariate shift:\newline LOGO-MMD (groups), quintile AUUC;\newline AUUC may flip on LIVE slices;\newline recalibrate $e(T\mid X)$, cap segments &
+Mixed shift:\newline stratify REF; subset tools on matched support;\newline do not trust global LOCO until ESS OK \\
+\bottomrule
+\end{tabular}
+\end{center}
+
 \paragraph{Goal.}
 Global $\mathrm{AUUC}_{\mathrm{live}}$ or $\Delta_{\mathrm{AUUC}}$ flags a problem; \textbf{subset localization} answers \emph{where} on LIVE (which features or which users/slices).
 This mirrors distribution-shift FSDS for predictive models, with \textbf{MSE replaced by AUUC} on the ranking layer.
