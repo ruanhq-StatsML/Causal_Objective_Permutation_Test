@@ -2,6 +2,7 @@
 
 \paragraph{Value (embedded FSDS).}
 One monitoring stack: batch FSDS on $X$ detects input shift; LOCO--AUUC on a refit-on-REF meta-learner detects ranking decay and localizes feature groups; PO-risk/DRPerm on the same REF/LIVE window detects $Y\mid X$ concept shift when AUUC falls without clear $X$ drift---enabling REALLOCATE-before-RELEARN ops instead of silent uplift degradation.
+\emph{Insight:} $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$ are sensitive to \textbf{both covariate shift and concept drift}; MMD/domain AUC on $X$ and PO-risk separate the failure mode (same FSDS as elsewhere, MSE $\rightarrow$ AUUC in the ranking layer).
 
 \noindent\textbf{Validity:} SRM on uplift treatment $T$ (REF \& LIVE).
 

@@ -65,4 +65,9 @@ dragonnet & 0.0261 & -0.0554 & 0.0815 & 0.909 & -1.00 & 5.42 \\
 \bottomrule
 \end{tabular}
 \end{center}
+\noindent\emph{Key insight (AUUC sensitivity).} LOCO--AUUC with embedded FSDS is \textbf{sensitive to both covariate shift and concept drift} through the same primary metric: $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$.
+Under \emph{covariate shift} (MMD$^2$ and domain RF AUC on $X$ rise, overlap ESS often remains high), ranking on LIVE degrades---AUUC$_{\mathrm{live}}$ drops or changes sign (Hillstrom covariate drift; synthetic covariate) even when the REF calibration window looks stable.
+Under \emph{concept drift} (MMD on $X$ flat or modest, PO-risk / DRPerm on $Y\mid X$ may reject), AUUC gaps widen and LOCO Spearman flips ($\rho=\pm 1$), indicating which feature groups no longer drive the same targeting surface (synthetic concept).
+Layer~1 FSDS on $X$ tells \emph{which failure mode} is dominant; AUUC tells \emph{that} uplift ranking broke; LOCO tells \emph{where} to act---without replacing the rest of the FSDS stack (only MSE $\rightarrow$ AUUC in Layer~2).
+
 \noindent\emph{Readout.} Hillstrom: low MMD, high monitor ESS ($\approx 0.98$); Registry Logistic-X and DragonNet achieve highest AUUC$_{\mathrm{live}}$, meta LOCO $\approx 10\times$ faster. Covariate-drifting Hillstrom/synthetic: domain AUC $\rightarrow 1$, AUUC$_{\mathrm{live}}$ often flips sign. Synthetic concept: AUUC gap widens with LOCO Spearman $\pm 1$ across blocks---feature-level reallocation visible.
