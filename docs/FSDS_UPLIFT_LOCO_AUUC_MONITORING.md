@@ -102,7 +102,7 @@ LaTeX (paste into manuscript): `docs/latex/uplift_fsds_monitoring_po.tex`.
 
 ## Flowchart & action playbook
 
-![FSDS uplift monitor flow](../artifacts/uplift_fsds_monitor_flow.png)
+![FSDS uplift monitor flow (English)](../artifacts/uplift_fsds_monitor_flow_en.png)
 
 When **AUUC_live** drops, use diagnosis + **ESS_ovlp** to choose actions (REALLOCATE before RELEARN): see **`docs/FSDS_UPLIFT_MONITOR_ACTIONS.md`**.
 

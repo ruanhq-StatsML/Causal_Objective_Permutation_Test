@@ -1,6 +1,23 @@
 # Uplift monitor playbook: FSDS + LOCO–AUUC → actions when AUUC drops
 
-Flow figure: `artifacts/uplift_fsds_monitor_flow.png` (generate: `cd Python && python3 plot_uplift_fsds_monitor_flow.py`).
+**English flow figure:** `artifacts/uplift_fsds_monitor_flow_en.png` (alias: `uplift_fsds_monitor_flow.png`).  
+Generate: `cd Python && python3 plot_uplift_fsds_monitor_flow.py`.
+
+## SRM, ESS overlap, and domain RF AUC (support gate)
+
+| Check | What it guards | Typical use |
+|-------|----------------|-------------|
+| **SRM on T** | Treatment ratio in REF train and LIVE matches design (e.g. 50/50) | **Before AUUC**: imbalanced T invalidates uplift curves; fix assignment/logging first. |
+| **Domain RF AUC(X)** | Can a random forest separate REF vs LIVE using **X alone**? | Standard **batch FSDS** covariate signal (with MMD²). AUC ≈ 0.5 → batches look alike on X; AUC → 1 → strong shift (same story as high MMD / Online PFI domain AUC). |
+| **ESS overlap** on \(\hat e(W{=}1\mid X)\) | Effective sample size after batch propensity weights | **Before LOCO–AUUC / PO-LOCO**: low ESS → ref and live sit on different X supports; attributions are unstable even if AUUC moves. |
+
+You can gate Layer 2 attributions with **either or both**:
+
+- **ESS overlap high** (e.g. above team threshold ~0.15–0.3 rule-of-thumb in `diagnose_shift`) → proceed with LOCO–AUUC.
+- **Domain RF AUC(X) not extreme** (e.g. &lt; 0.95 after calibration) together with MMD → covariate shift is real but you may still compare rankings on overlap.
+- **ESS low or domain AUC ≈ 1** → treat as **mix shift**: refresh REF, stratify, do **not** trust LOCO drops until the gate passes.
+
+SRM is independent: pass SRM on **T** even when X overlap looks fine.
 
 ## How to run the monitor (one window)
 

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Simple flowchart: FSDS + LOCO-AUUC uplift monitoring and response actions."""
+"""English flowchart: FSDS + LOCO-AUUC uplift monitoring and response actions."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "artifacts" / "uplift_fsds_monitor_flow.png"
+OUT = ROOT / "artifacts" / "uplift_fsds_monitor_flow_en.png"
+OUT_LEGACY = ROOT / "artifacts" / "uplift_fsds_monitor_flow.png"
 
 
 def _box(ax, xy, w, h, text, fc="#eef4ff", ec="#334155", fontsize=8):
@@ -24,155 +25,197 @@ def _box(ax, xy, w, h, text, fc="#eef4ff", ec="#334155", fontsize=8):
         facecolor=fc,
     )
     ax.add_patch(p)
-    ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fontsize, wrap=True)
+    ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fontsize)
 
 
-def _arrow(ax, start, end, text=None):
-    arr = FancyArrowPatch(
-        start,
-        end,
-        arrowstyle="-|>",
-        mutation_scale=12,
-        linewidth=1.1,
-        color="#475569",
+def _arrow(ax, start, end):
+    ax.add_patch(
+        FancyArrowPatch(
+            start,
+            end,
+            arrowstyle="-|>",
+            mutation_scale=12,
+            linewidth=1.1,
+            color="#475569",
+        )
     )
-    ax.add_patch(arr)
-    if text:
-        mx = (start[0] + end[0]) / 2
-        my = (start[1] + end[1]) / 2
-        ax.text(mx, my + 0.15, text, ha="center", fontsize=7, color="#64748b")
 
 
 def main() -> None:
-    fig, ax = plt.subplots(figsize=(11, 14))
+    fig, ax = plt.subplots(figsize=(11.5, 15))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 18)
+    ax.set_ylim(0, 19)
     ax.axis("off")
     ax.set_title(
-        "Monitor uplift with FSDS + LOCO–AUUC\n(meta-learner probe on REF; ESS overlap gates attribution)",
-        fontsize=12,
+        "How to monitor an uplift model with FSDS + LOCO–AUUC",
+        fontsize=13,
         fontweight="bold",
-        pad=12,
+        pad=14,
     )
-
-    _box(ax, (2.5, 16.2), 5, 1.0, "REF window + LIVE window\n(features X, treatment T, outcome Y)", fc="#dbeafe")
-    _arrow(ax, (5, 16.2), (5, 15.5))
+    ax.text(
+        5,
+        18.35,
+        "Meta-learner probe (retrain on REF) · SRM on T · Support gate: ESS overlap or domain RF AUC(X)",
+        ha="center",
+        fontsize=9,
+        color="#475569",
+    )
 
     _box(
         ax,
-        (1.2, 13.8),
-        7.6,
-        1.5,
-        "Layer 1 — Batch FSDS on X\n"
-        r"MMD$^2$(ref,live) · domain AUC(X) · ESS$_{\mathrm{ovlp}}$( $\hat e(W|X)$ ) · SRM on T",
+        (2.2, 16.8),
+        5.6,
+        1.05,
+        "Inputs: REF window + LIVE window\nFeatures X · uplift treatment T · outcome Y · batch label W",
+        fc="#dbeafe",
+    )
+    _arrow(ax, (5, 16.8), (5, 16.15))
+
+    _box(
+        ax,
+        (1.0, 14.5),
+        8.0,
+        1.45,
+        "Step 0 — Validity checks\n"
+        "SRM on T (REF train & LIVE): treatment balance for AUUC\n"
+        "Layer 1 — Batch FSDS on X: MMD²(ref,live) · domain RF AUC(X) · Online PFI (optional)",
         fc="#ecfdf5",
     )
-    _arrow(ax, (5, 13.8), (5, 13.0))
+    _arrow(ax, (5, 14.5), (5, 13.85))
 
     _box(
         ax,
-        (1.2, 11.3),
-        7.6,
-        1.4,
-        "Layer 2 — LOCO–AUUC (meta-learner, REF train only)\n"
-        "AUUC_ref · AUUC_live · gap · Group LOCO retrain → drop_live · Spearman(ref,live)",
+        (1.0, 12.55),
+        8.0,
+        1.15,
+        "Support / comparability gate (use either or both)\n"
+        r"ESS$_{\mathrm{overlap}}$ on $\hat e(W{=}1\mid X)$  OR  high domain RF AUC(X) $\Rightarrow$ review before LOCO",
+        fc="#e0f2fe",
+        fontsize=7.5,
+    )
+    _arrow(ax, (5, 12.55), (5, 11.9))
+
+    _box(
+        ax,
+        (1.0, 10.35),
+        8.0,
+        1.35,
+        "Layer 2 — LOCO–AUUC (ranking)\n"
+        "Fit meta-learner on REF train only → AUUC_ref, AUUC_live, gap\n"
+        "Group LOCO: drop block g, retrain on REF → drop_live; Spearman(drop_ref, drop_live)",
         fc="#fef3c7",
     )
-    _arrow(ax, (5, 11.3), (5, 10.5))
+    _arrow(ax, (5, 10.35), (5, 9.7))
 
     _box(
         ax,
-        (1.2, 9.0),
-        7.6,
-        1.2,
-        "Layer 3 (same window) — FSDS PO-risk on Y|X\n"
-        r"PO-risk · DRPerm(W) · PO-LOCO → which features drive concept shift",
+        (1.0, 8.35),
+        8.0,
+        1.15,
+        "Layer 3 — PO-risk on Y|X (same window, optional)\n"
+        "Pseudo-outcome learner · PO-risk · DRPerm on W · PO-LOCO features",
         fc="#fae8ff",
     )
-    _arrow(ax, (5, 9.0), (5, 8.2))
-
-    _box(ax, (2.0, 7.0), 6, 0.9, "diagnose_shift label + bootstrap AUUC_live CI", fc="#f1f5f9")
-
-    # Decision branches
-    y0 = 6.2
-    _arrow(ax, (5, 7.0), (2.0, y0))
-    _arrow(ax, (5, 7.0), (5.0, y0))
-    _arrow(ax, (5, 7.0), (8.0, y0))
+    _arrow(ax, (5, 8.35), (5, 7.7))
 
     _box(
         ax,
-        (0.3, 4.5),
-        3.4,
-        1.4,
-        "ESS low or\nmix_shift\n(MMD↑)",
+        (2.0, 6.75),
+        6.0,
+        0.85,
+        "Output: diagnose_shift label · bootstrap CI on AUUC_live",
+        fc="#f1f5f9",
+    )
+
+    y0 = 6.0
+    _arrow(ax, (5, 6.75), (1.8, y0))
+    _arrow(ax, (5, 6.75), (5.0, y0))
+    _arrow(ax, (5, 6.75), (8.2, y0))
+
+    _box(
+        ax,
+        (0.2, 4.35),
+        3.2,
+        1.45,
+        "Mix / new population\nMMD or domain AUC up\nESS overlap low",
         fc="#fee2e2",
         fontsize=7,
     )
     _box(
         ax,
-        (3.3, 4.5),
-        3.4,
-        1.4,
-        "covariate_shift\nMMD↑ gap↑\nESS OK",
+        (3.4, 4.35),
+        3.2,
+        1.45,
+        "Covariate shift\nMMD / domain AUC up\nAUUC gap up · ESS OK",
         fc="#ffedd5",
         fontsize=7,
     )
     _box(
         ax,
-        (6.3, 4.5),
-        3.4,
-        1.4,
-        "concept / τ change\nMMD flat AUUC↓\n(or Spearman↓)",
+        (6.6, 4.35),
+        3.2,
+        1.45,
+        "Concept / tau drift\nMMD flat · AUUC down\nPO-risk sig · Spearman down",
         fc="#fce7f3",
         fontsize=7,
     )
 
-    _arrow(ax, (2.0, 4.5), (2.0, 3.6))
-    _arrow(ax, (5.0, 4.5), (5.0, 3.6))
-    _arrow(ax, (8.0, 4.5), (8.0, 3.6))
+    _arrow(ax, (1.8, 4.35), (1.8, 3.45))
+    _arrow(ax, (5.0, 4.35), (5.0, 3.45))
+    _arrow(ax, (8.2, 4.35), (8.2, 3.45))
 
     _box(
         ax,
-        (0.15, 1.5),
-        3.7,
-        1.9,
-        "Actions\n• Refresh / match REF\n• Stratify; pause LOCO trust\n• Fix overlap then re-monitor",
+        (0.05, 1.35),
+        3.5,
+        1.95,
+        "Actions\n"
+        "• Refresh or match REF cohort\n"
+        "• Stratify LIVE; pause LOCO-driven cuts\n"
+        "• Re-check support gate; then re-run monitor",
         fc="#ffffff",
-        fontsize=7,
+        fontsize=6.8,
     )
     _box(
         ax,
-        (3.15, 1.5),
-        3.7,
-        1.9,
-        "Actions (adapt ranking, not full relearn first)\n• LOCO blocks → trim / cap segments\n• Recalibrate ê(T|X)\n• Target only overlap support",
+        (3.25, 1.35),
+        3.5,
+        1.95,
+        "Actions (ranking first)\n"
+        "• LOCO blocks: cap / trim high-shift segments\n"
+        "• Recalibrate propensity e(T|X)\n"
+        "• Re-score AUUC on overlap support only\n"
+        "• Defer full prod tau relearn",
         fc="#ffffff",
         fontsize=6.5,
     )
     _box(
         ax,
-        (6.15, 1.5),
-        3.7,
-        1.9,
-        "Actions\n• PO-LOCO + LOCO–AUUC features\n• Extend labels; retrain τ (prod)\n• REALLOCATE rules → then RELEARN",
+        (6.45, 1.35),
+        3.5,
+        1.95,
+        "Actions (outcome / tau)\n"
+        "• PO-LOCO + LOCO–AUUC feature lists\n"
+        "• Extend label window; retrain tau (prod)\n"
+        "• REALLOCATE targeting rules, then RELEARN",
         fc="#ffffff",
         fontsize=6.5,
     )
 
     ax.text(
         5,
-        0.4,
-        "Cheap monitor: Registry X-learner hourly · Deep confirm (neural LOCO) only on alert",
+        0.45,
+        "Hourly: Registry X-learner monitor · On alert: neural / prod LOCO confirm",
         ha="center",
         fontsize=8,
         color="#475569",
     )
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout()
-    fig.savefig(OUT, dpi=160, bbox_inches="tight", facecolor="white")
+    for path in (OUT, OUT_LEGACY):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path, dpi=170, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-    print("Wrote", OUT)
+    print("Wrote", OUT, "and", OUT_LEGACY)
 
 
 if __name__ == "__main__":
