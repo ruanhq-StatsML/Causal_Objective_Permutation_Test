@@ -30,7 +30,7 @@ Mixed shift:\newline stratify REF; subset tools on matched support;\newline do n
 \paragraph{Goal.}
 Global $\mathrm{AUUC}_{\mathrm{live}}$ or $\Delta_{\mathrm{AUUC}}$ flags a problem; \textbf{subset localization} answers \emph{where} on LIVE (which features or which users/slices).
 This mirrors distribution-shift FSDS for predictive models, with \textbf{MSE replaced by AUUC} on the ranking layer.
-We do \textbf{not} use a hierarchical feature tree here---flat groups, per-feature LOCO, and population quintiles are enough for the uplift tabular use case.
+We do \textbf{not} use a hierarchical feature tree unless a known path is required---post-hoc localization uses flat LOCO, quintiles, and pairwise comparisons only.
 
 \paragraph{Windows and notation.}
 REF (calibration) vs LIVE (deployment); batch $W\in\{0,1\}$; uplift treatment $T$; meta-learner $\hat\tau$ fit on REF train only.
@@ -104,6 +104,37 @@ MMD flat, gap $\uparrow$ & Mixture stable, ranking/concept & \textbf{LOCO--AUUC 
 \bottomrule
 \end{tabular}
 \end{center}
+
+\subsection{Concept drift (PO-risk): where uplift moved today}
+
+\paragraph{When to enter this branch.}
+Run this \emph{after} validity (SRM, ESS$_{\mathrm{ovlp}}$) and \emph{after} you read Axis~A as flat: $\widehat{\mathrm{MMD}}^2$ and domain AUC on $X$ are not elevated, yet $\Delta_{\mathrm{AUUC}}$ fails SLA.
+Then PO-risk / DRPerm on stacked REF$\cup$LIVE (batch indicator $W$) \textbf{rejects} the null that $P(Y\mid X)$ is unchanged across windows.
+That is the concept axis: the \textbf{observed treatment--control contrast} on LIVE can move even when the covariate mixture looks stable.
+
+\paragraph{Two pairwise layers (do not conflate).}
+\begin{itemize}
+  \item \textbf{Pairwise AUUC} (quintiles $Q_a,Q_b$): compares \emph{ranking quality} of the fixed REF meta-learner $\hat\tau$ on each slice.
+  Large $|\mathrm{AUUC}_{Q_a}-\mathrm{AUUC}_{Q_b}|$ answers ``where does targeting \emph{sort} users badly today?''---same as the LOCO--AUUC story, but on \emph{users} not features.
+  \item \textbf{Pairwise empirical ATE} (same quintiles): on LIVE only, per slice
+  $\widehat{\tau}^{\mathrm{obs}}_k = \bar Y_{T=1,k}-\bar Y_{T=0,k}$.
+  Pairwise $\widehat{\tau}^{\mathrm{obs}}_a-\widehat{\tau}^{\mathrm{obs}}_b$ answers ``\textbf{where did observed uplift increase or drop today?}''---a direct post-hoc localization of \emph{effect movement}, not model ranking.
+\end{itemize}
+Optional cross-check: pairwise on $\mathbb E[\hat\tau(X)\mid Q_k]$ flags slices where the \emph{model} thinks uplift moved vs slices where \emph{data} moved (divergence $\Rightarrow$ relearn; alignment $\Rightarrow$ reallocate budget).
+
+\paragraph{Strategy (ordered).}
+\begin{enumerate}
+  \item \textbf{Confirm concept.} PO-risk reject + flat $X$-FSDS; if ESS low, stop---refresh REF first.
+  \item \textbf{LOCO--AUUC} on LIVE: which features still drive $\hat\tau$ ranking (targeting-side drivers).
+  \item \textbf{PO-LOCO} (optional): which features drive $Y\mid X$ shift vs targeting LOCO (outcome-side drivers).
+  \item \textbf{Slice uplift on LIVE:} partition users by $\hat s(x)=\mathbb P(W{=}1\mid X)$ quintiles; report $\mathrm{AUUC}_k$, $\widehat{\tau}^{\mathrm{obs}}_k$, $\bar{\hat\tau}_k$ per $Q_k$.
+  \item \textbf{Pairwise empirical ATE:} sort all $(Q_a,Q_b)$ by $|\widehat{\tau}^{\mathrm{obs}}_a-\widehat{\tau}^{\mathrm{obs}}_b|$; the top pair names the strongest ``who gained vs who lost'' contrast \emph{on today's LIVE traffic}.
+  \item \textbf{Act:} REALLOCATE---shift same-day holdout or promo intensity toward the higher-$\widehat{\tau}^{\mathrm{obs}}$ slice \emph{after} SRM and overlap checks; cap the low-uplift partner from the top pairwise row.
+  Schedule \textbf{RELEARN} only if PO-risk persists and $\bar{\hat\tau}_k$ vs $\widehat{\tau}^{\mathrm{obs}}_k$ disagree across slices (model no longer tracks realized effects).
+\end{enumerate}
+
+\paragraph{Ops read (one sentence).}
+Under concept drift, global AUUC is the alarm; \textbf{pairwise empirical ATE on domain quintiles} is the post-hoc map of \emph{which user subset's uplift jumped today}; pairwise AUUC says where the \emph{existing ranker} still fails on those users.
 
 \subsection{Main insights (paper-ready)}
 

@@ -29,6 +29,8 @@ Uplift monitoring hinges on **two independent questions**. AUUC moves under eith
 
 **Business rules:** extend labels, RELEARN prod uplift after REALLOCATE trial; PO-risk confirms concept before expensive retrain.
 
+**Slice localization under concept:** partition LIVE by domain quintiles; report empirical ATE per slice; **pairwise empirical ATE** (largest $|\Delta|$) identifies which subset gained vs lost **observed uplift today**—then REALLOCATE before full RELEARN. Pairwise AUUC on the same slices still describes **ranking** failure of the fixed REF model, not effect movement alone.
+
 ## How they combine (results interpretation)
 
 | X shift | Y\|X shift | AUUC | Trust most | Misread if ignored |
