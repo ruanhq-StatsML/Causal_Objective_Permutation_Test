@@ -20,6 +20,13 @@ Layer~2 (empirical ATE and mean $\hat\tau$ on LIVE slices) localises \emph{effec
 The pipeline outputs direct targeting policies without a hierarchical feature tree.
 \end{abstract}
 
+\noindent\textbf{Overview.}\ 
+The post-hoc localization is performed at two levels: one based on AUUC (evaluated on a single batch) and the other based on estimated uplift, followed by pseudo-outcome risk.
+This design is highly efficient and beneficial for downstream procedures.
+Moreover, the AUC of the RF-domain binary classifier is instrumental for monitoring covariate shift.
+These elements collectively produce compound insights that facilitate interpretation.
+
+\medskip
 \input{uplift_fsds_two_batch_formulation.tex}
 
 \section{Empirical two-batch scenarios}

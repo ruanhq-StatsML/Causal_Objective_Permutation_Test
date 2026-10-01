@@ -4,6 +4,12 @@
 
 \section{Two-batch uplift monitoring (FSDS-isomorphic formulation)}
 
+\paragraph{Design rationale (post-hoc localization).}
+The post-hoc localization is performed at two levels: one based on AUUC (evaluated on a single batch) and the other based on estimated uplift, followed by pseudo-outcome risk.
+This design is highly efficient and beneficial for downstream procedures.
+Moreover, the AUC of the RF-domain binary classifier is instrumental for monitoring covariate shift.
+These elements collectively produce compound insights that facilitate interpretation.
+
 \paragraph{Monitoring contract.}
 Fix two disjoint finite samples representing \textbf{calibration} and \textbf{deployment}:
 \[
