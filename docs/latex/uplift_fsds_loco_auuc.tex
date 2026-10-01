@@ -11,6 +11,10 @@ Checks are coupled to actions: REALLOCATE targeting and propensity calibration b
 The monitor probe (Registry T/X/R) is deliberately cheap to retrain inside LOCO; production scorers (e.g.\ Dragon-Net) may differ and are confirmed only on alert.
 This is a direct, feature-specific operationalization of FSDS---no separate multimodal objective---suitable for hourly windows and audit trails (SRM on $T$, bootstrap AUUC on LIVE).
 
+\paragraph{Key insight (AUUC sensitivity).}
+$\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$ react to \textbf{both covariate shift and concept drift}: under covariate shift, MMD$^2$ and domain RF AUC on $X$ increase while ESS overlap may remain high, but ranking on LIVE degrades (AUUC drops or changes sign); under concept drift, $X$-shift signals can be flat while AUUC gaps widen, PO-risk on $Y\mid X$ may reject, and LOCO Spearman across REF vs.\ LIVE flips ($\rho=\pm 1$).
+Batch FSDS on $X$ and PO-risk identify \emph{which} mode dominates; AUUC identifies \emph{that} targeting quality broke; LOCO--AUUC identifies \emph{where} to act---with MSE replaced by AUUC only in the ranking layer.
+
 \paragraph{Windows and validity.}
 Reference batch $\mathcal{D}_{\mathrm{ref}}$ (calibration) and live batch $\mathcal{D}_{\mathrm{live}}$ (deployment).
 Batch label $W_i\in\{0,1\}$; uplift treatment $T_i\in\{0,1\}$; outcome $Y_i$; features $X_i\in\mathbb{R}^p$.

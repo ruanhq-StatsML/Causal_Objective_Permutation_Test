@@ -1,22 +1,29 @@
-% Short paste block. Full section + justification: uplift_fsds_loco_auuc.tex
+% Paste block for manuscript / slides. Full section: uplift_fsds_loco_auuc.tex
+% Benchmark tables: uplift_fsds_benchmark_results.tex
 
-\paragraph{Value (embedded FSDS).}
-One monitoring stack: batch FSDS on $X$ detects input shift; LOCO--AUUC on a refit-on-REF meta-learner detects ranking decay and localizes feature groups; PO-risk/DRPerm on the same REF/LIVE window detects $Y\mid X$ concept shift when AUUC falls without clear $X$ drift---enabling REALLOCATE-before-RELEARN ops instead of silent uplift degradation.
-\emph{Insight:} $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}$ are sensitive to \textbf{both covariate shift and concept drift}; MMD/domain AUC on $X$ and PO-risk separate the failure mode (same FSDS as elsewhere, MSE $\rightarrow$ AUUC in the ranking layer).
+\paragraph{Uplift monitoring via embedded FSDS + LOCO--AUUC (use case).}
+Same batch FSDS stack as elsewhere on $X$ and on $Y\mid X$ (PO-risk); the only swap in the ranking layer is \textbf{MSE $\rightarrow$ AUUC} on a refit-on-REF meta-learner $\hat\tau(X,T,Y)$.
+SRM on treatment $T$ gates validity; ESS$_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$ or domain RF AUC$(X)$ gates LOCO attributions.
 
-\noindent\textbf{Validity:} SRM on uplift treatment $T$ (REF \& LIVE).
+\paragraph{Key insight (AUUC sensitivity).}
+LOCO--AUUC with embedded FSDS is \textbf{sensitive to both covariate shift and concept drift} through one primary metric: $\mathrm{AUUC}_{\mathrm{live}}$ and $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$.
+\begin{itemize}\itemsep2pt
+  \item \textbf{Covariate shift:} $\widehat{\mathrm{MMD}}^2(X)$ and $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$ rise; overlap ESS often stays high---yet $\mathrm{AUUC}_{\mathrm{live}}$ drops or flips sign (ranking on LIVE fails while REF may look stable).
+  \item \textbf{Concept drift:} MMD on $X$ flat or modest; PO-risk / DRPerm on $Y\mid X$ may reject; $\Delta_{\mathrm{AUUC}}$ widens and LOCO Spearman $\rho$ on $\mathrm{drop}_{\mathrm{ref}}$ vs.\ $\mathrm{drop}_{\mathrm{live}}$ goes to $\pm 1$ (targeting drivers reallocate across feature groups).
+\end{itemize}
+Layer~1 FSDS disambiguates the failure mode; AUUC signals that uplift ranking broke; LOCO--AUUC localizes where to REALLOCATE before RELEARN---no second monitoring framework.
 
 \noindent\textbf{FSDS on $X$:}\
 $\widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}},X_{\mathrm{live}})$,
 $\widehat{\mathrm{AUC}}_{\mathrm{dom}}^{\mathrm{RF}}(X)$,
-$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$ (support gate for LOCO).
+$\mathrm{ESS}_{\mathrm{ovlp}}(\hat e(W{=}1\mid X))$.
 
 \noindent\textbf{LOCO--AUUC:}\
-meta-learner $\hat\tau$ on REF train;
 $\mathrm{AUUC}_{\mathrm{ref}}$, $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}$;
-group LOCO retrain $\Rightarrow$ $\mathrm{drop}_{\mathrm{live}}^{(g)}$, $\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
+group LOCO: $\mathrm{drop}_{\mathrm{live}}^{(g)}=\mathrm{AUUC}_{\mathrm{live}}^{\mathrm{full}}-\mathrm{AUUC}_{\mathrm{live}}^{(-g)}$,
+$\rho=\mathrm{Spearman}(\mathrm{drop}_{\mathrm{ref}},\mathrm{drop}_{\mathrm{live}})$.
 
 \noindent\textbf{FSDS PO-risk on $Y\mid X$:}\
 $\tilde Y=(Y-\hat\mu(X))(W-\hat e(X))$,
 $\mathrm{PO\text{-}risk}=n^{-1}\sum_i \hat\tau_Y(X_i)^2$,
-DRPerm on $W$; PO-LOCO $\mathrm{VIMP}_j$.
+DRPerm on batch $W$; PO-LOCO $\mathrm{VIMP}_j$.
