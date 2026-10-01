@@ -32,6 +32,52 @@ Global $\mathrm{AUUC}_{\mathrm{live}}$ or $\Delta_{\mathrm{AUUC}}$ flags a probl
 This mirrors distribution-shift FSDS for predictive models, with \textbf{MSE replaced by AUUC} on the ranking layer.
 We do \textbf{not} use a hierarchical feature tree unless a known path is required---post-hoc localization uses flat LOCO, quintiles, and pairwise comparisons only.
 
+\subsection{Two monitoring layers: AUUC vs uplift (when to use which)}
+
+Monitoring is intentionally \textbf{two-layered}. Both layers can use the same LIVE slices (domain quintiles $Q_1,\ldots,Q_5$), but they measure different objects.
+Do not treat a drop in AUUC as ``uplift went down'' without Layer~2; do not treat a spike in empirical ATE as ``ranking is fine'' without Layer~1.
+
+\paragraph{Layer 1 --- AUUC movement (ranking / targeting).}
+\textbf{Fixed object:} REF-fitted scores $\hat\tau(x)$ evaluated on LIVE.
+\begin{itemize}
+  \item \textbf{Global:} $\mathrm{AUUC}_{\mathrm{live}}$, $\Delta_{\mathrm{AUUC}}=\mathrm{AUUC}_{\mathrm{ref}}-\mathrm{AUUC}_{\mathrm{live}}$ --- SLA alarm: is today's traffic \emph{sorted} well by yesterday's ranker?
+  \item \textbf{Features:} LOCO--AUUC $\mathrm{drop}_{\mathrm{live}}^{(g)}$ --- which columns does LIVE ranking \emph{depend on}?
+  \item \textbf{Users:} quintile $\mathrm{AUUC}_k$, pairwise $|\mathrm{AUUC}_A-\mathrm{AUUC}_B|$ --- where does the \emph{same} $\hat\tau$ rank badly?
+\end{itemize}
+AUUC moves under covariate shift, concept drift, and stale $\hat\tau$; FSDS on $X$ and PO-risk disambiguate \emph{why} the alarm fired.
+\textbf{Use Layer~1} for scheduled monitor SLAs, whenever $\Delta_{\mathrm{AUUC}}$ fails, and whenever the ops question is \emph{cap/continue targeting by rank} (REALLOCATE on low-AUUC slices, overlap-only scores).
+
+\paragraph{Layer 2 --- Uplift movement (effect level).}
+\textbf{Object:} how large treatment benefit is on each slice---not whether $\hat\tau$ orders users correctly.
+\begin{itemize}
+  \item \textbf{Observed:} $\widehat{\tau}^{\mathrm{obs}}_k=\bar Y_{T=1,k}-\bar Y_{T=0,k}$ on LIVE quintile $k$ (empirical ATE).
+  \item \textbf{Model level:} $\bar{\hat\tau}_k=\mathbb E[\hat\tau(X)\mid Q_k]$ on LIVE (mean estimated uplift).
+  \item \textbf{Pairwise effect:} $|\widehat{\tau}^{\mathrm{obs}}_a-\widehat{\tau}^{\mathrm{obs}}_b|$ and optionally $|\bar{\hat\tau}_a-\bar{\hat\tau}_b|$.
+\end{itemize}
+\textbf{Use Layer~2} when PO-risk rejects (concept axis), when ops asks ``where did \emph{realized} uplift move today?'', or to compare $\bar{\hat\tau}_k$ vs $\widehat{\tau}^{\mathrm{obs}}_k$: agreement $\Rightarrow$ reallocate budget toward high-observed slices; systematic mismatch $\Rightarrow$ RELEARN.
+Layer~2 is \textbf{not} a substitute for Layer~1 SLA: small slices make ATE noisy; ranking can fail while average effects look flat.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.28\linewidth}ccp{0.32\linewidth}@{}}
+\toprule
+\textbf{Situation} & \textbf{L1 AUUC} & \textbf{L2 uplift} & \textbf{Primary read} \\
+\midrule
+Routine, all green & global & optional spot-check & monitor \\
+$\Delta_{\mathrm{AUUC}}\uparrow$, MMD$\uparrow$, ESS OK & LOCO + pairwise AUUC & optional ATE (support confounds) & ranking on shifted support \\
+$\Delta_{\mathrm{AUUC}}\uparrow$, MMD flat, ESS OK & LOCO + pairwise AUUC & ATE + $\bar{\hat\tau}$; PO-risk & ranking and/or concept \\
+PO-risk reject, MMD flat & yes (stale ranker) & pairwise $\widehat{\tau}^{\mathrm{obs}}$, $\bar{\hat\tau}$ & effect moved; REALLOCATE \\
+AUUC OK, PO-risk reject & watch LOCO & Layer~2 drives ops & silent concept \\
+ESS low & defer LOCO & defer slice ATE & REFRESH\_REF \\
+Overlap AUUC $\gg$ global & band + pairwise AUUC & on overlap only & narrow targeting \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Combined workflow.}
+Gates (SRM, ESS, MMD) $\rightarrow$ Layer~1 global + LOCO + quintile/pairwise AUUC $\rightarrow$ regime (X vs Y$|$X) $\rightarrow$ Layer~2 slice uplift + pairwise ATE (and $\bar{\hat\tau}$) when concept or budget question $\rightarrow$ actions: rank-based REALLOCATE from L1, effect-based REALLOCATE from L2, RELEARN when PO-risk persists and $\bar{\hat\tau}\not\approx\widehat{\tau}^{\mathrm{obs}}$ across slices.
+Markdown reference: \verb|docs/FSDS_UPLIFT_TWO_LAYERS.md|.
+
 \paragraph{Windows and notation.}
 REF (calibration) vs LIVE (deployment); batch $W\in\{0,1\}$; uplift treatment $T$; meta-learner $\hat\tau$ fit on REF train only.
 Optional feature \textbf{groups} $\mathcal{G}=\{g_1,\ldots,g_G\}$; if $\mathcal{G}=\emptyset$, LOCO runs \textbf{per feature} (one column dropped at a time).
