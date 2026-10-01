@@ -28,3 +28,14 @@ If MMD / domain AUC on $X$ is up, suspect population shift first.
 If $X$ looks stable but AUUC is down, suspect concept drift and check PO-risk.
 LOCO--AUUC tells which feature groups to fix before retraining the production model.
 Production may use Dragon-Net; the monitor can use a cheap Registry X-learner---same procedure.
+
+\medskip
+\noindent\textbf{Post-hoc subset localization (after a global alert).}\quad
+Global numbers hide \emph{where} LIVE broke.
+\begin{itemize}\itemsep2pt
+  \item \textbf{Feature subsets:} LOCO--AUUC already names groups; optional group-wise MMD$^2(X_g)$ shows which blocks drive covariate shift.
+  \item \textbf{Population subsets:} split LIVE by domain RF score quintiles (how live-like each row is vs REF); compare AUUC$_{\mathrm{live}}$ per quintile---often the top quintile loses ranking first under covariate shift while overlap core still looks fine.
+  \item \textbf{Support subset:} recompute AUUC on LIVE rows with batch propensity in a middle band (comparable REF/LIVE support).
+\end{itemize}
+\emph{Insight:} LOCO says \emph{which features}; subset AUUC says \emph{which users/regions of $X$}; together they turn one red dashboard into a ticket (e.g.\ cap targeting in domain quintile 5 + refresh features in LOCO block 1).
+Hierarchical subset tests on $X$ (tree + FDR) are the same FSDS post-hoc tool used elsewhere; here AUUC replaces MSE on each subset when the question is uplift ranking.
