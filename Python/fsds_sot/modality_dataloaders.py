@@ -1,12 +1,15 @@
 """
-Upstream dataloaders → modality blocks for two-batch FSDS attribution.
+Upstream only: episode list → ``ModalityBatch`` (X, names) per lane.
 
-Three loaders (your spec):
-  1. text      — episode-level text / token statistics
-  2. structured — trace scalars (tool_calls, failures, latency, …)
-  3. embedding  — branch embedding summaries (mean / std per branch block)
+Downstream is standard batch FSDS (``covariate_attribution``, two-layer LOGO) — no extra
+multimodal logic here. Swap or add loaders in production; keep row i aligned across modalities.
 
-Then: concatenate for global batch test OR run per-modality attribution separately.
+Default loaders:
+  text       — ``text_dataloader`` (Qwen / text_tokens)
+  structured — ``structured_dataloader`` (tool/latency scalars)
+  embedding  — ``embedding_dataloader`` (branch embeddings flattened)
+
+See ``docs/FSDS_TWO_LAYER_MODALITY_ATTRIBUTION.md``.
 """
 
 from __future__ import annotations
