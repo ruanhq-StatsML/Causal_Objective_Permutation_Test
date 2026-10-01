@@ -27,6 +27,7 @@ from .posthoc_localization import (
     auuc_live_by_domain_quintile,
     auuc_live_on_overlap_support,
     mmd_subset_by_groups,
+    pairwise_auuc_compare,
 )
 
 
@@ -182,6 +183,25 @@ def business_rules_from_localization(
     return rules
 
 
+def subset_insight_regime(
+    mmd2_x: float,
+    auuc_gap: float,
+    overlap_ess: float,
+    *,
+    mmd_high: float = 0.02,
+    gap_high: float = 0.005,
+    ess_low: float = 0.15,
+) -> str:
+    """Plain read for ops: where to look first (groups optional downstream)."""
+    if overlap_ess < ess_low:
+        return "mix_shift_refresh_ref_first"
+    if mmd2_x >= mmd_high and abs(auuc_gap) >= gap_high:
+        return "x_shift_check_logo_mmd_and_quintiles"
+    if mmd2_x < mmd_high and abs(auuc_gap) >= gap_high:
+        return "x_stable_gap_large_check_loco_and_po_risk"
+    return "monitor"
+
+
 def run_uplift_subset_localization(
     X_ref_tr: np.ndarray,
     t_ref_tr: np.ndarray,
@@ -193,7 +213,7 @@ def run_uplift_subset_localization(
     t_live: np.ndarray,
     y_live: np.ndarray,
     learner_factory: Callable[[], Any],
-    groups: Dict[str, List[int]],
+    groups: Optional[Dict[str, List[int]]] = None,
     feature_names: Optional[List[str]] = None,
     *,
     e_batch_live: Optional[np.ndarray] = None,
@@ -221,7 +241,11 @@ def run_uplift_subset_localization(
         groups=groups,
     )
 
-    mmd_full, logo_mmd = logo_mmd_groups(X_ref_eval, X_live, groups)
+    groups = groups or {}
+    logo_mmd: List[Dict[str, Any]] = []
+    mmd_full = _rbf_mmd2(X_ref_eval, X_live)
+    if groups:
+        mmd_full, logo_mmd = logo_mmd_groups(X_ref_eval, X_live, groups)
     if mmd2_x is None:
         mmd2_x = _rbf_mmd2(X_ref_pool, X_live)
 
@@ -257,6 +281,25 @@ def run_uplift_subset_localization(
     worst_q = min(finite, key=lambda r: r["auuc_live"], default=None)
     best_q = max(finite, key=lambda r: r["auuc_live"], default=None)
 
+    slice_rows = list(quintiles)
+    if overlap_row and np.isfinite(overlap_row.get("auuc_live", np.nan)):
+        slice_rows.append({**overlap_row, "subset": overlap_row.get("subset", "overlap")})
+    if np.isfinite(loco_out["auuc_live_full"]):
+        slice_rows.append(
+            {"subset": "global_live", "n_live": len(y_live), "auuc_live": loco_out["auuc_live_full"]}
+        )
+    pairwise_quintile = pairwise_auuc_compare(quintiles)
+    pairwise_all = pairwise_auuc_compare(slice_rows)
+
+    loco_high = sorted(
+        loco_out["loco_rows"],
+        key=lambda r: -abs(r.get("drop_live", 0)),
+    )[:3]
+
+    regime = subset_insight_regime(
+        mmd2_x, loco_out["auuc_gap"], overlap_ess
+    )
+
     loc = {
         "auuc_live_global": loco_out["auuc_live_full"],
         "auuc_ref_global": loco_out["auuc_ref_full"],
@@ -264,20 +307,24 @@ def run_uplift_subset_localization(
         "mmd2_x_global": mmd2_x,
         "mmd2_x_logo_full": mmd_full,
         "logo_mmd": logo_mmd,
-        "group_mmd2_standalone": mmd_subset_by_groups(X_ref_eval, X_live, groups),
+        "group_mmd2_standalone": mmd_subset_by_groups(X_ref_eval, X_live, groups)
+        if groups
+        else [],
         "loco_rows": loco_out["loco_rows"],
+        "loco_high_drop_live": loco_high,
         "domain_quintile_auuc": quintiles,
+        "pairwise_auuc_quintiles": pairwise_quintile[:10],
+        "pairwise_auuc_slices": pairwise_all[:10],
         "overlap_support_auuc": overlap_row,
         "diagnosis": diag,
+        "subset_insight_regime": regime,
         "insights": {
             "worst_quintile": worst_q,
             "best_quintile": best_q,
+            "largest_pairwise_quintile_gap": pairwise_quintile[0] if pairwise_quintile else None,
             "top_logo_mmd_group": logo_mmd[0]["group"] if logo_mmd else None,
-            "top_loco_live_group": max(
-                loco_out["loco_rows"], key=lambda r: r["drop_live"]
-            )["feature"]
-            if loco_out["loco_rows"]
-            else None,
+            "top_loco_live_group": loco_high[0]["feature"] if loco_high else None,
+            "x_stable_but_gap_large": regime == "x_stable_gap_large_check_loco_and_po_risk",
         },
     }
     loc["business_rules"] = [r.to_dict() for r in business_rules_from_localization(loc)]

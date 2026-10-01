@@ -90,6 +90,34 @@ def auuc_live_on_overlap_support(
     return out
 
 
+def pairwise_auuc_compare(
+    slices: List[Dict[str, Any]],
+    *,
+    metric: str = "auuc_live",
+    label_key: str = "subset",
+) -> List[Dict[str, Any]]:
+    """Pairwise AUUC on subsets (quintiles, overlap band vs global, etc.)."""
+    finite = [s for s in slices if np.isfinite(s.get(metric, np.nan))]
+    pairs: List[Dict[str, Any]] = []
+    for i in range(len(finite)):
+        for j in range(i + 1, len(finite)):
+            a, b = finite[i], finite[j]
+            va, vb = float(a[metric]), float(b[metric])
+            pairs.append(
+                {
+                    label_key + "_a": a.get(label_key, i),
+                    label_key + "_b": b.get(label_key, j),
+                    "auuc_a": va,
+                    "auuc_b": vb,
+                    "delta": va - vb,
+                    "worse": a.get(label_key) if va < vb else b.get(label_key),
+                    "better": b.get(label_key) if va < vb else a.get(label_key),
+                }
+            )
+    pairs.sort(key=lambda p: -abs(p["delta"]))
+    return pairs
+
+
 def mmd_subset_by_groups(
     X_ref: np.ndarray,
     X_live: np.ndarray,

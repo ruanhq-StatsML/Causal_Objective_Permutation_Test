@@ -58,3 +58,12 @@ Output to ops & \textbf{Business rules}: cap segment, hold feature group, refres
 \end{tabular}
 \end{center}
 Rules are plain sentences (e.g.\ ``Cap uplift in domain quintile 5''; ``Hold feature block\_a for targeting until REF refresh'')---see \texttt{demo\_uplift\_subset\_business\_rules.py}.
+
+\medskip
+\noindent\textbf{Which subset? (insights, groups optional).}
+\begin{itemize}\itemsep2pt
+  \item \textbf{LOCO--AUUC} (high $\mathrm{drop}_{\mathrm{live}}$): error localized to a \emph{feature} group (or single column if no groups).
+  \item \textbf{Quintile AUUC}: error localized to a \emph{population slice} on LIVE; use \textbf{pairwise AUUC} (largest $|\mathrm{AUUC}_a-\mathrm{AUUC}_b|$) for direct cap/continue rules.
+  \item \textbf{Overlap-band AUUC} vs global: slice error on comparable-support users only.
+  \item \textbf{$X$ stable but gap large:} covariate mixture flat, ranking/concept broke---prioritize LOCO + PO-risk; quintiles still show \emph{who} on LIVE is worst off.
+\end{itemize}
