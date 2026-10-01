@@ -176,12 +176,27 @@ AUUC alone cannot split the first column; **FSDS + PO-risk** do. Subset tools ru
 
 ---
 
-## 7. After you find the subset — adjust strategy (two paragraphs)
+## 7. After you find the subset — adjust strategy
 
-LaTeX **`uplift_fsds_two_batch_formulation.tex`**, `\ref{sec:cross-batch-business}`:
+Full text: **`uplift_fsds_two_batch_formulation.tex`**, `\ref{sec:cross-batch-business}` (Paragraphs 1–2 + **narrow support** + **Reallocate trial vs RELEARN**).
 
-1. **What the subset means** across REF/LIVE (quintile = LIVE users by ŝ(x); L1 vs L2 conflict; gates).
-2. **Concrete moves:** (i) LOCO group → HoldFeature, not column drop; (ii) worst AUUC quintile → cap + shift to pairwise partner; (iii) overlap band → narrow targeting; (iv) ATE pair → budget shift only if PO reject and no L1 cap on same quintile; (v) when Relearn vs Reallocate; collision priority (ESS > L1 cap > L2 spend).
+### Narrow support
+
+- **ê(W|X)** on REF∪LIVE; policy treats uplift only if **ê ∈ [0.15, 0.85]** on LIVE (τ̂ can still be scored for all).
+- **Fire when** AUUC_ovlp beats global LIVE by ~0.01–0.02+ → cap/off-policy the off-support tail; **RefreshRef** in parallel for high-ŝ users.
+- **Win next window:** SLA on policy-conditional AUUC or stable green AUUC_ovlp.
+- **Widen band** when MMD/domain AUC cool down and core stays green — before RELEARN if τ̂ tracks empirical ATE.
+
+### Continue REALLOCATE vs RELEARN
+
+| After 1–2 trial LIVE windows (same REF τ̂) | Action |
+|-------------------------------------------|--------|
+| AUUC up but &lt; SLA | **Tighten** quintile cap or narrow band further |
+| AUUC_ovlp OK, global red | **Stay narrow** + extend REF |
+| PO accept, LOCO localized | **HoldFeature** / segment rules |
+| AUUC weak, τ̂ ≈ ATE | **Recalibrate e(T\|X)**, keep REALLOCATE |
+| AUUC_ovlp &amp; capped slices still red, **PO reject**, τ̂ ≠ ATE (or LOCO Spearman collapse) | **Schedule RELEARN** |
+| Only off-support ranking bad | **Do not relearn** — narrow + REF |
 
 ---
 
