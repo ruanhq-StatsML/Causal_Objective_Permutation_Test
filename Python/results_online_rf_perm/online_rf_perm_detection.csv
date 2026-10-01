@@ -1,0 +1,7 @@
+scenario,model,pre_change_FAR,post_change_detect_rate,detection_delay
+cov,Logistic,0.0,0.05,10.0
+cov,RF (OnlineRFPerm),0.0,1.0,0.0
+mean,Logistic,0.0,1.0,0.0
+mean,RF (OnlineRFPerm),0.05,1.0,0.0
+stationary,Logistic,0.1,0.0,
+stationary,RF (OnlineRFPerm),0.0,0.05,1.0
