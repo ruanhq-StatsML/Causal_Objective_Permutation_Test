@@ -176,21 +176,12 @@ AUUC alone cannot split the first column; **FSDS + PO-risk** do. Subset tools ru
 
 ---
 
-## 7. Cross-batch interpretation (tricky) → business recommendations
+## 7. After you find the subset — adjust strategy (two paragraphs)
 
-**Read this before acting on subset rules.**
+LaTeX **`uplift_fsds_two_batch_formulation.tex`**, `\ref{sec:cross-batch-business}`:
 
-| Pitfall | What cross-batch actually means | Do this |
-|---------|----------------------------------|---------|
-| Big ΔAUUC → relearn now | Ranking on LIVE vs REF holdout broke; not necessarily Y\|X | REALLOCATE (quintile / overlap) first |
-| High domain RF AUC → model dead | **X** shifted between batches | Refresh/match REF; cap LIVE-like quintiles; recalibrate e(T\|X) |
-| Highest ATE quintile → spend there | L2 level on LIVE; AUUC may be worst on same slice | **Cap if L1 says so**; ATE-only move only if PO reject |
-| PO reject → immediate relearn | Concept; ranking may fix with REALLOCATE | Shift budget per pairwise ATE, then relearn if τ̂ ≠ ATE |
-| LOCO top group → drop column | LOCO = dependence, not “remove safely” | HOLD_FEATURE; no silent ablation |
-
-**Mandatory order:** SRM(T) → ESS → MMD + **domain RF AUC** → L1 (AUUC, LOCO, pairwise AUUC) → PO-risk → L2 ATE (if PO reject) → RELEARN only after REALLOCATE + τ̂ vs ATE check.
-
-LaTeX (full table + policy sentences): `docs/latex/uplift_fsds_two_batch_formulation.tex`, §Cross-batch interpretation (`sec:cross-batch-business`).
+1. **What the subset means** across REF/LIVE (quintile = LIVE users by ŝ(x); L1 vs L2 conflict; gates).
+2. **Concrete moves:** (i) LOCO group → HoldFeature, not column drop; (ii) worst AUUC quintile → cap + shift to pairwise partner; (iii) overlap band → narrow targeting; (iv) ATE pair → budget shift only if PO reject and no L1 cap on same quintile; (v) when Relearn vs Reallocate; collision priority (ESS > L1 cap > L2 spend).
 
 ---
 
