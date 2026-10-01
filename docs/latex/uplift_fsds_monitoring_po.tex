@@ -39,3 +39,22 @@ Global numbers hide \emph{where} LIVE broke.
 \end{itemize}
 \emph{Insight:} LOCO says \emph{which features}; subset AUUC says \emph{which users/regions of $X$}; together they turn one red dashboard into a ticket (e.g.\ cap targeting in domain quintile 5 + refresh features in LOCO block 1).
 Hierarchical subset tests on $X$ (tree + FDR) are the same FSDS post-hoc tool used elsewhere; here AUUC replaces MSE on each subset when the question is uplift ranking.
+
+\medskip
+\noindent\textbf{Same recipe as predictive-model shift FSDS (uplift swap).}
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Predictive monitoring & Uplift monitoring \\
+\midrule
+Global MMD / domain AUC on $X$ & Same \\
+Global MSE or loss & Global AUUC$_{\mathrm{live}}$, gap \\
+LOGO-MMD (drop group, MMD falls) & LOGO-MMD on feature groups \\
+LOCO / retrain loss per group & LOCO--AUUC (drop group, retrain, AUUC falls) \\
+Subset score on population slice & Domain-quintile AUUC on LIVE \\
+Output to ops & \textbf{Business rules}: cap segment, hold feature group, refresh REF, relearn \\
+\bottomrule
+\end{tabular}
+\end{center}
+Rules are plain sentences (e.g.\ ``Cap uplift in domain quintile 5''; ``Hold feature block\_a for targeting until REF refresh'')---see \texttt{demo\_uplift\_subset\_business\_rules.py}.

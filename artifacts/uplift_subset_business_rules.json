@@ -1,0 +1,186 @@
+{
+  "auuc_live_global": 0.015433534118340675,
+  "auuc_ref_global": 0.03604069617694979,
+  "auuc_gap": 0.020607162058609116,
+  "mmd2_x_global": 0.006154717513020751,
+  "mmd2_x_logo_full": 0.006241263318314667,
+  "logo_mmd": [
+    {
+      "group": "block_a",
+      "logo_mmd_drop": 0.0048637409816128414,
+      "mmd_without_group": 0.0013775223367018252,
+      "mmd_full": 0.006241263318314667
+    },
+    {
+      "group": "block_c",
+      "logo_mmd_drop": -0.009353878131522286,
+      "mmd_without_group": 0.015595141449836952,
+      "mmd_full": 0.006241263318314667
+    },
+    {
+      "group": "block_b",
+      "logo_mmd_drop": -0.019626310389235135,
+      "mmd_without_group": 0.0258675737075498,
+      "mmd_full": 0.006241263318314667
+    }
+  ],
+  "group_mmd2_standalone": [
+    {
+      "group": "block_a",
+      "mmd2": 0.07647896290927131,
+      "n_features": 3
+    },
+    {
+      "group": "block_b",
+      "mmd2": 0.0009318343963373166,
+      "n_features": 3
+    },
+    {
+      "group": "block_c",
+      "mmd2": 0.0004119139201866906,
+      "n_features": 2
+    }
+  ],
+  "loco_rows": [
+    {
+      "feature": "block_a",
+      "auuc_ref": 0.03244723890369104,
+      "auuc_live": 0.014891131025532337,
+      "drop_ref": 0.0035934572732587503,
+      "drop_live": 0.0005424030928083377,
+      "drop_gap": -0.0030510541804504125
+    },
+    {
+      "feature": "block_b",
+      "auuc_ref": 0.017959833282827666,
+      "auuc_live": 0.02173432407661729,
+      "drop_ref": 0.018080862894122127,
+      "drop_live": -0.006300789958276617,
+      "drop_gap": -0.024381652852398746
+    },
+    {
+      "feature": "block_c",
+      "auuc_ref": 0.03434393619560579,
+      "auuc_live": 0.015943565915886252,
+      "drop_ref": 0.0016967599813440051,
+      "drop_live": -0.0005100317975455775,
+      "drop_gap": -0.0022067917788895827
+    }
+  ],
+  "domain_quintile_auuc": [
+    {
+      "subset": "domain_quintile_1",
+      "n_live": 299,
+      "auuc_live": -0.0028355024345015473,
+      "mean_domain_score": 0.7240384615384616
+    },
+    {
+      "subset": "domain_quintile_2",
+      "n_live": 285,
+      "auuc_live": 0.012419360446970326,
+      "mean_domain_score": 0.813859649122807
+    },
+    {
+      "subset": "domain_quintile_3",
+      "n_live": 302,
+      "auuc_live": 0.0008955068192366619,
+      "mean_domain_score": 0.8692466887417216
+    },
+    {
+      "subset": "domain_quintile_4",
+      "n_live": 252,
+      "auuc_live": -0.016514823691065786,
+      "mean_domain_score": 0.9118551587301587
+    },
+    {
+      "subset": "domain_quintile_5",
+      "n_live": 362,
+      "auuc_live": 0.025823006600824778,
+      "mean_domain_score": 0.9609461325966849
+    }
+  ],
+  "overlap_support_auuc": {
+    "subset": "overlap_support_band",
+    "n_live": 1074,
+    "lo": 0.15,
+    "hi": 0.85,
+    "auuc_live": 0.008871233038759557
+  },
+  "diagnosis": {
+    "mmd2_x": 0.006154717513020751,
+    "auuc_gap": 0.020607162058609116,
+    "overlap_ess": 0.7,
+    "loco_spearman": -0.5,
+    "label": "concept_drift_or_tau_change",
+    "hints": [
+      "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+      "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+    ]
+  },
+  "insights": {
+    "worst_quintile": {
+      "subset": "domain_quintile_4",
+      "n_live": 252,
+      "auuc_live": -0.016514823691065786,
+      "mean_domain_score": 0.9118551587301587
+    },
+    "best_quintile": {
+      "subset": "domain_quintile_5",
+      "n_live": 362,
+      "auuc_live": 0.025823006600824778,
+      "mean_domain_score": 0.9609461325966849
+    },
+    "top_logo_mmd_group": "block_a",
+    "top_loco_live_group": "block_a"
+  },
+  "business_rules": [
+    {
+      "priority": 1,
+      "action": "REALLOCATE",
+      "rule": "Cap uplift in domain quintile 'domain_quintile_4' (AUUC_live=-0.0165, n=252); continue in 'domain_quintile_5' where ranking remains stronger.",
+      "evidence": {
+        "worst": {
+          "subset": "domain_quintile_4",
+          "n_live": 252,
+          "auuc_live": -0.016514823691065786,
+          "mean_domain_score": 0.9118551587301587
+        },
+        "best": {
+          "subset": "domain_quintile_5",
+          "n_live": 362,
+          "auuc_live": 0.025823006600824778,
+          "mean_domain_score": 0.9609461325966849
+        }
+      }
+    },
+    {
+      "priority": 2,
+      "action": "REALLOCATE",
+      "rule": "Uplift ranking on LIVE depends on group 'block_b': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0063).",
+      "evidence": {
+        "feature": "block_b",
+        "auuc_ref": 0.017959833282827666,
+        "auuc_live": 0.02173432407661729,
+        "drop_ref": 0.018080862894122127,
+        "drop_live": -0.006300789958276617,
+        "drop_gap": -0.024381652852398746
+      }
+    },
+    {
+      "priority": 2,
+      "action": "RELEARN",
+      "rule": "X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.",
+      "evidence": {
+        "mmd2_x": 0.006154717513020751,
+        "auuc_gap": 0.020607162058609116,
+        "overlap_ess": 0.7,
+        "loco_spearman": -0.5,
+        "label": "concept_drift_or_tau_change",
+        "hints": [
+          "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+          "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+        ]
+      }
+    }
+  ]
+}

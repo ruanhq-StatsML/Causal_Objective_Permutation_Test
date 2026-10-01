@@ -3,6 +3,10 @@
 **English flow figure:** `artifacts/uplift_fsds_monitor_flow_en.png` (alias: `uplift_fsds_monitor_flow.png`).  
 Generate: `cd Python && python3 plot_uplift_fsds_monitor_flow.py`.
 
+## Post-hoc subset localization
+
+After global AUUC/MMD fire: **LOCO** localizes feature groups; **domain quintile AUUC** localizes which LIVE slice lost ranking; **group MMD** localizes which $X$ blocks shifted; **overlap-band AUUC** checks the comparable-support core. See `loco_auuc.posthoc_localization.posthoc_from_monitor`.
+
 ## SRM, ESS overlap, and domain RF AUC (support gate)
 
 | Check | What it guards | Typical use |
