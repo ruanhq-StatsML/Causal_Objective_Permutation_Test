@@ -1,0 +1,47 @@
+{
+  "dataset": "hillstrom",
+  "n_feature_groups": 2,
+  "n_retrains_per_loco_cycle": 6,
+  "note": "Same REF/LIVE split seed=42; AUUC = sklift uplift_auc; fast neural epochs=35",
+  "learners": {
+    "registry_logistic_x": {
+      "auuc_live": 0.048594237042257356,
+      "auuc_gap": -0.049042408017133006,
+      "loco_spearman": 1.0,
+      "loco_monitor_sec": 0.598,
+      "single_fit_sec": 0.014
+    },
+    "dragonnet_fast": {
+      "auuc_live": 0.047154302956882464,
+      "auuc_gap": -0.05832450401624391,
+      "loco_spearman": 1.0,
+      "loco_monitor_sec": 6.165,
+      "single_fit_sec": 0.786
+    },
+    "sklearn_xlearner": {
+      "auuc_live": 0.015405895194048363,
+      "auuc_gap": -0.06027516159270615,
+      "loco_spearman": 1.0,
+      "loco_monitor_sec": 2.911,
+      "single_fit_sec": 0.416
+    },
+    "registry_rf_x": {
+      "auuc_live": 0.0017352250877567836,
+      "auuc_gap": -0.04683729412381791,
+      "loco_spearman": 1.0,
+      "loco_monitor_sec": 1.77,
+      "single_fit_sec": 0.2
+    },
+    "tarnet_fast": {
+      "auuc_live": -0.0007321717597460759,
+      "auuc_gap": -0.01190623335077168,
+      "loco_spearman": 1.0,
+      "loco_monitor_sec": 7.774,
+      "single_fit_sec": 0.643
+    }
+  },
+  "efficiency_ratios_vs_registry_logistic": {
+    "loco_wall_time_dragonnet_over_logistic": 10.3,
+    "auuc_live_dragonnet_over_logistic": 0.97
+  }
+}

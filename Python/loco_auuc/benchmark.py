@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -18,6 +19,7 @@ from .metrics import auuc, evaluate_window
 from .metrics_compare import auuc_integral_report
 from .monitor import run_uplift_monitor
 from .registry_learners import make_registry_learner
+from .neural_uplift import make_dragonnet, make_tarnet
 
 
 REGISTRY_OUTCOME_MODELS = [
@@ -87,6 +89,7 @@ def _eval_model(
     def _e_fit(X, w):
         return GradientBoostingClassifier(random_state=0).fit(X, w).predict_proba(X)[:, 1]
 
+    t0 = time.perf_counter()
     mon = run_uplift_monitor(
         X_tr,
         t_tr,
@@ -102,11 +105,18 @@ def _eval_model(
         groups=groups,
         fit_propensity_for_overlap=_e_fit,
     )
+    loco_monitor_sec = time.perf_counter() - t0
 
+    t1 = time.perf_counter()
     model = learner_factory()
     model.fit(X_tr, t_tr, y_tr)
     tau_lv = model.predict_tau(X_lv)
     integral = auuc_integral_report(y_lv, t_lv, tau_lv)
+    single_fit_sec = time.perf_counter() - t1
+
+    n_groups = len(groups) if groups else p
+    # loco_auuc_monitor: 2 baseline fits + 2 per group (ref eval + live predict each retrain)
+    n_retrains_loco = 2 * (1 + n_groups)
 
     return {
         "auuc_ref_full": mon["loco_auuc"]["auuc_ref_full"],
@@ -121,6 +131,12 @@ def _eval_model(
             mon["loco_auuc"]["loco_rows"],
             key=lambda r: -r["drop_live"],
         )[:3],
+        "timing": {
+            "loco_monitor_wall_sec": loco_monitor_sec,
+            "single_fit_wall_sec": single_fit_sec,
+            "n_retrains_loco": n_retrains_loco,
+            "implied_sec_per_retrain": loco_monitor_sec / max(n_retrains_loco, 1),
+        },
     }
 
 
@@ -142,8 +158,11 @@ def run_full_benchmark(*, quick: bool = False, with_online_pfi: bool = True) -> 
                 lambda: make_registry_learner("tlearner", model_mu="rf_classifier"),
             )
         )
+        models.append(("dragonnet_fast", lambda: make_dragonnet(epochs=35, seed=42, fast=True)))
     else:
         models.append(("sklearn_xlearner", lambda: make_learner("xlearner")))
+        models.append(("tarnet", lambda: make_tarnet(epochs=60, seed=42, fast=True)))
+        models.append(("dragonnet", lambda: make_dragonnet(epochs=60, seed=42, fast=True)))
         for tag, mu, tau, e in REGISTRY_OUTCOME_MODELS:
             models.append(
                 (
