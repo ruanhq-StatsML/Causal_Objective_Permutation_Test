@@ -170,7 +170,7 @@ def run_uplift_monitor(
     tau_live_full = learner_factory()
     tau_live_full.fit(X_ref_tr, t_ref_tr, y_ref_tr)
     uplift_live = tau_live_full.predict_tau(X_live)
-    ci = bootstrap_auuc(y_live, t_live, uplift_live, n_boot=200)
+    ci = bootstrap_auuc(y_live, t_live, uplift_live, n_boot=80)
 
     return {
         "srm_ref": srm_ref,

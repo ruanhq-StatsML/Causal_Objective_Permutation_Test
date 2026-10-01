@@ -32,11 +32,27 @@ def qini_curve(y: np.ndarray, treatment: np.ndarray, uplift: np.ndarray) -> tupl
     return frac, gain
 
 
-def auuc(y: np.ndarray, treatment: np.ndarray, uplift: np.ndarray) -> float:
-    """Area under cumulative gain curve, normalized by n."""
+def auuc_gain_integral(y: np.ndarray, treatment: np.ndarray, uplift: np.ndarray) -> float:
+    """Raw $\frac{1}{n}\int g(f)df$ on cumulative Qini-style gain (internal diagnostic)."""
     frac, gain = qini_curve(y, treatment, uplift)
     area = np.trapezoid(gain, frac) if hasattr(np, "trapezoid") else np.trapz(gain, frac)
     return float(area / max(len(y), 1))
+
+
+def auuc(y: np.ndarray, treatment: np.ndarray, uplift: np.ndarray) -> float:
+    """
+    Primary AUUC: ``sklift.metrics.uplift_auc_score`` (normalized vs perfect uplift curve).
+    Falls back to ``auuc_gain_integral`` if sklift unavailable.
+    """
+    y = np.asarray(y, dtype=float).ravel()
+    t = np.asarray(treatment, dtype=int).ravel()
+    u = np.asarray(uplift, dtype=float).ravel()
+    try:
+        from sklift.metrics import uplift_auc_score
+
+        return float(uplift_auc_score(y, u, t))
+    except Exception:
+        return auuc_gain_integral(y, t, u)
 
 
 def auuc_random_baseline(
