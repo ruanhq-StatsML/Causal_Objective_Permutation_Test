@@ -28,6 +28,136 @@ from loco_auuc.monitor import propensity_overlap_ess  # noqa: E402
 from loco_auuc.subset_localization import run_uplift_subset_localization  # noqa: E402
 
 ART = ROOT / "artifacts"
+DOCS = ROOT / "docs" / "latex"
+
+
+def _tex_escape(s: str) -> str:
+    return (
+        s.replace("\\", "\\textbackslash{}")
+        .replace("_", "\\_")
+        .replace("&", "\\&")
+        .replace("%", "\\%")
+        .replace("#", "\\#")
+    )
+
+
+def write_subset_localization_tex(
+    runs: List[Dict[str, Any]],
+    path: Path,
+    *,
+    generated_utc: str = "",
+) -> None:
+    """Write LaTeX tables from run_uplift_subset_localization benchmark JSON."""
+    lines: List[str] = [
+        "% Auto-generated from uplift_two_layer_benchmark.json — run_uplift_subset_benchmark.py",
+        "\\paragraph{Two-batch subset localization (empirical).}",
+        "Monitor probe: sklearn X-learner; REF/LIVE splits as in \\texttt{benchmark\\_datasets}; "
+        "gates include $\\widehat{\\mathrm{MMD}}^2$, ESS overlap on $\\hat e(W\\mid X)$, DRPerm PO-risk ($n_{\\mathrm{perm}}=32$--$48$). "
+        "Layer~1: LOCO--AUUC, domain-quintile AUUC, pairwise ranking. "
+        "Layer~2: empirical ATE and $\\bar{\\hat\\tau}$ per quintile; L2 REALLOCATE rules require PO-risk reject.",
+    ]
+    if generated_utc:
+        lines.append(f"Generated (UTC): {_tex_escape(generated_utc)}.")
+    lines.append("")
+
+    for r in runs:
+        name = _tex_escape(r["dataset"])
+        g = r["gates"]
+        l1 = r["layer1_auuc_ranking"]
+        l2 = r["layer2_uplift_effect"]
+        lines.append(f"\\subparagraph{{{name}.}}")
+        lines.append(
+            f"Gates: $\\widehat{{\\mathrm{{MMD}}}}^2={g['mmd2_x']:.4f}$, "
+            f"$\\mathrm{{ESS}}_{{\\mathrm{{ovlp}}}}={g['overlap_ess_batch']:.3f}$, "
+            f"PO-risk $p={g['po_risk_pvalue']:.4f}$ "
+            f"({'reject' if g['po_risk_reject'] else 'accept'}). "
+            f"Diagnosis: \\texttt{{{_tex_escape(r['diagnosis'].get('label', ''))}}}. "
+            f"Regime: \\texttt{{{_tex_escape(r.get('subset_insight_regime', ''))}}}."
+        )
+        lines.append(
+            f"Global Layer~1: $\\mathrm{{AUUC}}_{{\\mathrm{{ref}}}}={l1['auuc_ref']:.4f}$, "
+            f"$\\mathrm{{AUUC}}_{{\\mathrm{{live}}}}={l1['auuc_live']:.4f}$, "
+            f"$\\Delta_{{\\mathrm{{AUUC}}}}={l1['auuc_gap']:.4f}$."
+        )
+        lines.append("")
+
+        loco = l1.get("loco_top3") or []
+        if loco:
+            lines.append("\\noindent\\textbf{LOCO--AUUC (top groups).}")
+            lines.append("\\begin{center}\\small")
+            lines.append("\\begin{tabular}{lrrr}")
+            lines.append("\\toprule Group & $\\mathrm{drop}_{\\mathrm{ref}}$ & $\\mathrm{drop}_{\\mathrm{live}}$ & $\\mathrm{drop\\_gap}$ \\\\")
+            lines.append("\\midrule")
+            for row in loco[:3]:
+                feat = _tex_escape(str(row.get("feature", "")))
+                lines.append(
+                    f"{feat} & {row.get('drop_ref', 0):.4f} & {row.get('drop_live', 0):.4f} & {row.get('drop_gap', 0):.4f} \\\\"
+                )
+            lines.append("\\bottomrule\\end{tabular}\\end{center}")
+
+        pw = l1.get("pairwise_auuc_top3") or []
+        if pw:
+            top = pw[0]
+            worse = _tex_escape(str(top.get("worse", "")))
+            better = _tex_escape(str(top.get("better", "")))
+            d_auuc = abs(float(top.get("delta", 0)))
+            lines.append(
+                f"\\noindent Top pairwise AUUC (L1): cap \\texttt{{{worse}}}, "
+                f"continue \\texttt{{{better}}} "
+                f"($|\\Delta\\mathrm{{AUUC}}|={d_auuc:.4f}$)."
+            )
+
+        slices = l2.get("slices") or []
+        if slices:
+            lines.append("\\noindent\\textbf{LIVE quintiles (L1 AUUC + L2 effect).}")
+            lines.append("\\begin{center}\\small")
+            lines.append("\\begin{tabular}{lrrrrr}")
+            lines.append(
+                "\\toprule Slice & $n$ & $\\mathrm{AUUC}_{\\mathrm{live}}$ & "
+                "$\\widehat{\\tau}^{\\mathrm{obs}}$ & $\\bar{\\hat\\tau}$ & $\\hat s$ \\\\"
+            )
+            lines.append("\\midrule")
+            for row in slices:
+                sub = _tex_escape(str(row.get("subset", "")).replace("domain_quintile_", "Q"))
+                auuc = row.get("auuc_live", float("nan"))
+                ate = row.get("empirical_ate", float("nan"))
+                mt = row.get("mean_tau_hat", float("nan"))
+                sc = row.get("mean_domain_score", float("nan"))
+                lines.append(
+                    f"{sub} & {int(row.get('n_live', 0))} & {auuc:.4f} & {ate:.4f} & {mt:.4f} & {sc:.3f} \\\\"
+                )
+            lines.append("\\bottomrule\\end{tabular}\\end{center}")
+
+        pw_ate = l2.get("pairwise_empirical_ate_top3") or []
+        if pw_ate:
+            t0 = pw_ate[0]
+            sa = _tex_escape(str(t0.get("subset_a", "")))
+            sb = _tex_escape(str(t0.get("subset_b", "")))
+            hi = _tex_escape(str(t0.get("higher_uplift_subset", "")))
+            d_ate = float(t0.get("delta_a_minus_b", 0))
+            lines.append(
+                f"\\noindent Top pairwise empirical ATE (L2): "
+                f"\\texttt{{{sa}}} vs \\texttt{{{sb}}}, "
+                f"$\\Delta\\widehat{{\\tau}}^{{\\mathrm{{obs}}}}={d_ate:.4f}$ "
+                f"(higher: \\texttt{{{hi}}})."
+            )
+
+        rules = r.get("business_rules") or []
+        if rules:
+            lines.append("\\noindent\\textbf{Business rules emitted.}")
+            lines.append("\\begin{itemize}\\itemsep2pt")
+            for br in rules[:6]:
+                act = _tex_escape(str(br.get("action", "")))
+                pri = int(br.get("priority", 9))
+                rule = _tex_escape(str(br.get("rule", ""))[:220])
+                if len(str(br.get("rule", ""))) > 220:
+                    rule += "\\ldots"
+                lines.append(f"\\item[\\textsc{{{act}}} (P{pri}).] {rule}")
+            lines.append("\\end{itemize}")
+        lines.append("")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
 DOCS = ROOT / "docs"
 
 
@@ -277,12 +407,16 @@ def main() -> int:
     ART.mkdir(exist_ok=True)
     json_path = ART / "uplift_two_layer_benchmark.json"
     md_path = ART / "uplift_two_layer_business_insights.md"
+    generated_utc = datetime.now(timezone.utc).isoformat()
     with open(json_path, "w") as f:
-        json.dump({"generated_utc": datetime.now(timezone.utc).isoformat(), "runs": results}, f, indent=2)
+        json.dump({"generated_utc": generated_utc, "runs": results}, f, indent=2)
 
     write_markdown(results, md_path)
+    tex_path = DOCS / "uplift_fsds_subset_localization_results.tex"
+    write_subset_localization_tex(results, tex_path, generated_utc=generated_utc)
     print("Wrote", json_path)
     print("Wrote", md_path)
+    print("Wrote", tex_path)
     for r in results:
         print("\n===", r["dataset"], "===")
         print(r["strategy"])
