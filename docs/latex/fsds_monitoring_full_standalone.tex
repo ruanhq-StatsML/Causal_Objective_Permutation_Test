@@ -1,0 +1,75 @@
+% Full LaTeX bundle: uplift two-batch monitor + federated cross-block FSDS
+% Compile from docs/latex:
+%   pdflatex fsds_monitoring_full_standalone.tex
+%   pdflatex fsds_monitoring_full_standalone.tex  (second pass for references)
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{hyperref}
+
+\title{FSDS Monitoring --- Full Document\\[0.4em]
+\large Part~I: Two-Batch Uplift (LOCO--AUUC, Two-Layer Localization)\quad
+Part~II: Communication-Efficient Federated Cross-Block Protocol}
+\author{Batch FSDS monitoring and federated feature-block attribution}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\begin{abstract}
+\textbf{Part~I (uplift).}
+We formalise uplift model monitoring under a two-batch contract: REF calibrates a frozen ranker $\hat\tau$; LIVE is deployment.
+Layer~1 (AUUC, LOCO--AUUC, domain-quintile pairwise comparisons) localises ranking failure; Layer~2 (empirical ATE and mean $\hat\tau$ on LIVE slices) localises effect movement, gated by PO-risk on stacked batches.
+Outputs are direct targeting policies (REALLOCATE, REFRESH\_REF, RELEARN) without a hierarchical feature tree.
+
+\textbf{Part~II (federated).}
+For vertically partitioned features, clients upload only $O(|F_k|)$ attribution summaries per REF/LIVE window.
+The server merges ranks, runs BH-FDR, diagnoses drift type, and emits online feature selection actions.
+Five UCI benchmarks show $10^2$--$10^3\times$ uplink efficiency versus naive matrix centralization and localize injected shift in targeted blocks.
+\end{abstract}
+
+\part{Two-batch uplift monitoring}
+
+\input{uplift_fsds_two_batch_formulation.tex}
+
+\section{Empirical uplift benchmarks (LOCO--AUUC)}
+\input{uplift_fsds_benchmark_results.tex}
+
+\section{Subset localization and business rules}
+\input{uplift_fsds_subset_localization_results.tex}
+
+\section{Operational subset insights}
+\input{uplift_fsds_subset_insights.tex}
+
+\part{Communication-efficient federated FSDS}
+
+\input{federated_fsds_comprehensive_preamble.tex}
+
+\section{Federated protocol --- multi-dataset validation}
+\input{federated_fsds_protocol_results.tex}
+
+\part{Reproducibility}
+
+\section{Code and artifacts}
+\begin{itemize}\itemsep3pt
+  \item \textbf{Uplift two-batch:} \texttt{Python/loco\_auuc/}, \texttt{run\_uplift\_subset\_benchmark.py}, \texttt{plot\_uplift\_fsds\_monitor\_flow.py}.
+  \item \textbf{Artifacts:} \texttt{artifacts/uplift\_two\_layer\_benchmark.json}, \texttt{artifacts/uplift\_fsds\_monitor\_flow\_en.png}.
+  \item \textbf{Federated protocol:} \texttt{Python/fsds\_sot/federated\_protocol.py}, \texttt{drift\_ofs\_fdr\_loop.py}, \texttt{demo\_federated\_protocol\_datasets.py}.
+  \item \textbf{Artifacts:} \texttt{artifacts/federated\_protocol\_benchmark.json}.
+  \item \textbf{Playbooks:} \texttt{docs/FSDS\_UPLIFT\_TWO\_BATCH\_LANDING.md}, \texttt{docs/FSDS\_FEDERATED\_FEATURE\_BLOCKS.md}.
+\end{itemize}
+
+\section{Included \texttt{.tex} fragments (maintainers)}
+\begin{itemize}\itemsep2pt
+  \item \texttt{uplift\_fsds\_two\_batch\_formulation.tex}
+  \item \texttt{uplift\_fsds\_benchmark\_results.tex} (auto)
+  \item \texttt{uplift\_fsds\_subset\_localization\_results.tex} (auto)
+  \item \texttt{uplift\_fsds\_subset\_insights.tex}
+  \item \texttt{federated\_fsds\_comprehensive\_preamble.tex}
+  \item \texttt{federated\_fsds\_protocol\_results.tex} (auto)
+\end{itemize}
+
+\end{document}
