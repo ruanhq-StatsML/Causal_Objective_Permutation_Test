@@ -1,0 +1,31 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{hyperref}
+
+\title{Communication-Efficient Federated FSDS:\\
+Cross-Block Monitoring, Explicit Protocol, and OFS/FDR Closed Loop}
+\author{FSDS federated monitoring note (auto-generated empirical section)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We document a \textbf{communication-efficient} federated variant of batch FSDS for vertically partitioned features.
+Clients upload only $O(|F_k|)$ attribution summaries per REF/LIVE window---not raw samples---while the server merges global ranks, runs BH-FDR, diagnoses drift type, and emits online feature selection (OFS) actions.
+Empirical runs on five UCI-style benchmarks (WDBC, Wine, Diabetes, Ionosphere, Heart Statlog) with injected covariate shift show consistent uplink savings on the order of $10^2$--$10^3\times$ versus naive matrix centralization and localize shift in the targeted feature blocks when top-ranked features align with injection (see summary table).
+\end{abstract}
+
+\input{federated_fsds_comprehensive_preamble.tex}
+\input{federated_fsds_protocol_results.tex}
+
+\section{Reproducibility}
+\begin{itemize}\itemsep2pt
+  \item Code: \texttt{Python/fsds\_sot/federated\_protocol.py}, \texttt{drift\_ofs\_fdr\_loop.py}.
+  \item Run: \texttt{cd Python \&\& python3 demo\_federated\_protocol\_datasets.py}.
+  \item Artifacts: \texttt{artifacts/federated\_protocol\_benchmark.json}.
+  \item Related uplift two-batch monitor: \texttt{docs/latex/uplift\_fsds\_two\_batch\_standalone.tex}.
+\end{itemize}
+
+\end{document}

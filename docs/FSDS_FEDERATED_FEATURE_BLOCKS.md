@@ -135,13 +135,15 @@ Outputs: `artifacts/federated_block_fsds_report.json` — per-block local stats,
 
 Communication envelope (per round, per client): `{mmd2, domain_auc, ess, n_ref, n_live, top_features[], po_pvalue optional}` — **O(p_k)** floats, not **O(n p)** rows.
 
-## 10. Explicit three-phase protocol + OFS/FDR loop (two datasets)
+## 10. Comprehensive LaTeX + five-dataset benchmark
 
 ```bash
 cd Python && python3 demo_federated_protocol_datasets.py
+cd docs/latex && pdflatex federated_fsds_comprehensive_standalone.tex
 ```
 
-- **Code:** `fsds_sot/federated_protocol.py`, `fsds_sot/drift_ofs_fdr_loop.py`
-- **LaTeX (English, practical takeaway first):** `docs/latex/federated_fsds_protocol_standalone.tex`
-- **JSON:** `artifacts/federated_protocol_two_datasets.json`
-- **Datasets:** WDBC (30 features, shift on cols 10–15), UCI Wine (13 features, shift on cols 4–7)
+- **Full document (communication efficiency first):** `docs/latex/federated_fsds_comprehensive_standalone.tex`
+- **Generated results section:** `docs/latex/federated_fsds_protocol_results.tex`
+- **Methodology (static):** `docs/latex/federated_fsds_comprehensive_preamble.tex`
+- **JSON:** `artifacts/federated_protocol_benchmark.json`
+- **Datasets:** WDBC, Wine, Diabetes, Ionosphere, Heart Statlog (vertical blocks + injected LIVE shift)
