@@ -1,0 +1,122 @@
+{
+  "runs": [
+    {
+      "dataset": "WDBC_breast_cancer",
+      "n_features": 30,
+      "n_ref": 341,
+      "n_live": 228,
+      "n_nodes": 5,
+      "shift_cols": [
+        10,
+        16
+      ],
+      "top_global_features": [
+        [
+          "f10",
+          3.7774408232732197
+        ],
+        [
+          "f14",
+          1.7643067400662658
+        ],
+        [
+          "f18",
+          0.5782523517121229
+        ],
+        [
+          "f26",
+          0.567600568992276
+        ],
+        [
+          "f4",
+          0.4977957639417545
+        ],
+        [
+          "f28",
+          0.49628514110859473
+        ],
+        [
+          "f21",
+          0.43366862591013355
+        ],
+        [
+          "f1",
+          0.4187704315306791
+        ]
+      ],
+      "n_fdr_significant": 1,
+      "action_counts": {
+        "keep": 29,
+        "candidate_retire": 1
+      },
+      "sample_actions": {
+        "f10": "candidate_retire"
+      },
+      "drift_types_among_significant": {
+        "f10": "concept"
+      },
+      "server_notes": [
+        "BH-FDR alpha=0.05: 1 features flagged."
+      ]
+    },
+    {
+      "dataset": "UCI_wine",
+      "n_features": 13,
+      "n_ref": 106,
+      "n_live": 72,
+      "n_nodes": 3,
+      "shift_cols": [
+        4,
+        8
+      ],
+      "top_global_features": [
+        [
+          "f7",
+          2.861542199868988
+        ],
+        [
+          "f1",
+          0.5867981811904327
+        ],
+        [
+          "f2",
+          0.5389801033649354
+        ],
+        [
+          "f0",
+          0.32800744205334303
+        ],
+        [
+          "f12",
+          0.03678861043345794
+        ],
+        [
+          "f10",
+          -0.032770714364298695
+        ],
+        [
+          "f11",
+          -0.09495443263277709
+        ],
+        [
+          "f3",
+          -0.12043729570269866
+        ]
+      ],
+      "n_fdr_significant": 1,
+      "action_counts": {
+        "keep": 12,
+        "candidate_retire": 1
+      },
+      "sample_actions": {
+        "f7": "candidate_retire"
+      },
+      "drift_types_among_significant": {
+        "f7": "concept"
+      },
+      "server_notes": [
+        "BH-FDR alpha=0.05: 1 features flagged."
+      ]
+    }
+  ]
+}

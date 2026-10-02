@@ -1,0 +1,27 @@
+% Auto-generated — demo_federated_protocol_datasets.py
+\section{Federated FSDS protocol: empirical validation (two datasets)}
+
+\paragraph{Practical takeaway (top line).}
+Vertical feature blocks upload \emph{only} local attribution summaries (MMD-LOCO shift proxy + domain-RF VIMP as PO-risk distance); the server merges ranks, runs BH-FDR, assigns drift type per feature, and emits OFS actions (\textsc{keep}, \textsc{recalibrate}, \textsc{candidate\_retire}, \textsc{alert\_recalibrate\_and\_review}) without raw cross-node data. On WDBC with injected LIVE shift on features 10--15, flagged features concentrate in the shifted block; Wine (13 features, 5 nodes) shows the same protocol contract at small scale.
+
+\paragraph{Protocol (three phases).}
+\textbf{Phase 1}---each node $k$ computes local $\{(d_f^{(k)}, \Delta P_f^{(k)}, R_k(f))\}$ via batch FSDS on $F_k$ (REF vs LIVE). \textbf{Phase 2}---upload payloads (plain in prototype; secure-aggregation hook reserved). \textbf{Phase 3}---server global rank, feature-level drift typing, BH-FDR at $\alpha{=}0.05$, OFS closed loop.
+
+\subparagraph{WDBC\_breast\_cancer.}
+$n=341+228$, $p=30$, 5 nodes; injected shift columns [10, 16). FDR significant: 1. Action mix: {'keep': 29, 'candidate_retire': 1}.
+Top global scores: \texttt{f10} (3.78), \texttt{f14} (1.76), \texttt{f18} (0.58), \texttt{f26} (0.57), \texttt{f4} (0.50).
+\noindent Sample significant OFS actions:
+\begin{itemize}\itemsep1pt
+\item \texttt{f10}: type=concept, action=\textsc{candidate\_retire}.
+\end{itemize}
+
+\subparagraph{UCI\_wine.}
+$n=106+72$, $p=13$, 3 nodes; injected shift columns [4, 8). FDR significant: 1. Action mix: {'keep': 12, 'candidate_retire': 1}.
+Top global scores: \texttt{f7} (2.86), \texttt{f1} (0.59), \texttt{f2} (0.54), \texttt{f0} (0.33), \texttt{f12} (0.04).
+\noindent Sample significant OFS actions:
+\begin{itemize}\itemsep1pt
+\item \texttt{f7}: type=concept, action=\textsc{candidate\_retire}.
+\end{itemize}
+
+\paragraph{Evaluation targets (monitoring).}
+Track drift-type accuracy on synthetic injections, FDR at $\alpha$, feature discovery on shifted columns, and closed-loop latency (one REF/LIVE window). Secure aggregation remains future work; communication per node is $O(|F_k|)$ summary floats, not $O(n|F_k|)$ rows.
