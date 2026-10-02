@@ -15,35 +15,35 @@
       "top_global_features": [
         [
           "f10",
-          3.777729425155128
+          3.7786675483439516
         ],
         [
           "f14",
-          1.7645229091677372
+          1.7638103045105031
         ],
         [
           "f18",
-          0.578425846449371
+          0.5780896447286521
         ],
         [
           "f26",
-          0.5677736804772382
+          0.5674408591767887
         ],
         [
           "f4",
-          0.4979663638423371
+          0.4976556956015295
         ],
         [
           "f28",
-          0.4964556866568056
+          0.4961454978230775
         ],
         [
           "f21",
-          0.4338369185094053
+          0.43354660147955604
         ],
         [
           "f1",
-          0.4189381880913177
+          0.41865259911118374
         ]
       ],
       "n_fdr_significant": 1,
@@ -340,6 +340,132 @@
         "efficiency_ratio": 73.125,
         "uplink_kib": 0.375,
         "raw_mib": 0.0267791748046875
+      }
+    },
+    {
+      "dataset": "UCI_spambase",
+      "n_features": 57,
+      "n_ref": 2760,
+      "n_live": 1841,
+      "n_nodes": 5,
+      "shift_cols": [
+        22,
+        30
+      ],
+      "top1_feature": "f23",
+      "top1_in_shift_block": true,
+      "top_global_features": [
+        [
+          "f23",
+          4.1512029766375065
+        ],
+        [
+          "f54",
+          2.3833152334231436
+        ],
+        [
+          "f56",
+          2.1590375550491747
+        ],
+        [
+          "f49",
+          1.6990852578468822
+        ],
+        [
+          "f18",
+          1.6757893926076526
+        ],
+        [
+          "f55",
+          1.6722788840980662
+        ],
+        [
+          "f51",
+          1.383047803467656
+        ],
+        [
+          "f20",
+          1.3781974324246498
+        ]
+      ],
+      "n_fdr_significant": 0,
+      "action_counts": {
+        "keep": 57
+      },
+      "sample_actions": {},
+      "drift_types_among_significant": {},
+      "server_notes": [
+        "BH-FDR alpha=0.05: 0 features flagged."
+      ],
+      "communication": {
+        "uplink_floats": 186.0,
+        "raw_matrix_floats": 262257.0,
+        "efficiency_ratio": 1409.983870967742,
+        "uplink_kib": 1.453125,
+        "raw_mib": 2.0008621215820312
+      }
+    },
+    {
+      "dataset": "UCI_sonar",
+      "n_features": 60,
+      "n_ref": 124,
+      "n_live": 84,
+      "n_nodes": 5,
+      "shift_cols": [
+        18,
+        26
+      ],
+      "top1_feature": "f25",
+      "top1_in_shift_block": true,
+      "top_global_features": [
+        [
+          "f25",
+          6.517865478053327
+        ],
+        [
+          "f24",
+          1.9604428726298637
+        ],
+        [
+          "f3",
+          1.357042956542834
+        ],
+        [
+          "f42",
+          1.3485381934020761
+        ],
+        [
+          "f39",
+          1.2122093105454144
+        ],
+        [
+          "f47",
+          0.5660075978361181
+        ],
+        [
+          "f11",
+          0.4383936580150081
+        ],
+        [
+          "f52",
+          0.3729093080988586
+        ]
+      ],
+      "n_fdr_significant": 0,
+      "action_counts": {
+        "keep": 60
+      },
+      "sample_actions": {},
+      "drift_types_among_significant": {},
+      "server_notes": [
+        "BH-FDR alpha=0.05: 0 features flagged."
+      ],
+      "communication": {
+        "uplink_floats": 195.0,
+        "raw_matrix_floats": 12480.0,
+        "efficiency_ratio": 64.0,
+        "uplink_kib": 1.5234375,
+        "raw_mib": 0.09521484375
       }
     }
   ]

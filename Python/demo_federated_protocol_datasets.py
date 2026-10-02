@@ -145,6 +145,18 @@ def _load_heart() -> Tuple[np.ndarray, List[str]]:
     return X, [f"f{j}" for j in range(X.shape[1])]
 
 
+def _load_spambase() -> Tuple[np.ndarray, List[str]]:
+    bunch = fetch_openml("spambase", version=1, as_frame=False, parser="auto")
+    X = np.asarray(bunch.data, dtype=float)
+    return X, [f"f{j}" for j in range(X.shape[1])]
+
+
+def _load_sonar() -> Tuple[np.ndarray, List[str]]:
+    bunch = fetch_openml("sonar", version=1, as_frame=False, parser="auto")
+    X = np.asarray(bunch.data, dtype=float)
+    return X, [f"f{j}" for j in range(X.shape[1])]
+
+
 def _tex_dict(d: Dict[str, int]) -> str:
     return ", ".join(f"\\textsc{{{k.replace('_', '\\\\_')}}}={v}" for k, v in d.items())
 
@@ -236,6 +248,8 @@ def main() -> int:
     dia = load_diabetes()
     X_ion, names_ion = _load_ionosphere()
     X_hrt, names_hrt = _load_heart()
+    X_spam, names_spam = _load_spambase()
+    X_sonar, names_sonar = _load_sonar()
 
     specs = [
         ("WDBC_breast_cancer", bc.data.astype(float), [f"f{j}" for j in range(bc.data.shape[1])],
@@ -246,6 +260,8 @@ def main() -> int:
          slice(3, 7), 2.0, 11, 3),
         ("UCI_ionosphere", X_ion, names_ion, slice(12, 20), 1.5, 3, 5),
         ("UCI_heart_statlog", X_hrt, names_hrt, slice(4, 9), 2.2, 17, 3),
+        ("UCI_spambase", X_spam, names_spam, slice(22, 30), 2.0, 23, 5),
+        ("UCI_sonar", X_sonar, names_sonar, slice(18, 26), 1.8, 29, 5),
     ]
 
     runs = [

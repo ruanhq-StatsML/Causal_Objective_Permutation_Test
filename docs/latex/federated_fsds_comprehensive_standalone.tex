@@ -14,7 +14,7 @@ Cross-Block Monitoring, Explicit Protocol, and OFS/FDR Closed Loop}
 \begin{abstract}
 We document a \textbf{communication-efficient} federated variant of batch FSDS for vertically partitioned features.
 Clients upload only $O(|F_k|)$ attribution summaries per REF/LIVE window---not raw samples---while the server merges global ranks, runs BH-FDR, diagnoses drift type, and emits online feature selection (OFS) actions.
-Empirical runs on five UCI-style benchmarks (WDBC, Wine, Diabetes, Ionosphere, Heart Statlog) with injected covariate shift show consistent uplink savings on the order of $10^2$--$10^3\times$ versus naive matrix centralization and localize shift in the targeted feature blocks when top-ranked features align with injection (see summary table).
+Empirical runs on seven UCI-style benchmarks (WDBC, Wine, Diabetes, Ionosphere, Heart Statlog, Spambase, Sonar) with injected covariate shift show consistent uplink savings on the order of $10^2$--$10^3\times$ versus naive matrix centralization and localize shift in the targeted feature blocks when top-ranked features align with injection (see summary table).
 \end{abstract}
 
 \input{federated_fsds_comprehensive_preamble.tex}

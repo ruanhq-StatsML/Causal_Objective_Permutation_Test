@@ -15,6 +15,8 @@ UCI\_wine & 13 & 3 & 1 & 48$\times$ & 0.38 & \texttt{f7} & yes \\
 UCI\_diabetes & 10 & 3 & 1 & 113$\times$ & 0.30 & \texttt{f6} & yes \\
 UCI\_ionosphere & 34 & 5 & 1 & 102$\times$ & 0.91 & \texttt{f12} & yes \\
 UCI\_heart\_statlog & 13 & 3 & 2 & 73$\times$ & 0.38 & \texttt{f8} & yes \\
+UCI\_spambase & 57 & 5 & 0 & 1410$\times$ & 1.45 & \texttt{f23} & yes \\
+UCI\_sonar & 60 & 5 & 0 & 64$\times$ & 1.52 & \texttt{f25} & yes \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -54,5 +56,13 @@ Top global scores: \texttt{f8} (2.68), \texttt{f5} (1.27), \texttt{f0} (0.57), \
 \item \texttt{f8}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
 \item \texttt{f5}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
 \end{itemize}
+
+\subparagraph{UCI\_spambase.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=2760+1841$, shift columns $[22,\,30)$. Communication: 186 floats uplink (1.45 KiB) vs 262257 raw matrix floats (2.001 MiB if centralized)---\textbf{1410$\times$} fewer scalars over the wire. FDR significant: 0; actions: \textsc{keep}=57.
+Top global scores: \texttt{f23} (4.15), \texttt{f54} (2.38), \texttt{f56} (2.16), \texttt{f49} (1.70), \texttt{f18} (1.68).
+
+\subparagraph{UCI\_sonar.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=124+84$, shift columns $[18,\,26)$. Communication: 195 floats uplink (1.52 KiB) vs 12480 raw matrix floats (0.095 MiB if centralized)---\textbf{64$\times$} fewer scalars over the wire. FDR significant: 0; actions: \textsc{keep}=60.
+Top global scores: \texttt{f25} (6.52), \texttt{f24} (1.96), \texttt{f3} (1.36), \texttt{f42} (1.35), \texttt{f39} (1.21).
 
 \paragraph{Monitoring metrics (targets).} Drift-type accuracy under injection, FDR $\approx \alpha$, top-$k$ hit rate in shifted blocks, action precision, one-window closed-loop latency. Secure aggregation is orthogonal to Eff and left to production.
