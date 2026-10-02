@@ -33,6 +33,12 @@ $\mathrm{Eff}= \frac{n(p+p)}{ \sum_k B_k } \approx \frac{2np}{\sum_k 3|F_k|}$ (s
 Phase~2 supports plain upload (prototype) or a \texttt{secure\_aggregation} hook (masked sums / Shamir shares on \emph{aggregates only}).
 Raw features never leave the client; only attribution statistics cross the wire.
 
+\paragraph{Cost and deployment.}
+Each REF/LIVE monitoring window uploads $O(p)$ attribution scalars ($\sum_k B_k$ with $B_k=3|F_k|{+}3$) instead of centralizing an $(n_{\mathrm{ref}}{+}n_{\mathrm{live}}){\times}p$ feature matrix, so uplink scales as $O(p)$ rather than $O(np)$.
+At representative tabular scales ($n{\sim}10^3$, $p{\sim}10^2$) this is on the order of $10^3$ fewer floats per round---consistent with measured efficiency ratios from about $48{\times}$ to $1410{\times}$ in our benchmarks (Spambase at $n{\approx}4600$).
+Deployment-wise, vertically partitioned clients run the same two-batch FSDS contract locally; the server only merges ranks and emits OFS actions (\textsc{keep}, \textsc{recalibrate}, \textsc{candidate\_retire}, \textsc{alert\_recalibrate\_and\_review}), which map directly to monitor/recalibrate/review tickets without moving raw \emph{X} across trust boundaries.
+The main operational savings are recurring bandwidth and federation coordination cost, reduced data-governance latency (no central pool of sensitive columns), and actionable drift labels per feature rather than a single global alarm.
+
 \section{Explicit client--server protocol (three phases)}
 
 \paragraph{Phase 1 --- Local attribution.}
