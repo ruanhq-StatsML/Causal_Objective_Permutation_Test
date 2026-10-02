@@ -134,3 +134,14 @@ cd Python && python3 demo_federated_block_fsds.py
 Outputs: `artifacts/federated_block_fsds_report.json` — per-block local stats, server merged ranking, drift **type** per block, suggested **OFS/monitor** actions.
 
 Communication envelope (per round, per client): `{mmd2, domain_auc, ess, n_ref, n_live, top_features[], po_pvalue optional}` — **O(p_k)** floats, not **O(n p)** rows.
+
+## 10. Explicit three-phase protocol + OFS/FDR loop (two datasets)
+
+```bash
+cd Python && python3 demo_federated_protocol_datasets.py
+```
+
+- **Code:** `fsds_sot/federated_protocol.py`, `fsds_sot/drift_ofs_fdr_loop.py`
+- **LaTeX (English, practical takeaway first):** `docs/latex/federated_fsds_protocol_standalone.tex`
+- **JSON:** `artifacts/federated_protocol_two_datasets.json`
+- **Datasets:** WDBC (30 features, shift on cols 10–15), UCI Wine (13 features, shift on cols 4–7)
