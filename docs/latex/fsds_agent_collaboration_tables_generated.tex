@@ -1,5 +1,5 @@
 % Auto-generated — agent collaboration scenarios
-% 2026-10-03T14:17:59.025569+00:00
+% 2026-10-03T14:45:45.173660+00:00
 
 \subsection{Table R7 --- Agent collaboration scenarios (uniform vs FSDS MC)}
 \label{tab:agent-collab}
@@ -51,6 +51,38 @@ Lever & Value (demo) \\
 FSDS cost reduction (micro) & 37.8\% \\
 Early-stop at round & 4 / 5 \\
 Macro round-cost save / debate & \$0.0088 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R10 --- Production-practical focus: ReAct and multi-agent (detail)}
+\label{tab:practical-react-ma}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.14\textwidth}p{0.30\textwidth}rrrr@{}}
+\toprule
+Pattern & What shifts (LIVE) & \$ uniform & \$ FSDS & Save \% & Checks saved \\
+\midrule
+ReAct & Observation / tool noise & 0.02064 & 0.01416 & 31.4 & 3 \\
+Multi-agent & Con role embedding & 0.02064 & 0.01283 & 37.8 & 3 \\
+Multi-agent (50ep) & Dedicated MC artifact & 0.02064 & 0.01252 & 39.3 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R10b --- Multi-agent per-role FSDS budgets (example plan)}
+\label{tab:ma-roles}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Role & $L$ tokens & Tier & Checks & Shift score \\
+\midrule
+pro & 336 & medium & 1 & 0.929 \\
+con & 287 & small & 1 & 0.832 \\
+judge & 480 & medium & 1 & 1.000 \\
+\midrule
+\multicolumn{5}{l}{MC success: uniform 0.66 $\rightarrow$ FSDS 0.68 (+2pp)} \\
 \bottomrule
 \end{tabular}
 \end{center}

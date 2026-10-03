@@ -301,6 +301,82 @@ def main() -> int:
             r"\end{center}",
             "",
         ]
+    react = next((s for s in collab.get("scenarios", []) if s.get("scenario_id") == "react_observation_drift"), {})
+    ma_sc = next((s for s in collab.get("scenarios", []) if s.get("scenario_id") == "multi_agent_debate_con_drift"), {})
+    ma_full = _load("multi_agent_fsds_economics.json")
+    ma_mc = ma_full.get("monte_carlo_eval", {})
+    alines += [
+        r"\subsection{Table R10 --- Production-practical focus: ReAct and multi-agent (detail)}",
+        r"\label{tab:practical-react-ma}",
+        r"\begin{center}",
+        r"\small",
+        r"\begin{tabular}{@{}p{0.14\textwidth}p{0.30\textwidth}rrrr@{}}",
+        r"\toprule",
+        r"Pattern & What shifts (LIVE) & \$ uniform & \$ FSDS & Save \% & Checks saved \\",
+        r"\midrule",
+    ]
+    if react:
+        ru, rf = react["uniform"], react["fsds"]
+        alines.append(
+            f"ReAct & Observation / tool noise & {ru['mean_cost_usd']:.5f} & {rf['mean_cost_usd']:.5f} & "
+            f"{react['incremental'].get('cost_reduction_pct', 0):.1f} & "
+            f"{int(-react['incremental'].get('checks_delta', 0))} \\\\"
+        )
+    if ma_sc:
+        ru, rf = ma_sc["uniform"], ma_sc["fsds"]
+        alines.append(
+            f"Multi-agent & Con role embedding & {ru['mean_cost_usd']:.5f} & {rf['mean_cost_usd']:.5f} & "
+            f"{ma_sc['incremental'].get('cost_reduction_pct', 0):.1f} & "
+            f"{int(-ma_sc['incremental'].get('checks_delta', 0))} \\\\"
+        )
+    if ma_mc:
+        u = ma_mc.get("uniform_debate_swarm", {})
+        f = ma_mc.get("fsds_routed_debate", {})
+        pct = ma_mc.get("cost_reduction_pct", 0)
+        alines.append(
+            f"Multi-agent (50ep) & Dedicated MC artifact & {u.get('mean_cost_usd', 0):.5f} & "
+            f"{f.get('mean_cost_usd', 0):.5f} & {pct:.1f} & "
+            f"{int(-ma_mc.get('checks_delta', 0))} \\\\"
+        )
+    alines += [
+        r"\bottomrule",
+        r"\end{tabular}",
+        r"\end{center}",
+        "",
+    ]
+    roles = ma_full.get("per_role_budget") or []
+    u_mc = ma_mc.get("uniform_debate_swarm", {}) if ma_mc else {}
+    f_mc = ma_mc.get("fsds_routed_debate", {}) if ma_mc else {}
+    if roles:
+        alines += [
+            r"\subsection{Table R10b --- Multi-agent per-role FSDS budgets (example plan)}",
+            r"\label{tab:ma-roles}",
+            r"\begin{center}",
+            r"\small",
+            r"\begin{tabular}{@{}lrrrl@{}}",
+            r"\toprule",
+            r"Role & $L$ tokens & Tier & Checks & Shift score \\",
+            r"\midrule",
+        ]
+        for r in roles:
+            alines.append(
+                f"{_tex_escape(str(r.get('role', '')))} & {r.get('L_tokens', 0)} & "
+                f"{_tex_escape(str(r.get('tier', '')))} & {r.get('checks', 0)} & "
+                f"{r.get('shift_score', 0):.3f} \\\\"
+            )
+        if ma_mc:
+            alines += [
+                r"\midrule",
+                f"\\multicolumn{{5}}{{l}}{{MC success: uniform {u_mc.get('mean_success', 0):.2f} "
+                f"$\\rightarrow$ FSDS {f_mc.get('mean_success', 0):.2f} "
+                f"(+{ma_mc.get('success_delta', 0)*100:.0f}pp)}} \\\\",
+            ]
+        alines += [
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"\end{center}",
+            "",
+        ]
     alines.append(
         r"\noindent\emph{Regenerate suite:} \texttt{python3 demo\_fsds\_agent\_collaboration\_suite.py}."
     )
