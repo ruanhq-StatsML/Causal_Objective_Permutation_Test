@@ -28,7 +28,7 @@ Outputs are direct targeting policies (REALLOCATE, REFRESH\_REF, RELEARN) withou
 \textbf{Part~II (federated).}
 For vertically partitioned features, clients upload only $O(|F_k|)$ attribution summaries per REF/LIVE window.
 The server merges ranks, runs BH-FDR, diagnoses drift type, and emits online feature selection actions.
-Five UCI benchmarks show $10^2$--$10^3\times$ uplink efficiency versus naive matrix centralization and localize injected shift in targeted blocks.
+Seven UCI benchmarks show $10^2$--$10^3\times$ uplink efficiency versus naive matrix centralization; top-1 localization hits the injected shift block on all seven runs (BH-FDR may flag zero features on large-$n$ sets while ranking still peaks on the shift).
 \end{abstract}
 
 \part{Two-batch uplift monitoring}
@@ -50,6 +50,10 @@ Five UCI benchmarks show $10^2$--$10^3\times$ uplink efficiency versus naive mat
 
 \section{Federated protocol --- multi-dataset validation}
 \input{federated_fsds_protocol_results.tex}
+
+\part{Multi-agent collaboration and business impact}
+
+\input{fsds_multi_agent_business_impact.tex}
 
 \part{Reproducibility}
 

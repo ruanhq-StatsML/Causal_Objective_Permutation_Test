@@ -1,0 +1,41 @@
+% Fragment: multi-agent collaboration × FSDS × business impact
+% Include from fsds_monitoring_full_standalone.tex or agent manuscript.
+
+\section{Multi-agent collaboration and attributable business impact}
+
+\paragraph{Unified economic object.}
+Let an \emph{episode} be one user-facing workflow (ticket, claim, campaign decision, or agent task).
+Write contribution margin as
+\(
+\Pi = p_{\mathrm{succ}}\, v_{\mathrm{succ}} - c_{\mathrm{var}} - c_{\mathrm{fix}},
+\)
+where $p_{\mathrm{succ}}$ is success probability, $v_{\mathrm{succ}}$ the value of success (margin or avoided loss),
+$c_{\mathrm{var}}$ variable compute (tokens, tools, checks, human minutes), and $c_{\mathrm{fix}}$ monitor sidecar and storage.
+FSDS does not replace this accounting; it supplies \emph{when} to move each lever with testable batches.
+
+\paragraph{Same spine, three deployments.}
+\textbf{(i) Agent SoT and multi-agent:} segments are roles, handoffs, or debate rounds;
+Object~1 merges low-coupling roles; Object~2 allocates length, tier, and verification budget to shifted segments;
+covariate monitoring on trace features explains REF vs LIVE composition change.
+\textbf{(ii) Uplift:} the frozen ranker $\hat\tau$ is monitored on REF vs LIVE with AUUC, overlap bands, and PO-risk;
+policy adaptation (caps, narrow support) precedes CATE relearn.
+\textbf{(iii) Federated blocks:} each silo uploads $O(|F_k|)$ shift summaries; the server merges attribution without centralizing raw features.
+Nuisance refit of $\hat\mu$ and $\hat e$ is shared across meta-learners and DML stacks; only the online cadence of cross-fitting differs.
+
+\paragraph{Multi-agent profit mechanisms.}
+In orchestrator--worker systems, routing LIVE traffic to the worker with lowest embedding shift on the required skill reduces rework loops and raises $p_{\mathrm{succ}}$ without uniform over-invocation of every specialist.
+In debate patterns, down-weighting roles whose utterances show no REF--LIVE increment relative to task outcome removes redundant generation (\emph{concept dedup}), lowering $c_{\mathrm{var}}$ while preserving judge budget on high-shift rounds.
+Human supervisors need not review every handoff: FSDS localizes shifted segments so QA samples are \emph{justified} by shift statistics rather than discretionary spot checks.
+
+\paragraph{Audit trail (justifiable impact).}
+Each automated action should emit a \emph{monitor receipt}: time windows, shift score or $\widehat{\mathrm{MMD}}^2$, hypothesis-test $p$-value where applicable, pre-action and post-action KPI ($p_{\mathrm{succ}}$, AUUC, or $\$/\mathrm{episode}$), and a rule identifier (e.g.\ REALLOCATE cap, segment budget, federated block retire).
+Finance and risk can tie spend changes to pre-registered statistics---the same contract as batch FSDS and pseudo-outcome gates on uplift.
+
+\paragraph{Wide-scene opportunities.}
+\textbf{Growth:} sales and renewal swarms combined with uplift-style REALLOCATE on slices where ranking remains valid on overlap support.
+\textbf{Compliance:} federated monitors enable campaigns in jurisdictions where raw feature pooling is prohibited---revenue unlock, not only uplink savings.
+\textbf{Operations:} support and SWE agents reuse segment-level refresh (re-run only shifted hunks or tools).
+\textbf{Platforms:} marketplaces can price agent listings by stability certificates (low REF--LIVE shift), aligning take rate with measured reliability.
+
+\paragraph{Near-term product gaps.}
+Quantified multi-agent ROI demos paralleling SoT boss delivery; optional dollar fields on uplift business rules; standardized impact-receipt JSON shared across agent closed-loop and two-batch uplift monitors.

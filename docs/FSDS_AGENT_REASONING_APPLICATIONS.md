@@ -57,3 +57,7 @@ Plus **(0) batch covariate monitoring** on trace features \(\Dold\) vs \(\Dnew\)
 
 - Log `{segment_embedding, quality, tool_ok}` per step → rolling \(\Dold,\Dnew\).  
 - Sidecar calls `fit_plan` async; scheduler reads `BranchBudget`-like outputs per segment type.
+
+## Business impact and multi-agent GTM
+
+For **profit generation**, audit receipts, and a divergent map of enterprise scenarios (sales swarms, federated compliance, uplift-as-agent-policy), see **`docs/FSDS_MULTI_AGENT_BUSINESS_IMPACT.md`** and LaTeX fragment **`docs/latex/fsds_multi_agent_business_impact.tex`**.
