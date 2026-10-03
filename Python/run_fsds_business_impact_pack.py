@@ -23,6 +23,7 @@ def main() -> int:
         ["python3", "demo_federated_legal_agent_blocks.py"],
         ["python3", "run_uplift_subset_benchmark.py", "--n-perm", "32"],
         ["python3", "plot_fsds_business_impact_dashboard_en.py"],
+        ["python3", "synthesize_fsds_economics_report.py"],
     ]
     for cmd in demos:
         _run(cmd)

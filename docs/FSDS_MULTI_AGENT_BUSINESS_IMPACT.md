@@ -2,6 +2,8 @@
 
 **Purpose:** Connect **multi-agent** and **orchestrator–worker** patterns to the same FSDS spine already used for SoT budgeting, uplift two-batch monitoring, and federated feature blocks — with **P&L language** finance and product can defend, not only ML metrics.
 
+**Executive rollup (direct vs potential $):** [`FSDS_BUSINESS_IMPACT_EXECUTIVE_SUMMARY.md`](FSDS_BUSINESS_IMPACT_EXECUTIVE_SUMMARY.md) · `python3 synthesize_fsds_economics_report.py`
+
 **Related:** `docs/FSDS_AGENT_REASONING_APPLICATIONS.md`, `docs/FSDS_SoT_LANDING.md`, `docs/FSDS_UPLIFT_TWO_BATCH_LANDING.md`, `docs/FSDS_FEDERATED_FEATURE_BLOCKS.md`, `Python/fsds_sot/economics.py`, `Python/fsds_sot/applications.py` (`build_multi_agent_trace`).
 
 ---
