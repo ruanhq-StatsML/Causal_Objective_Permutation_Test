@@ -43,3 +43,11 @@ File: [`fsds_opex_capex_cost_share_po.tex`](fsds_opex_capex_cost_share_po.tex) �
 ## Concrete pipeline justification (X, Y, algorithm, measured delta)
 
 [`fsds_concrete_pipeline_justification.tex`](fsds_concrete_pipeline_justification.tex) — step ledger with Hillstrom/synthetic numbers from benchmark JSON.
+
+## Treasury + credit-risk fulfillment PO (English)
+
+```bash
+cd docs/latex && pdflatex fsds_treasury_credit_risk_po.tex
+```
+
+File: [`fsds_treasury_credit_risk_po.tex`](fsds_treasury_credit_risk_po.tex) — checking-account reconciliation (retained vs cash in), `impact_receipt` GL mapping, and credit origination fulfillment via the same two-batch uplift spine.
