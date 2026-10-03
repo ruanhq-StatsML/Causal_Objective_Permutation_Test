@@ -39,3 +39,7 @@ cd docs/latex && pdflatex fsds_opex_capex_cost_share_po.tex
 ```
 
 File: [`fsds_opex_capex_cost_share_po.tex`](fsds_opex_capex_cost_share_po.tex) — discrete demo step-sizes and two-ledger governance.
+
+## Concrete pipeline justification (X, Y, algorithm, measured delta)
+
+[`fsds_concrete_pipeline_justification.tex`](fsds_concrete_pipeline_justification.tex) — step ledger with Hillstrom/synthetic numbers from benchmark JSON.
