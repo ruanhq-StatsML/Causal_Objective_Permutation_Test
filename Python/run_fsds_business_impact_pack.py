@@ -18,6 +18,7 @@ def _run(cmd: list[str]) -> None:
 def main() -> int:
     demos = [
         ["python3", "demo_fsds_multi_agent_economics.py"],
+        ["python3", "demo_fsds_agent_collaboration_suite.py"],
         ["python3", "demo_fsds_multi_agent_debate_early_stop.py"],
         ["python3", "demo_fsds_langgraph_hook.py"],
         ["python3", "demo_federated_legal_agent_blocks.py"],

@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / "artifacts"
 OUT = ROOT / "docs" / "latex" / "fsds_results_tables_generated.tex"
+OUT_AGENT = ROOT / "docs" / "latex" / "fsds_agent_collaboration_tables_generated.tex"
 
 
 def _load(name: str) -> dict:
@@ -226,6 +227,85 @@ def main() -> int:
     )
     OUT.write_text("\n".join(lines) + "\n")
     print(f"Wrote {OUT.relative_to(ROOT)}")
+
+    collab = _load("agent_collaboration_scenarios.json")
+    alines: list[str] = [
+        "% Auto-generated — agent collaboration scenarios",
+        f"% {datetime.now(timezone.utc).isoformat()}",
+        "",
+        r"\subsection{Table R7 --- Agent collaboration scenarios (uniform vs FSDS MC)}",
+        r"\label{tab:agent-collab}",
+        r"\begin{center}",
+        r"\scriptsize",
+        r"\begin{tabular}{@{}llrrrrr@{}}",
+        r"\toprule",
+        r"Scenario & Pattern & \$ uniform & \$ FSDS & Save \% & $\Delta$ success (pp) & Checks $\Delta$ \\",
+        r"\midrule",
+    ]
+    for sc in collab.get("scenarios", []):
+        sid = _tex_escape(str(sc.get("scenario_id", "")))
+        pat = _tex_escape(str(sc.get("pattern", "")))
+        if "uniform" not in sc or "fsds" not in sc:
+            continue
+        inc = sc.get("incremental", {})
+        u = sc["uniform"]["mean_cost_usd"]
+        f = sc["fsds"]["mean_cost_usd"]
+        alines.append(
+            f"{sid} & {pat} & {u:.5f} & {f:.5f} & {inc.get('cost_reduction_pct', 0):.1f} & "
+            f"{inc.get('success_delta_pp', 0):+.1f} & {inc.get('checks_delta', 0):+.0f} \\\\"
+        )
+    alines += [
+        r"\bottomrule",
+        r"\end{tabular}",
+        r"\end{center}",
+        "",
+        r"\subsection{Table R8 --- Collaboration objects ($X$, $Y$, $Z$, $W$) by scenario}",
+        r"\label{tab:agent-xy}",
+        r"\begin{center}",
+        r"\small",
+        r"\begin{tabular}{@{}p{0.18\textwidth}p{0.74\textwidth}@{}}",
+        r"\toprule",
+        r"Scenario & Collaboration / monitoring note \\",
+        r"\midrule",
+    ]
+    for sc in collab.get("scenarios", []):
+        sid = _tex_escape(str(sc.get("scenario_id", "")))
+        note = _tex_escape(str(sc.get("collaboration_note", sc.get("playbook", ""))))
+        alines.append(f"{sid} & {note} \\\\")
+    alines += [
+        r"\bottomrule",
+        r"\end{tabular}",
+        r"\end{center}",
+        "",
+    ]
+    stacked = next(
+        (s for s in collab.get("scenarios", []) if s.get("scenario_id") == "stacked_multi_agent_fsds_plus_early_stop"),
+        None,
+    )
+    if stacked and stacked.get("stacked_levers"):
+        sl = stacked["stacked_levers"]
+        alines += [
+            r"\subsection{Table R9 --- Stacked multi-agent levers (micro FSDS + macro early-stop)}",
+            r"\label{tab:stacked-ma}",
+            r"\begin{center}",
+            r"\small",
+            r"\begin{tabular}{@{}lr@{}}",
+            r"\toprule",
+            r"Lever & Value (demo) \\",
+            r"\midrule",
+            f"FSDS cost reduction (micro) & {sl.get('fsds_cost_reduction_pct', 0):.1f}\\% \\\\",
+            f"Early-stop at round & {sl.get('early_stop_rounds', 0)} / {sl.get('early_stop_max_rounds', 5)} \\\\",
+            f"Macro round-cost save / debate & \\${sl.get('macro_round_cost_save_usd_per_debate', 0):.4f} \\\\",
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"\end{center}",
+            "",
+        ]
+    alines.append(
+        r"\noindent\emph{Regenerate suite:} \texttt{python3 demo\_fsds\_agent\_collaboration\_suite.py}."
+    )
+    OUT_AGENT.write_text("\n".join(alines) + "\n")
+    print(f"Wrote {OUT_AGENT.relative_to(ROOT)}")
     return 0
 
 

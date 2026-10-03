@@ -1,0 +1,56 @@
+% Auto-generated — agent collaboration scenarios
+% 2026-10-03T10:02:43.694786+00:00
+
+\subsection{Table R7 --- Agent collaboration scenarios (uniform vs FSDS MC)}
+\label{tab:agent-collab}
+\begin{center}
+\scriptsize
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Scenario & Pattern & \$ uniform & \$ FSDS & Save \% & $\Delta$ success (pp) & Checks $\Delta$ \\
+\midrule
+react\_observation\_drift & react & 0.02064 & 0.01416 & 31.4 & +0.0 & -3 \\
+rag\_multihop\_hop3\_drift & rag\_per\_chunk & 0.02680 & 0.01716 & 36.0 & +0.0 & -4 \\
+self\_consistency\_chain\_dispersion & self\_consistency & 0.03080 & 0.01950 & 36.7 & -4.2 & -5 \\
+multi\_agent\_debate\_con\_drift & multi\_agent\_debate & 0.02064 & 0.01283 & 37.8 & +0.0 & -3 \\
+langgraph\_tool\_call\_drift & langgraph\_checkpoint & 0.03080 & 0.01965 & 36.2 & +0.0 & -5 \\
+stacked\_multi\_agent\_fsds\_plus\_early\_stop & multi\_agent\_debate+early\_stop & 0.02064 & 0.01283 & 37.8 & +0.0 & -3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R8 --- Collaboration objects ($X$, $Y$, $Z$, $W$) by scenario}
+\label{tab:agent-xy}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.18\textwidth}p{0.74\textwidth}@{}}
+\toprule
+Scenario & Collaboration / monitoring note \\
+\midrule
+react\_observation\_drift & Thought→action→observation chain; collaboration = sequential segments under one topology gate. \\
+rag\_multihop\_hop3\_drift & Multi-hop retrieve; hops collaborate via parallel chunk budget when decomposable. \\
+self\_consistency\_chain\_dispersion & N chain samples; dispersion drives adaptive N (fewer samples when chains agree). \\
+multi\_agent\_debate\_con\_drift & Three roles (pro/con/judge) share one FSDS plan; shift on con triggers role-level budget split. \\
+langgraph\_tool\_call\_drift & Checkpoint nodes collaborate via graph trace batch; retry only drifted nodes in prod hook. \\
+stacked\_multi\_agent\_fsds\_plus\_early\_stop & Agents collaborate across rounds; stop when centroids stabilize; FSDS trims per-role spend on LIVE shift. \\
+self\_consistency\_adaptive\_N & Parallel chains collaborate via vote/dispersion; low dispersion → fewer paid samples. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R9 --- Stacked multi-agent levers (micro FSDS + macro early-stop)}
+\label{tab:stacked-ma}
+\begin{center}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Lever & Value (demo) \\
+\midrule
+FSDS cost reduction (micro) & 37.8\% \\
+Early-stop at round & 4 / 5 \\
+Macro round-cost save / debate & \$0.0088 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\emph{Regenerate suite:} \texttt{python3 demo\_fsds\_agent\_collaboration\_suite.py}.

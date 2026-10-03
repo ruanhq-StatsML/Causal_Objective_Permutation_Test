@@ -52,17 +52,30 @@ cd docs/latex && pdflatex fsds_treasury_credit_risk_po.tex
 
 File: [`fsds_treasury_credit_risk_po.tex`](fsds_treasury_credit_risk_po.tex) — checking-account reconciliation (retained vs cash in), `impact_receipt` GL mapping, and credit origination fulfillment via the same two-batch uplift spine.
 
-## FSDS method + incremental value PO (polished, with result tables R1–R6)
+## Full scenario PO (English, uplift + agent collaboration, tables R1–R9)
 
-**Recommended executive/technical PDF:**
+**Recommended full PDF:**
+
+```bash
+cd Python
+python3 run_fsds_business_impact_pack.py
+python3 demo_fsds_agent_collaboration_suite.py
+python3 export_fsds_results_tables_tex.py
+cd ../docs/latex && pdflatex fsds_full_scenarios_po_en.tex
+```
+
+- [`fsds_full_scenarios_po_en.tex`](fsds_full_scenarios_po_en.tex) — polished narratives + `\input` R1–R6 and R7–R9
+- [`fsds_agent_collaboration_tables_generated.tex`](fsds_agent_collaboration_tables_generated.tex) — agent MC suite tables
+- [`fsds_results_tables_generated.tex`](fsds_results_tables_generated.tex) — uplift + executive rollup tables
+
+## FSDS method + incremental value PO (shorter, R1–R6 only)
 
 ```bash
 cd Python && python3 export_fsds_results_tables_tex.py
 cd ../docs/latex && pdflatex fsds_method_incremental_value_po_en.tex
 ```
 
-- [`fsds_method_incremental_value_po_en.tex`](fsds_method_incremental_value_po_en.tex) — where FSDS runs, incremental justify, `\input{fsds_results_tables_generated.tex}`
-- [`fsds_results_tables_generated.tex`](fsds_results_tables_generated.tex) — auto from `artifacts/*.json` (regenerate via `export_fsds_results_tables_tex.py`)
+- [`fsds_method_incremental_value_po_en.tex`](fsds_method_incremental_value_po_en.tex)
 
 ## Application X/Y and step-level benefit (English formulation + 中文)
 

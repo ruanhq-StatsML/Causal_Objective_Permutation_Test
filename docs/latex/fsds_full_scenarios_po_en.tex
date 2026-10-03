@@ -1,0 +1,111 @@
+% Full English PO: FSDS placement, incremental value, uplift + agent collaboration scenarios
+% Compile:
+%   cd Python
+%   python3 run_fsds_business_impact_pack.py
+%   python3 demo_fsds_agent_collaboration_suite.py
+%   python3 export_fsds_results_tables_tex.py
+%   cd ../docs/latex && pdflatex fsds_full_scenarios_po_en.tex
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true,linkcolor=blue!55!black}
+
+\title{\textbf{FSDS Full Scenario Portfolio}\\[0.4em]
+\large Where the Method Runs, Agent Collaboration, Incremental Value, and Empirical Tables}
+\author{Repository PO --- auto-tables from \texttt{artifacts/*.json}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is the \textbf{full English} position paper for review: uplift fulfillment, single-agent SoT, and \emph{multi-agent collaboration} patterns (ReAct chains, multi-hop RAG, self-consistency samples, pro/con/judge debate, LangGraph checkpoints, and stacked micro+macro levers).
+For each scenario we state \textbf{where} \texttt{fit\_agent\_plan} / two-batch localization runs, objects $X,Y,Z,W$ (and $T$ in uplift), \textbf{incremental value} vs uniform baselines, and \textbf{attached tables} R1--R9 regenerated from JSON.
+Collaboration means multiple segments, roles, hops, or rounds sharing one FSDS attribution window---shift on one participant triggers budget reallocation for the team, not a blind global token cut.
+\end{abstract}
+
+\tableofcontents
+
+\section{Executive framing}
+
+\paragraph{One monitor, many surfaces.}
+FSDS compares REF to LIVE on $X$ (and uses $Y$ for concept gates in uplift).
+\textbf{Incremental value} appears when a \emph{policy executes}: REALLOCATE caps, branch/role/node budgets, debate early-stop, or federated block OFS---each with \texttt{impact\_receipt} and \texttt{rule\_ids}.
+
+\paragraph{Agent collaboration focus.}
+Unlike single-branch copilots, collaborative agents expose \textbf{$Z$} (segment embeddings) for Object~2 budgeting while \textbf{$X$} (\texttt{trace\_features}) drives batch shift detection on $W$.
+Table~\ref{tab:agent-collab} reports five patterns plus a \textbf{stacked} multi-agent row (role FSDS + round early-stop); Table~\ref{tab:agent-xy} documents how roles/hops/chains interact.
+
+\section{Uplift and enterprise surfaces (Tables R1--R6)}
+
+Marketing two-batch uplift, credit fulfillment (same code, relabeled economics), federated blocks, and config annualization appear in the following auto-generated block.
+
+\input{fsds_results_tables_generated.tex}
+
+\section{Agent collaboration scenarios (Tables R7--R9)}
+
+We ran an expanded Monte Carlo suite (\texttt{demo\_fsds\_agent\_collaboration\_suite.py}) with shared protocol:
+REF/LIVE trace batches ($W$), per-episode $Z$ segments, MC success ($Y$), uniform \texttt{uniform\_plan} vs \texttt{FSDSSoT.fit\_plan} ($\kappa{=}0.88$, latency cap 480).
+Drift is injected on the \emph{collaboration bottleneck}: ReAct \texttt{observation}, RAG hop~3, debate \texttt{con}, LangGraph \texttt{tool\_call}.
+
+\input{fsds_agent_collaboration_tables_generated.tex}
+
+\subsection{Polished scenario narratives}
+
+\paragraph{ReAct (\texttt{react\_observation\_drift}).}
+Three segments collaborate sequentially; LIVE noise on observation embedding triggers extra checks/tier on obs without re-expanding thought---workflow-efficient collaboration.
+
+\paragraph{RAG multihop (\texttt{rag\_multihop\_hop3\_drift}).}
+Four hops collaborate; drift on reasoning hop after retrieve localizes budget to the failing collaboration edge (retrieve$\rightarrow$reason handoff).
+
+\paragraph{Self-consistency (\texttt{self\_consistency\_chain\_dispersion}).}
+Parallel chain embeddings collaborate via dispersion; FSDS reduces checks/tokens on stable chains; adaptive $N$ vignette (Table~\ref{tab:agent-collab} companion row) shows sample-count lever when dispersion falls.
+
+\paragraph{Multi-agent debate (\texttt{multi\_agent\_debate\_con\_drift}).}
+Pro, con, and judge share one plan; con drift under LIVE mimics adversarial channel shift; FSDS down-weights con tier while preserving judge budget on critical path.
+
+\paragraph{LangGraph (\texttt{langgraph\_tool\_call\_drift}).}
+Five checkpoint nodes collaborate; tool\_call drift matches production hook---partial replay instead of full graph CAPEX relearn.
+
+\paragraph{Stacked collaboration (\texttt{stacked\_multi\_agent\_fsds\_plus\_early\_stop}).}
+\textbf{Micro:} per-role FSDS budgets (Table~\ref{tab:stacked-ma}).
+\textbf{Macro:} \texttt{debate\_early\_stop\_round} on $(R,B,d)$ tensors stops when round centroids stabilize---agents ``agree'' across rounds, so further debate is OPEX waste.
+
+\section{Incremental value synthesis}
+
+\begin{itemize}[nosep]
+  \item \textbf{Uplift:} OPEX net \$3{,}271 bench total on REALLOCATE (Table~\ref{tab:uplift-scenarios}); gates prevent cap when ESS/SRM fail.
+  \item \textbf{Single SoT:} $\sim$33.6\% \$/episode (boss pack; Table~\ref{tab:direct-incremental}).
+  \item \textbf{Collaboration MC:} Table~\ref{tab:agent-collab} --- cost reductions \textbf{31--38\%} across patterns at similar success in this MC seed (self-consistency trades success for cost in one run).
+  \item \textbf{Stacked debate:} combine Table~\ref{tab:stacked-ma} micro \% with macro round save for portfolio storytelling; receipts should tag levers separately for finance.
+\end{itemize}
+
+\section{Audit, treasury, reproduction}
+
+\paragraph{Receipts.}
+\texttt{impact\_receipt} on agent and uplift rules; treasury split \texttt{retained} vs \texttt{cash\_in} (\texttt{bank\_cash\_bridge.py}).
+
+\paragraph{Regenerate entire PO.}
+\begin{verbatim}
+cd Python
+python3 run_fsds_business_impact_pack.py
+python3 demo_fsds_agent_collaboration_suite.py
+python3 export_fsds_results_tables_tex.py
+cd ../docs/latex
+pdflatex fsds_full_scenarios_po_en.tex
+\end{verbatim}
+
+\paragraph{Related LaTeX.}
+\texttt{fsds\_xy\_benefit\_formulation\_en.tex} (object ledger);
+\texttt{fsds\_method\_incremental\_value\_po\_en.tex} (short PO);
+\texttt{fsds\_treasury\_credit\_risk\_po.tex} (credit + checking).
+
+\section*{Closing}
+The full scenario portfolio shows FSDS is not a single demo---it is a \textbf{repeatable method} on REF/LIVE with \textbf{collaboration-aware} budgets ($Z$) and \textbf{measured increments} in Tables R1--R9.
+Extend production by adding scenarios to \texttt{agent\_collaboration\_scenarios.json}, not by changing the statistical spine.
+
+\end{document}
