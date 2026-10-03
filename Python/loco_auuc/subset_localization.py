@@ -209,7 +209,13 @@ def business_rules_from_localization(
             )
         )
     rules.sort(key=lambda r: r.priority)
-    return attach_uplift_rule_economics(rules, loc)
+    try:
+        from fsds_economics_config import uplift_economics_kwargs
+
+        kw = uplift_economics_kwargs()
+    except Exception:
+        kw = {}
+    return attach_uplift_rule_economics(rules, loc, **kw)
 
 
 def attach_uplift_rule_economics(

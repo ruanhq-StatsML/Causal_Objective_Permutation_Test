@@ -16,6 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / "artifacts"
 DOCS = ROOT / "docs"
 
+from fsds_economics_config import (  # noqa: E402
+    federated_egress_savings_usd_per_year,
+    load_assumptions,
+)
+
 
 def _load(name: str) -> Dict[str, Any]:
     p = ART / name
@@ -27,6 +32,10 @@ def _annualize_usd_per_unit(usd_per_ep: float, episodes_per_month: float) -> flo
 
 
 def main() -> int:
+    cfg = load_assumptions()
+    agent_cfg = cfg.get("agent_unit_economics_from_demos") or {}
+    strat = cfg.get("strategic_sim") or {}
+
     boss = _load("boss_delivery_six_points.json")
     ma = _load("multi_agent_fsds_economics.json")
     early = _load("multi_agent_debate_early_stop.json")
@@ -37,8 +46,8 @@ def main() -> int:
     # SoT agent $/ep (boss pack point 3)
     fsds_usd_ep = 0.0236
     uniform_usd_ep = 0.0356
-    so_direct_save_ep = uniform_usd_ep - fsds_usd_ep
-    so_cost_pct = 33.6
+    so_direct_save_ep = float(agent_cfg.get("so_direct_save_usd_per_ep", uniform_usd_ep - fsds_usd_ep))
+    so_cost_pct = float(agent_cfg.get("so_cost_reduction_pct", 33.6))
 
     ma_mc = ma.get("monte_carlo_eval") or {}
     ma_u = ma_mc.get("uniform_debate_swarm", {}).get("mean_cost_usd", 0.02064)
@@ -62,27 +71,32 @@ def main() -> int:
         r.get("economics_summary", {}).get("estimated_capex_tickets_usd", 0) for r in uplift_runs
     )
 
-    fed_unlock = (fed.get("business_impact_sim") or {}).get("revenue_unlock_usd_quarter", 0)
+    fed_unlock = float(
+        strat.get(
+            "revenue_unlock_usd_quarter",
+            (fed.get("business_impact_sim") or {}).get("revenue_unlock_usd_quarter", 0),
+        )
+    )
+    fed_egress_yr = federated_egress_savings_usd_per_year(cfg)
 
-    # Scale scenarios (illustrative)
-    scales = [
-        {"name": "pilot", "agent_episodes_per_month": 50_000, "debates_per_month": 10_000, "uplift_windows_per_year": 12},
-        {"name": "mid_market", "agent_episodes_per_month": 500_000, "debates_per_month": 80_000, "uplift_windows_per_year": 52},
-        {"name": "platform", "agent_episodes_per_month": 5_000_000, "debates_per_month": 600_000, "uplift_windows_per_year": 52},
-    ]
+    traffic = cfg.get("traffic") or {}
+    scale_names = ["pilot", "mid_market", "platform"]
     scaled: List[Dict[str, Any]] = []
-    for s in scales:
+    opex_per_window = round(uplift_opex_total / max(len(uplift_runs), 1), 2)
+    for name in scale_names:
+        s = traffic.get(name) or {}
+        ep_m = float(s.get("agent_episodes_per_month", 50_000))
+        deb_m = float(s.get("debates_per_month", 10_000))
+        win_yr = float(s.get("uplift_monitor_windows_per_year", 12))
         scaled.append(
             {
-                "scale": s["name"],
-                "direct_compute_sot_usd_per_year": _annualize_usd_per_unit(so_direct_save_ep, s["agent_episodes_per_month"]),
-                "direct_compute_debate_fsds_usd_per_year": _annualize_usd_per_unit(
-                    ma_save_ep, s["debates_per_month"]
-                ),
-                "direct_compute_debate_early_stop_usd_per_year": _annualize_usd_per_unit(
-                    early_save_ep, s["debates_per_month"]
-                ),
-                "direct_uplift_opex_per_window_usd": round(uplift_opex_total / max(len(uplift_runs), 1), 2),
+                "scale": name,
+                "direct_compute_sot_usd_per_year": _annualize_usd_per_unit(so_direct_save_ep, ep_m),
+                "direct_compute_debate_fsds_usd_per_year": _annualize_usd_per_unit(ma_save_ep, deb_m),
+                "direct_compute_debate_early_stop_usd_per_year": _annualize_usd_per_unit(early_save_ep, deb_m),
+                "direct_uplift_opex_per_window_usd": opex_per_window,
+                "direct_uplift_opex_usd_per_year": round(opex_per_window * win_yr, 2),
+                "federated_egress_savings_usd_per_year_illustrative": fed_egress_yr,
             }
         )
 
@@ -134,6 +148,12 @@ def main() -> int:
             "type": "potential_revenue_risk",
         },
         {
+            "line": "Federated uplink vs centralized matrix (egress)",
+            "metric": f"Illustrative egress save ~${fed_egress_yr}/yr (config tenants/windows)",
+            "evidence": "config/fsds_economics_assumptions.json",
+            "type": "direct_infra",
+        },
+        {
             "line": "Audit impact receipts",
             "metric": "Finance-defensible cap/realloc (statistic + rule_id)",
             "illustrative_usd": "Avoid ad-hoc rollback / compliance delay (not quantified)",
@@ -165,7 +185,8 @@ def main() -> int:
             "uplift OPEX is per campaign window; federated unlock is scenario sim not additive to token saves."
         ),
         "scale_scenarios_usd_per_year": scaled,
-        "reproduce": "cd Python && python3 run_fsds_business_impact_pack.py && python3 synthesize_fsds_economics_report.py",
+        "assumptions_config": str(ROOT / "config" / "fsds_economics_assumptions.json"),
+        "reproduce": "cd Python && python3 run_fsds_business_impact_pack.py",
     }
 
     ART.mkdir(exist_ok=True)

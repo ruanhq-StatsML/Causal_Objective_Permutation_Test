@@ -1,6 +1,6 @@
 # FSDS — executive summary: effects & economics
 
-*Generated 2026-10-03T03:13:22.843598+00:00 from demo artifacts.*
+*Generated 2026-10-03T05:07:33.300537+00:00 from demo artifacts.*
 
 ## What we built (effect)
 
@@ -35,6 +35,7 @@ One statistical spine (**REF/LIVE + receipts**) across:
 ## Potential / strategic benefits (partially simulated)
 
 - **Federated legal block monitor:** Targeted OFS vs global copilot shutdown
+- **Federated uplink vs centralized matrix (egress):** Illustrative egress save ~$0.51/yr (config tenants/windows)
 - **Audit impact receipts:** Finance-defensible cap/realloc (statistic + rule_id)
 - **RELEARN gating (PO-risk + AUUC_ovlp):** Defer CAPEX until OPEX adapt fails
 - **Human QA sampling on shifted segments only:** Supervisor FTE on FSDS-localized handoffs

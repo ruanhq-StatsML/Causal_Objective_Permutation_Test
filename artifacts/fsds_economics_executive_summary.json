@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-03T03:13:22.843598+00:00",
+  "generated_at_utc": "2026-10-03T05:07:33.300537+00:00",
   "headline": {
     "direct": "Unit-tested OPEX: ~34% agent $/ep, ~39% multi-agent debate $, ~20% early-stop rounds, uplift caps with receipts",
     "potential": "Cross-silo rollout, revenue unlock, CAPEX timing, compliance narrative"
@@ -51,6 +51,12 @@
       "type": "potential_revenue_risk"
     },
     {
+      "line": "Federated uplink vs centralized matrix (egress)",
+      "metric": "Illustrative egress save ~$0.51/yr (config tenants/windows)",
+      "evidence": "config/fsds_economics_assumptions.json",
+      "type": "direct_infra"
+    },
+    {
       "line": "Audit impact receipts",
       "metric": "Finance-defensible cap/realloc (statistic + rule_id)",
       "illustrative_usd": "Avoid ad-hoc rollback / compliance delay (not quantified)",
@@ -75,22 +81,29 @@
       "direct_compute_sot_usd_per_year": 7200.0,
       "direct_compute_debate_fsds_usd_per_year": 974.11,
       "direct_compute_debate_early_stop_usd_per_year": 1060.8,
-      "direct_uplift_opex_per_window_usd": 817.7
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 9812.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
     },
     {
       "scale": "mid_market",
       "direct_compute_sot_usd_per_year": 72000.0,
       "direct_compute_debate_fsds_usd_per_year": 7792.91,
       "direct_compute_debate_early_stop_usd_per_year": 8486.4,
-      "direct_uplift_opex_per_window_usd": 817.7
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 42520.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
     },
     {
       "scale": "platform",
       "direct_compute_sot_usd_per_year": 720000.0,
       "direct_compute_debate_fsds_usd_per_year": 58446.79,
       "direct_compute_debate_early_stop_usd_per_year": 63648.0,
-      "direct_uplift_opex_per_window_usd": 817.7
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 42520.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
     }
   ],
-  "reproduce": "cd Python && python3 run_fsds_business_impact_pack.py && python3 synthesize_fsds_economics_report.py"
+  "assumptions_config": "/workspace/config/fsds_economics_assumptions.json",
+  "reproduce": "cd Python && python3 run_fsds_business_impact_pack.py"
 }

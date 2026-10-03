@@ -11,4 +11,10 @@ Regenerate PNG deck (12 images, EN + ZH):
 cd Python && python3 plot_fsds_scenario_slides_deck.py
 ```
 
-Output: `artifacts/fsds_scenario_slides/slide{01-06}_{en|zh}.png`
+Output: `artifacts/fsds_scenario_slides/slide_{01-06}_{en|zh}.png`
+
+**v2:** PPTX decks + `config/fsds_economics_assumptions.json` — see [CHANGELOG_V2.md](CHANGELOG_V2.md).
+
+```bash
+cd Python && python3 export_fsds_scenario_slides_pptx.py
+```

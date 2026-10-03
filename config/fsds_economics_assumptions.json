@@ -1,0 +1,43 @@
+{
+  "_comment": "Override sim defaults for executive rollup & uplift economics. Edit and re-run synthesize_fsds_economics_report.py",
+  "uplift": {
+    "margin_usd_per_conversion": 48.0,
+    "treatment_cost_usd": 6.5,
+    "treat_rate": 0.35
+  },
+  "traffic": {
+    "pilot": {
+      "agent_episodes_per_month": 50000,
+      "debates_per_month": 10000,
+      "uplift_monitor_windows_per_year": 12
+    },
+    "mid_market": {
+      "agent_episodes_per_month": 500000,
+      "debates_per_month": 80000,
+      "uplift_monitor_windows_per_year": 52
+    },
+    "platform": {
+      "agent_episodes_per_month": 5000000,
+      "debates_per_month": 600000,
+      "uplift_monitor_windows_per_year": 52
+    }
+  },
+  "federated_infra": {
+    "egress_usd_per_gb": 0.05,
+    "monitor_windows_per_year": 52,
+    "tenants": 100,
+    "centralized_mib_per_window_per_tenant": 2.0,
+    "federated_kib_per_window_per_tenant": 1.45
+  },
+  "strategic_sim": {
+    "revenue_unlock_usd_quarter": 125000,
+    "relearn_capex_ticket_usd": 2500
+  },
+  "agent_unit_economics_from_demos": {
+    "so_direct_save_usd_per_ep": 0.012,
+    "debate_fsds_save_usd_per_debate": 0.0081,
+    "debate_early_stop_save_usd_per_debate": 0.0088,
+    "so_cost_reduction_pct": 33.6,
+    "debate_cost_reduction_pct": 39.3
+  }
+}
