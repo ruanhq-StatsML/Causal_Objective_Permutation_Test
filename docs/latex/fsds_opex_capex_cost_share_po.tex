@@ -1,0 +1,121 @@
+% Position/opinion piece: OPEX-first adaptation, CAPEX cost-sharing, and demo step-sizes
+% Compile: pdflatex fsds_opex_capex_cost_share_po.tex
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{FSDS Monitoring as Shared Governance:\\
+OPEX-First Adaptation, Discrete Step-Sizes in Demos, and CAPEX Co-Funding}
+\author{Position note (repository-aligned)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Production uplift and agent stacks often treat every alert as a \emph{retrain} event---conflating variable spend (OPEX: caps, token budgets, debate rounds) with lumpy model investment (CAPEX: full $\hat\tau$ or graph relearn).
+This note argues for a \textbf{two-ledger contract}: OPEX adaptations are small, reversible steps with immediate receipts; CAPEX moves are \textbf{tickets} issued only after bounded trial windows fail under pre-registered tests (PO-risk, overlap AUUC, model--data alignment).
+Demos in this repository instantiate that contract through explicit \textbf{step-sizes}---discrete ladder rungs, trial LIVE batches, budget gains $\kappa$, and dispersion thresholds---so finance and product can \emph{co-share} responsibility for when heavy investment is justified.
+\end{abstract}
+
+\section{Problem: one budget line hides two decisions}
+When LIVE diverges from REF, three different failures appear in the same dashboard:
+\begin{itemize}[nosep]
+  \item \textbf{Mixture / support}: who arrived changed; ranking on the overlap core may still be valid.
+  \item \textbf{Ranking on deployed support}: AUUC fails even on $\hat e(W\mid X)\in[\ell,u]$ after caps.
+  \item \textbf{Concept / outcome}: DRPerm (PO-risk) rejects; $Y\mid X$ or the CATE surface moved.
+\end{itemize}
+Retraining $\hat\tau$ addresses (iii) but is wasted on (i); uncapped spend addresses none of them with an audit trail.
+\textbf{CAPEX co-sharing} means: growth / policy owns OPEX trials; ML platform owns relearn execution; finance recognizes OPEX savings and approves CAPEX tickets separately---linked by the same \texttt{impact\_receipt} JSON (MMD$^2$, domain AUC, PO $p$, \texttt{rule\_id}, \texttt{econ\_bucket}).
+
+\section{Two-ledger economics in code}
+Business rules attach simulated tags (\texttt{attach\_uplift\_rule\_economics}):
+\begin{itemize}[nosep]
+  \item \texttt{econ\_bucket=opex}: REALLOCATE / REFRESH caps $\rightarrow$ \texttt{estimated\_saved\_spend\_usd} counts toward \textbf{scenario OPEX net}.
+  \item \texttt{econ\_bucket=capex\_ticket}: RELEARN $\rightarrow$ \texttt{estimated\_capex\_ticket\_usd} (default \$2{,}500 in config, bench totals $\sim\$10$k across four scenarios) with \texttt{estimated\_net\_impact\_usd}$=0$ so tickets \textbf{do not} depress OPEX ROI numerators.
+\end{itemize}
+Executive rollup (\texttt{summarize\_rule\_economics}) reports \texttt{estimated\_opex\_net\_usd} and \texttt{estimated\_capex\_tickets\_usd} on separate lines---this is the operational meaning of \emph{CAPEX co-sharing}: stakeholders see who must fund which line before a relearn sprint is scheduled.
+
+\section{Step-sizes in demos: discrete adaptation, not continuous churn}
+
+\subsection{Uplift: trial windows as the unit step}
+The two-batch formulation defines an explicit \textbf{two-step trial protocol} per alert:
+\begin{description}[style=nextline,font=\normalfont\bfseries]
+  \item[Step A (apply).] Emit REALLOCATE / narrow-support / HoldFeature from localization; \emph{frozen} $\hat\tau$ unchanged.
+  \item[Step B (re-monitor).] On the \textbf{next LIVE window(s)} with fixed REF, recompute gates, $\mathrm{AUUC}_{\mathrm{live}}$, $\mathrm{AUUC}_{\mathrm{ovlp}}$, DRPerm $p$, quintile $\widehat{\tau}^{\mathrm{obs}}_k$ vs $\bar{\hat\tau}_k$.
+\end{description}
+\textbf{Step-size} $=1$--$2$ LIVE batches between escalation checks (not hourly retrains).
+Continue OPEX-only steps while (iii)--(iv) in the formulation fail to fire; \textbf{schedule RELEARN} only if after one--two trial windows \emph{all} hold: SRM/ESS OK; ranking fails on \emph{deployed} support; PO-risk rejects; model--data misalignment persists.
+Support expansion and RELEARN are \textbf{not} combined in one step---when $\bar{\hat\tau}_k\approx\widehat{\tau}^{\mathrm{obs}}_k$, widen $[\ell,u]$ or refresh REF before opening a CAPEX ticket.
+
+\paragraph{Overlap band step.}
+Narrow support uses a fixed band (default $\hat e(W\mid X)\in[0.15,0.85]$) and trigger $\mathrm{AUUC}_{\mathrm{ovlp}}-\mathrm{AUUC}_{\mathrm{live}}>\delta_{\mathrm{ovlp}}$ (team-tuned $0.01$--$0.02$)---a \textbf{policy step} on deployment, not a weight update.
+
+\subsection{Agent closed loop: one ladder rung per failed window}
+\texttt{closed\_loop.iterate\_once} escalates \texttt{LadderRung} by \textbf{+1} when drift proxy does not improve:
+\[
+\text{REALLOCATE} \to \text{RETOPOLOGY} \to \text{REGROUND} \to \text{RECONFIGURE} \to \text{RELEARN}.
+\]
+Each iteration is one monitor window; \texttt{suggest\_intervention} emits budgets at REALLOCATE, topology hints at RETOPOLOGY, etc.
+\textbf{Step-size} $=1$ rung prevents jumping from ``tweak token budget'' to ``relearn stack'' without intermediate evidence.
+Reference updates after acceptance use \texttt{decay\_reference} with $\alpha\approx 0.85$---a fractional step toward LIVE, not a hard REF swap.
+
+\subsection{SoT budget gain $\kappa$ and floors (token step-size)}
+Agent demos set per-branch lengths
+\[
+L_b = \mathrm{clip}(\kappa\, s_b\, q_b\, \mathrm{need}_b,\, L_{\min},\, C_{\mathrm{lat}}),
+\]
+with representative \textbf{$\kappa=0.85$--$0.9$}, \textbf{entropy\_lambda}$=0.05$--$0.06$, and \textbf{$L_{\mathrm{floor}}=320$} on high-need branches (boss six-point pack).
+Pareto sweeps vary $\kappa\in\{0.85,0.9,1.0,1.15\}$---the \emph{step-size} on compute is the gain $\kappa$, not continuous online learning.
+Reported effect: $\sim$34\% lower \$/episode vs uniform SoT at $\kappa\approx 0.9$ while preserving critical-path span when one branch saturates $C_{\mathrm{lat}}$.
+
+\subsection{Multi-agent debate: round-level and role-level steps}
+\begin{itemize}[nosep]
+  \item \textbf{Micro step}: FSDS segment budget on roles (demo $\sim$39\% \$/debate vs uniform swarm).
+  \item \textbf{Macro step}: \texttt{debate\_early\_stop\_round} stops at round $r$ when inter-round centroid dispersion $\le$ target (demo $\sim$20\% round-cost savings); \texttt{min\_rounds}$=2$ avoids one-round noise.
+\end{itemize}
+Stacking note: micro and macro savings are partially additive; receipts record both levers separately.
+
+\subsection{Layer A vs Layer B (uplift joint refit)}
+\textbf{Layer A} step-size = hours--days (monitor + policy).
+\textbf{Layer B} step-size = days--weeks (temporal-split joint refit of $e$, $\mu$, $\tau$ with holdout).
+Nuisance refit is shared across meta-learners and DML; only the \emph{cadence} of full cross-fitting differs---another CAPEX/OPEX split: frequent $e$/$\mu$ refresh can be OPEX; full $\tau$ surface relearn remains a ticketed CAPEX event.
+
+\section{What ``co-sharing'' buys each function}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Function & OPEX steps (demo) & CAPEX ticket \\
+\midrule
+Growth / policy & Caps, narrow support, debate early-stop & --- \\
+Agent platform & $\kappa$, tier, checks per segment & RELEARN / graph relearn \\
+ML / data science & $e$/$\mu$ refresh, REF blend $\alpha$ & Joint refit $\hat\tau$ after trials \\
+Finance / risk & Signs OPEX receipt; tracks saved treat spend & Approves ticket; holdout AUUC SLA \\
+Federated silos & Block-local monitor uplink & Cross-silo relearn only if compound drift \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Justification summary (evidence chain)}
+\begin{enumerate}[nosep]
+  \item \textbf{Compute OPEX}: boss demo JSON; multi-agent and LangGraph economics JSON ($\sim$34\% / $\sim$39\% / early-stop $\sim$20\%).
+  \item \textbf{Campaign OPEX (sim)}: uplift benchmark \texttt{economics\_summary.estimated\_opex\_net\_usd}; configurable via \texttt{config/fsds\_economics\_assumptions.json}.
+  \item \textbf{CAPEX discipline}: RELEARN rules tagged \texttt{capex\_ticket}; excluded from OPEX totals in \texttt{synthesize\_fsds\_economics\_report.py}.
+  \item \textbf{Step protocol}: Paragraph ``Continue REALLOCATE versus schedule RELEARN'' in \texttt{uplift\_fsds\_two\_batch\_formulation.tex}; agent \texttt{LadderRung} in \texttt{closed\_loop.py}.
+  \item \textbf{Audit}: \texttt{impact\_receipt} on agent interventions and uplift \texttt{impact\_receipts[]}.
+\end{enumerate}
+
+\section{Closing position}
+FSDS monitoring is not primarily a ``save tokens'' story---it is a \textbf{governance interface} with explicit step-sizes: one--two LIVE trials before CAPEX, one ladder rung before agent relearn, $\kappa$ and dispersion thresholds before the next compute step.
+\textbf{CAPEX co-sharing} is implemented as separate economic buckets and receipts, not as a single blended ROI.
+Production should replace simulated treat costs and ticket amounts with real margins and eng estimates; the \emph{step structure} should remain.
+
+\paragraph{Reproduce.}
+\texttt{cd Python \&\& python3 run\_fsds\_business\_impact\_pack.py}
+
+\end{document}

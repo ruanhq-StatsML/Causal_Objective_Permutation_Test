@@ -29,4 +29,13 @@ cd Python
 python3 run_uplift_subset_benchmark.py      # uplift_fsds_benchmark_results.tex, subset_localization_results.tex
 python3 demo_federated_protocol_datasets.py # federated_fsds_protocol_results.tex
 python3 run_loco_auuc_benchmark.py          # uplift_fsds_benchmark_results.tex (LOCO tables)
+python3 run_fsds_business_impact_pack.py    # GTM demos + fsds_business_impact_dashboard_en.png
 ```
+
+## OPEX / CAPEX cost-sharing PO (English)
+
+```bash
+cd docs/latex && pdflatex fsds_opex_capex_cost_share_po.tex
+```
+
+File: [`fsds_opex_capex_cost_share_po.tex`](fsds_opex_capex_cost_share_po.tex) — discrete demo step-sizes and two-ledger governance.
