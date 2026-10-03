@@ -1,0 +1,149 @@
+% Polished PO: where FSDS is applied, incremental value, full results tables
+% Compile:
+%   cd Python && python3 export_fsds_results_tables_tex.py
+%   cd docs/latex && pdflatex fsds_method_incremental_value_po_en.tex
+\documentclass[11pt]{article}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+\hypersetup{colorlinks=true,linkcolor=blue!55!black}
+
+\title{\textbf{FSDS Method --- Application Map, Incremental Value,}\\[0.35em]
+\large Repository Position Paper with Empirical Result Tables}
+\author{Auto-tables from \texttt{artifacts/*.json}; narrative aligned with benchmark code paths}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\textbf{Full Distribution Shift (FSDS) monitoring} in this repository is one REF/LIVE statistical spine reused across uplift fulfillment, agent scheduling, multi-agent debate, LangGraph checkpoints, and federated vertical blocks.
+This position paper is organized for executive and technical review in three layers:
+\textbf{(i)}~\emph{where} the method runs and what observables $(X,Y,T,W,Z)$ mean in each domain;
+\textbf{(ii)}~\emph{what incremental value} is produced at the execution step (not at diagnostic gates alone);
+\textbf{(iii)}~\emph{attached result tables} regenerated from checked-in JSON (Tables~R1--R6).
+Incremental value means a measured delta vs an explicit baseline---uniform SoT, uniform debate swarm, uncapped treatment spend, or centralized federated matrix---logged on \texttt{impact\_receipt} with \texttt{rule\_ids} for finance reconciliation.
+\end{abstract}
+
+\section{Executive summary: method placement and increments}
+
+\paragraph{One method, six surfaces.}
+FSDS always compares a \textbf{reference window} to a \textbf{live window} on covariates $X$ (and, in uplift, outcomes $Y$ for concept gates).
+The \textbf{same} localization stack (MMD, overlap, DRPerm, LOCO--AUUC, business rules) applies to marketing uplift; credit fulfillment reuses uplift with relabeled $Y$ and economics units.
+
+\paragraph{Where incremental dollars or quality appear.}
+Monitoring steps (G0--G3, L1) \emph{localize}; they do not by themselves change spend.
+\textbf{Incremental value} first appears when a policy executes:
+\begin{itemize}[nosep]
+  \item \textbf{Uplift Track A:} rule step \textbf{R} --- REALLOCATE cap (\texttt{econ\_bucket=opex}).
+  \item \textbf{Agent Track B--D:} branch/role budgets, debate early-stop, LangGraph partial replay.
+  \item \textbf{Federated Track E:} reduced uplink (Eff $\times$); strategic block OFS is scenario-valued separately.
+\end{itemize}
+
+\paragraph{Headline increments (demo artifacts).}
+Agent SoT $\sim$34\% lower \$/episode; multi-agent FSDS $\sim$39\% \$/debate with +2pp success; debate early-stop $\sim$20\% round cost; uplift bench OPEX net \textbf{\$3{,}271} across four scenarios (sim treat economics); LangGraph receipt $\sim\$0.019$/episode.
+Annualization by traffic tier appears in Table~\ref{tab:scale-annual} (config-driven illustration).
+
+\section{Application map (where FSDS is used)}
+
+Table~\ref{tab:fsds-where-used} is the primary answer to ``where is the method applied?''
+Each row names the \textbf{production surface}, the \textbf{objects} monitored, the \textbf{code entry point}, and the \textbf{pipeline step} that first yields incremental value.
+
+\input{fsds_results_tables_generated.tex}
+
+\section{Per-domain formulation and incremental justify}
+
+\subsection{Track A --- Two-batch uplift and credit fulfillment}
+
+\paragraph{Method use.}
+Train $\hat\tau(X)$ on REF; score LIVE with frozen $\hat\tau$; run gates G0--G3 and localization L1 on $(X,Y,T,W)$; emit caps at step R before scheduling full $\hat\tau$ relearn (CAPEX ticket).
+
+\paragraph{Objects.}
+$X\in\mathbb{R}^{n\times p}$ customer/borrower covariates; $Y\in\{0,1\}$ conversion or default; $T\in\{0,1\}$ treatment arm; $W$ indicates REF vs LIVE row pool.
+
+\paragraph{Incremental value justify.}
+Table~\ref{tab:uplift-scenarios} shows four benchmark scenarios.
+\textbf{Direct OPEX increment} is the sum of \texttt{estimated\_opex\_net\_usd} on REALLOCATE rules (Hillstrom \$546; synthetic\_covariate \$2{,}268.50; synthetic\_concept \$456.31).
+\textbf{Zero OPEX} on hillstrom\_covariate\_drift in this bench run reflects rule tagging (caps not economically tagged), not absence of monitoring.
+\textbf{Incremental vs naive baseline:} ``retrain on every alert'' spends CAPEX (\$2{,}500 tickets $\times$4 scenarios in bench) without guaranteed OPEX cap; FSDS path emits OPEX caps first when PO accepts and quintile AUUC fails locally.
+
+\paragraph{Credit.}
+Same code; replace \texttt{treatment\_cost\_usd} with expected loss per marginal approval and \texttt{margin\_usd\_per\_conversion} with NIM+fees (see \texttt{fsds\_treasury\_credit\_risk\_po.tex}).
+
+\subsection{Track B --- Agent Skeleton-of-Thought}
+
+\paragraph{Method use.}
+\texttt{covariate\_attribution} on episode \texttt{trace\_features} ($X$) between REF and LIVE batches; \texttt{allocate\_branch\_budgets} on segment embeddings $Z$.
+
+\paragraph{Incremental value justify.}
+Measured variable cost \$0.0356 $\rightarrow$ \$0.0236 per episode ($\sim$33.6\%) from enumerated token/check budgets (boss pack).
+Eq.~\eqref{eq:netgain} splits quality uplift vs variable cost savings when MC success is reported.
+
+\subsection{Track C --- Multi-agent debate}
+
+\paragraph{Method use.}
+Three-role embeddings $Z$; LIVE shift on \texttt{con}; \texttt{fit\_agent\_plan} reallocates per-role $L$ and tier; optional \texttt{debate\_early\_stop\_round}.
+
+\paragraph{Incremental value justify.}
+Table~\ref{tab:agent-mc}: cost 0.02064 $\rightarrow$ 0.01252 USD/debate (39.3\%); success 0.66 $\rightarrow$ 0.68.
+Early-stop adds $\sim$20\% round-level savings (partially stackable with role budgets).
+
+\subsection{Track D --- LangGraph checkpoints}
+
+\paragraph{Method use.}
+Node-level traces form $X$; drift injected on \texttt{tool\_call}; intervention attaches \texttt{impact\_receipt} for conditional retry.
+
+\paragraph{Incremental value justify.}
+Receipt \texttt{estimated\_net\_gain\_usd} per episode (Table~\ref{tab:agent-mc}); mechanism is partial graph execution vs full replay (CAPEX).
+
+\subsection{Track E --- Federated vertical blocks}
+
+\paragraph{Method use.}
+Each silo runs local FSDS on $X_k$ only; server merges payloads under FDR.
+
+\paragraph{Incremental value justify.}
+Table~\ref{tab:federated-legal}: legal block MMD$^2=0.041$ vs finance $0.0037$ enables \textbf{targeted} action.
+Protocol bench (companion \texttt{federated\_fsds\_protocol\_results.tex}) reports Eff up to \textbf{1410$\times$} vs centralized matrix on Spambase.
+Strategic \$125k/quarter unlock in legal demo is \textbf{not} additive to token saves without signed scenario.
+
+\section{Agent economics (incremental decomposition)}
+
+When both cost and success are simulated:
+\begin{equation}
+\label{eq:netgain}
+\mathrm{net\_gain}
+= (p - p_0)\, v_{\mathrm{succ}}
++ (C^{\mathrm{base}}_{\mathrm{var}} - C^{\mathrm{fsds}}_{\mathrm{var}})
+- h_{\mathrm{fsds}}.
+\end{equation}
+Treasury should map the second term to \textbf{retained} vendor debits and the first to lagged \textbf{cash\_in} (\texttt{bank\_cash\_bridge.py}).
+
+\section{Audit and reproduction}
+
+\paragraph{Impact receipts.}
+Incremental policies attach \texttt{impact\_receipt} with \texttt{shift\_summary}, \texttt{rule\_ids}, and \texttt{estimated\_net\_gain\_usd}.
+
+\paragraph{Regenerate this PO and all tables.}
+\begin{verbatim}
+cd Python
+python3 run_fsds_business_impact_pack.py
+python3 export_fsds_results_tables_tex.py
+cd ../docs/latex
+pdflatex fsds_method_incremental_value_po_en.tex
+\end{verbatim}
+
+\paragraph{Extended formulation.}
+Object-level step ledger: \texttt{fsds\_xy\_benefit\_formulation\_en.tex}.
+Concrete algorithms per step: \texttt{fsds\_concrete\_pipeline\_justification.tex}.
+Uplift learner AUUC tables: \texttt{uplift\_fsds\_benchmark\_results.tex}.
+Federated protocol tables: \texttt{federated\_fsds\_protocol\_results.tex}.
+
+\section*{Closing position}
+FSDS value is \textbf{not} ``we computed MMD$^2$''---it is \textbf{localized, receipt-backed execution}: caps, budgets, early-stop, and block-level actions with measured increments in Tables~R2--R4 and scenario gates in Table~R3.
+Production should replace simulated treat economics with portfolio-specific units; the \textbf{application map and step-R / budget execution} structure should remain.
+
+\end{document}

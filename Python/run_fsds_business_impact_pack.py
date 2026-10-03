@@ -28,6 +28,7 @@ def main() -> int:
         ["python3", "synthesize_fsds_economics_report.py"],
         ["python3", "export_fsds_tonight_landing.py"],
         ["python3", "reconcile_fsds_bank_cash.py", "--episodes", "10000"],
+        ["python3", "export_fsds_results_tables_tex.py"],
     ]
     for cmd in demos:
         _run(cmd)

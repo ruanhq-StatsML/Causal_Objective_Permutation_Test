@@ -52,9 +52,21 @@ cd docs/latex && pdflatex fsds_treasury_credit_risk_po.tex
 
 File: [`fsds_treasury_credit_risk_po.tex`](fsds_treasury_credit_risk_po.tex) — checking-account reconciliation (retained vs cash in), `impact_receipt` GL mapping, and credit origination fulfillment via the same two-batch uplift spine.
 
+## FSDS method + incremental value PO (polished, with result tables R1–R6)
+
+**Recommended executive/technical PDF:**
+
+```bash
+cd Python && python3 export_fsds_results_tables_tex.py
+cd ../docs/latex && pdflatex fsds_method_incremental_value_po_en.tex
+```
+
+- [`fsds_method_incremental_value_po_en.tex`](fsds_method_incremental_value_po_en.tex) — where FSDS runs, incremental justify, `\input{fsds_results_tables_generated.tex}`
+- [`fsds_results_tables_generated.tex`](fsds_results_tables_generated.tex) — auto from `artifacts/*.json` (regenerate via `export_fsds_results_tables_tex.py`)
+
 ## Application X/Y and step-level benefit (English formulation + 中文)
 
-**Full English formulation (recommended PDF for review):**
+**Full English formulation:**
 
 ```bash
 cd docs/latex && pdflatex fsds_xy_benefit_formulation_en.tex && pdflatex fsds_xy_benefit_formulation_en.tex

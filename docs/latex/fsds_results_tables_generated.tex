@@ -1,0 +1,106 @@
+% Auto-generated — export_fsds_results_tables_tex.py
+% 2026-10-03T09:52:44.472629+00:00
+
+\subsection{Table R1 --- Where the FSDS method runs (repository)}
+\label{tab:fsds-where-used}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.14\textwidth}p{0.20\textwidth}p{0.18\textwidth}p{0.22\textwidth}p{0.18\textwidth}@{}}
+\toprule
+Domain & $X$ & $Y$ & Code entry & Step with \textbf{incremental} value \\
+\midrule
+Two-batch uplift & Customer covariates & Conversion / default & \texttt{run\_uplift\_subset\_localization} & \textbf{R} REALLOCATE cap \\
+Agent SoT & \texttt{trace\_features} & Task success & \texttt{FSDSSoT.fit\_plan} & Branch budgets (steps 3--4) \\
+Multi-agent debate & Trace batch + $Z$ roles & Debate success & \texttt{fit\_agent\_plan} & Role budget + early-stop \\
+LangGraph & Node checkpoint traces & Node success & \texttt{build\_langgraph\_node\_trace} & Conditional node retry \\
+Federated blocks & Local $X_k$ only & Optional global $Y$ & \texttt{local\_block\_fsds} & Uplink payload (B3) \\
+Credit fulfillment & Bureau + channel & DPD / default & Same as uplift & Same \textbf{R} cap (EL units) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R2 --- Measured direct incremental value (demo artifacts)}
+\label{tab:direct-incremental}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Application & Baseline & FSDS / policy & Increment & Evidence \\
+\midrule
+Agent SoT critical-path budget & --- & ~34\% $/episode vs uniform SoT & \$0.0120/unit & \texttt{boss\_delivery\_six\_points.json} \\
+Multi-agent FSDS routing (3-role debate) & --- & ~39.3\% $/debate vs uniform swarm & \$0.0081/unit & \texttt{multi\_agent\_fsds\_economics.json} \\
+Debate early-stop (dispersion gate) & --- & ~20\% fewer debate rounds (macro) & \$0.0088/unit & \texttt{multi\_agent\_debate\_early\_stop.json} \\
+Uplift REALLOCATE caps (sim, per monitor window) & --- & OPEX net $3271 across 4 scenario(s) in bench & ---/unit & \texttt{uplift\_two\_layer\_benchmark.json} \\
+LangGraph node budget (tool\_call drift) & --- & Same Object-2 as SoT on checkpoint embeddings & \$0.0153/unit & \texttt{langgraph\_fsds\_hook.json} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R3 --- Uplift two-layer bench: gates and OPEX net (sim)}
+\label{tab:uplift-scenarios}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Scenario & MMD$^2$ & ESS$_{\mathrm{ovlp}}$ & PO $p$ & OPEX net (\$) & CAPEX tickets (\$) \\
+\midrule
+hillstrom & 0.0016 & 0.990 & 0.727 & 546.00 & 2500.00 \\
+hillstrom\_covariate\_drift & 0.0041 & 0.683 & 1.000 & 0.00 & 2500.00 \\
+synthetic\_covariate & 0.0034 & 0.756 & 0.364 & 2268.50 & 2500.00 \\
+synthetic\_concept & 0.0020 & 0.991 & 0.030 & 456.31 & 2500.00 \\
+\midrule
+\textbf{Total} & --- & --- & --- & \textbf{3270.81} & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R4 --- Agent surfaces: cost and success deltas}
+\label{tab:agent-mc}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Surface & Mean cost (\$) & $\Delta$ cost & Mean success & $\Delta$ success \\
+\midrule
+Multi-agent uniform & 0.02064 & --- & 0.66 & --- \\
+Multi-agent FSDS & 0.01252 & 39.3\% & 0.68 & +2pp \\
+Debate early-stop & 0.03536 & 20.0\% rounds & --- & --- \\
+LangGraph hook (receipt) & --- & \$0.01884/ep & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{SoT boss pack (reference):}
+ uniform \$0.0356/ep $\rightarrow$ FSDS \$0.0236/ep ($\sim$33.6\% variable cost reduction).
+
+\subsection{Table R5 --- Federated legal demo: block-level shift}
+\label{tab:federated-legal}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Block & MMD$^2$ & Domain AUC & ESS & Drift type \\
+\midrule
+legal\_agent\_block & 0.0411 & 0.998 & 0.767 & feature\_drift \\
+finance\_agent\_block & 0.0037 & 1.000 & 0.893 & feature\_drift \\
+product\_agent\_block & 0.0135 & 1.000 & 0.771 & feature\_drift \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Table R6 --- Illustrative annualization (config traffic tiers)}
+\label{tab:scale-annual}
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Scale & SoT \$/yr & Debate FSDS \$/yr & Early-stop \$/yr & Uplift OPEX \$/yr \\
+\midrule
+pilot & 7,200 & 974 & 1,061 & 9,812.4 \\
+mid\_market & 72,000 & 7,793 & 8,486 & 42,520.4 \\
+platform & 720,000 & 58,447 & 63,648 & 42,520.4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\emph{Regenerate:} \texttt{cd Python \&\& python3 export\_fsds\_results\_tables\_tex.py}.

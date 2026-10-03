@@ -207,9 +207,16 @@
 
 ---
 
-## 英文 formulation（LaTeX，推荐 PDF）
+## 英文 PO（推荐：方法用在哪 + 增量价值 + 结果表 R1–R6）
 
-**完整版：** `docs/latex/fsds_xy_benefit_formulation_en.tex`（目录 + 全 track 逐步 justify + 信贷 + 收据）
+**Polished PO：** `docs/latex/fsds_method_incremental_value_po_en.tex` + `fsds_results_tables_generated.tex`
+
+```bash
+cd Python && python3 export_fsds_results_tables_tex.py
+cd ../docs/latex && pdflatex fsds_method_incremental_value_po_en.tex
+```
+
+**完整 formulation：** `docs/latex/fsds_xy_benefit_formulation_en.tex`
 
 ```bash
 cd docs/latex && pdflatex fsds_xy_benefit_formulation_en.tex
