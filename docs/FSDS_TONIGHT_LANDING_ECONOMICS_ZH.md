@@ -4,6 +4,8 @@
 
 机器可读清单：`artifacts/fsds_tonight_landing_checklist.json`（`python3 export_fsds_tonight_landing.py` 生成）。
 
+**对银行账户怎么落数：** `docs/FSDS_BANK_CASH_RECONCILIATION_ZH.md` + `python3 reconcile_fsds_bank_cash.py`。
+
 ---
 
 ## 一张表：直接 vs 间接
