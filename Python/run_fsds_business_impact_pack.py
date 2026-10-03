@@ -26,6 +26,7 @@ def main() -> int:
         ["python3", "plot_fsds_scenario_slides_deck.py"],
         ["python3", "export_fsds_scenario_slides_pptx.py"],
         ["python3", "synthesize_fsds_economics_report.py"],
+        ["python3", "export_fsds_tonight_landing.py"],
     ]
     for cmd in demos:
         _run(cmd)

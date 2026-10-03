@@ -1,0 +1,185 @@
+{
+  "generated_at_utc": "2026-10-03T05:50:42.498403+00:00",
+  "readme_zh": "T0=\u63a5 API/trace \u5373\u7701\u94b1\uff1bT1=\u586b config + \u4e00\u7a97 uplift\uff1bT2=\u5408\u89c4\u53d9\u4e8b+\u6536\u636e",
+  "readme_en": "T0=savings on API/trace; T1=config + one uplift window; T2=compliance receipts",
+  "boss_sot_reference": {},
+  "tiers": [
+    {
+      "tier": "T0",
+      "label_zh": "\u4eca\u665a\u53ef\u63a5\uff1a\u5df2\u6709 LLM/API \u8d26\u5355\u6216 agent trace",
+      "label_en": "Land tonight on existing API billing or trace logs",
+      "scenarios": [
+        {
+          "id": "agent_sot_closed_loop",
+          "title_zh": "\u5355 agent SoT\uff1a\u5173\u952e\u8def\u5f84\u9884\u7b97 + impact_receipt",
+          "title_en": "Agent SoT critical-path budget + impact receipt",
+          "direct_economic_benefit": true,
+          "benefit_type": "OPEX_compute",
+          "unit_save_usd": 0.012,
+          "demo_pct": 33.6,
+          "evidence_artifact": "artifacts/boss_delivery_six_points.json",
+          "validate_cmd": "cd Python && python3 -c \"from fsds_sot.closed_loop import suggest_intervention\"",
+          "prod_hook": [
+            "REF/LIVE \u7a97\u53e3\uff1a\u6bcf episode \u5199 trace_features + success",
+            "Sidecar: fit_agent_plan \u2192 suggest_intervention(..., attach_impact_receipt=True)",
+            "Scheduler \u6309 intervention.budgets \u6539 tier/token\uff0c\u65e5\u5fd7\u843d impact_receipt"
+          ],
+          "metrics_24h": [
+            "sum(impact_receipt.estimated_net_gain_usd)",
+            "mean(usd_per_episode[1]) vs baseline[0]"
+          ],
+          "annual_usd_if_traffic": {
+            "pilot": 7200.0,
+            "mid_market": 72000.0,
+            "platform": 720000.0
+          }
+        },
+        {
+          "id": "multi_agent_fsds_debate",
+          "title_zh": "\u591a agent \u8fa9\u8bba\uff1a\u6309 role \u91cd\u5206\u914d token/tier",
+          "title_en": "Multi-agent debate: FSDS role-level budget",
+          "direct_economic_benefit": true,
+          "benefit_type": "OPEX_compute",
+          "unit_save_usd": 0.0081,
+          "demo_pct": 45.12354651162791,
+          "evidence_artifact": "artifacts/multi_agent_fsds_economics.json",
+          "validate_cmd": "cd Python && python3 demo_fsds_multi_agent_economics.py",
+          "prod_hook": [
+            "\u6bcf\u8f6e\u5b58 role embedding (pro/con/judge)",
+            "fit_agent_plan on LIVE drift \u2192 budgets per role",
+            "impact_receipt \u8fdb finance/FinOps \u6d41\u6c34"
+          ],
+          "metrics_24h": [
+            "debates_with_receipt / total_debates",
+            "mean cost_savings_pct"
+          ],
+          "annual_usd_if_traffic": {
+            "pilot": 972.0,
+            "mid_market": 7776.0,
+            "platform": 58320.0
+          }
+        },
+        {
+          "id": "debate_early_stop",
+          "title_zh": "\u8fa9\u8bba early-stop\uff1a\u79bb\u6563\u5ea6\u8fbe\u6807\u505c\u8f6e",
+          "title_en": "Debate early-stop on dispersion gate",
+          "direct_economic_benefit": true,
+          "benefit_type": "OPEX_compute",
+          "unit_save_usd": 0.0088,
+          "demo_pct": null,
+          "evidence_artifact": "artifacts/multi_agent_debate_early_stop.json",
+          "validate_cmd": "cd Python && python3 demo_fsds_multi_agent_debate_early_stop.py",
+          "prod_hook": [
+            "debate_early_stop_round(round_role_embs, dispersion_target=...)",
+            "\u4e0e FSDS \u9884\u7b97\u53e0\u52a0\uff08macro \u8f6e\u6b21 + micro token\uff09"
+          ],
+          "metrics_24h": [
+            "mean rounds saved",
+            "early_stop_rate"
+          ],
+          "annual_usd_if_traffic": {
+            "pilot": 1056.0,
+            "mid_market": 8448.0,
+            "platform": 63360.0
+          }
+        },
+        {
+          "id": "langgraph_checkpoint_fsds",
+          "title_zh": "LangGraph\uff1acheckpoint embedding \u53ea\u91cd\u8dd1\u6f02\u79fb\u8282\u70b9",
+          "title_en": "LangGraph: retry drifted nodes only",
+          "direct_economic_benefit": true,
+          "benefit_type": "OPEX_compute",
+          "unit_save_usd": 0.018836252844087024,
+          "evidence_artifact": "artifacts/langgraph_fsds_hook.json",
+          "validate_cmd": "cd Python && python3 demo_fsds_langgraph_hook.py",
+          "prod_hook": [
+            "checkpoint \u5199 {node_id, embedding, W}",
+            "build_langgraph_node_trace + fit_agent_plan",
+            "conditional edge \u8bfb impact_receipt.shift_summary.mmd2"
+          ],
+          "metrics_24h": [
+            "partial_graph_replays_avoided",
+            "tool_call retries only"
+          ],
+          "annual_usd_if_traffic": {
+            "pilot": 7200.0,
+            "mid_market": 72000.0,
+            "platform": 720000.0
+          }
+        }
+      ]
+    },
+    {
+      "tier": "T1",
+      "label_zh": "\u4eca\u665a\u53ef\u8dd1\u7b2c\u4e00\u7a97\uff1a\u9700\u771f\u5b9e margin / \u6cbb\u7597\u6210\u672c + REF/LIVE \u5bfc\u51fa",
+      "label_en": "First monitor window tonight: real margin/treat cost + REF/LIVE export",
+      "scenarios": [
+        {
+          "id": "uplift_cap_opex",
+          "title_zh": "Uplift \u4e24\u6279\uff1aREALLOCATE \u5c01\u9876\uff08OPEX\uff0c\u975e\u7acb\u523b\u91cd\u8bad\uff09",
+          "title_en": "Two-batch uplift: REALLOCATE caps (OPEX, defer retrain)",
+          "direct_economic_benefit": true,
+          "benefit_type": "OPEX_treatment_spend",
+          "config_keys": [
+            "uplift.margin_usd_per_conversion",
+            "uplift.treatment_cost_usd",
+            "uplift.treat_rate"
+          ],
+          "config_current": {
+            "margin_usd_per_conversion": 48.0,
+            "treatment_cost_usd": 6.5,
+            "treat_rate": 0.35
+          },
+          "bench_opex_net_total_usd_sim": 3270.81,
+          "bench_opex_net_avg_per_window_sim": 817.7,
+          "evidence_artifact": "artifacts/uplift_two_layer_benchmark.json",
+          "validate_cmd": "cd Python && python3 run_uplift_subset_benchmark.py --n-perm 32",
+          "prod_hook": [
+            "\u5bfc\u51fa Hillstrom \u5f0f CSV\uff1aX, Y, T + REF/LIVE \u5207\u7a97",
+            "run_uplift_subset_localization \u2192 business_rules + impact_receipts",
+            "\u8425\u9500\u6267\u884c\u5c42\u53ea\u5e94\u7528 econ_bucket=opex \u7684 cap\uff1bRELEARN=CAPEX \u5de5\u5355"
+          ],
+          "metrics_24h": [
+            "rules_applied with receipt rule_id",
+            "estimated_opex_net_usd (real treat volume)"
+          ],
+          "annual_usd_if_traffic": {
+            "pilot": 9812.4,
+            "mid_market": 42520.4,
+            "platform": 42520.4
+          }
+        }
+      ]
+    },
+    {
+      "tier": "T2",
+      "label_zh": "\u6218\u7565 / \u5408\u89c4\uff1a\u901a\u5e38\u4e0d\u662f\u4eca\u665a OPEX\uff0c\u4f46\u53ef\u4eca\u665a\u63a5\u76d1\u63a7\u6536\u636e",
+      "label_en": "Strategic/compliance: rarely tonight OPEX; can wire receipts tonight",
+      "scenarios": [
+        {
+          "id": "federated_legal_blocks",
+          "title_zh": "\u8054\u90a6 legal/finance/product block \u6f02\u79fb",
+          "title_en": "Federated legal block drift monitors",
+          "direct_economic_benefit": false,
+          "benefit_type": "revenue_unlock_or_risk_avoidance",
+          "strategic_sim_quarter_usd": 125000,
+          "evidence_artifact": "artifacts/federated_legal_agent_blocks.json",
+          "validate_cmd": "cd Python && python3 demo_federated_legal_agent_blocks.py",
+          "prod_hook": [
+            "\u5404 silo \u53ea\u4e0a\u4f20 block \u7ea7\u7edf\u8ba1 + impact_receipt",
+            "\u5168\u5c40 campaign \u6309 block \u6682\u505c\u800c\u975e\u6574\u7ad9\u5173\u505c"
+          ],
+          "metrics_24h": [
+            "blocks_with_shift",
+            "campaigns_unpaused_vs_full_stop"
+          ]
+        }
+      ]
+    }
+  ],
+  "explicitly_not_tonight_opex": [
+    "\u5168\u91cf\u91cd\u8bad uplift \u6a21\u578b\uff08RELEARN\uff09\u2014\u2014 CAPEX\uff1b\u9700 PO/AUUC_ovlp \u9636\u68af\u8bd5\u8dd1\u540e\u518d\u6279\u9884\u7b97",
+    "\u65e0 trace \u65f6\u7684\u7eaf\u8bba\u6587\u4eff\u771f\u2014\u2014 \u4e0d\u4ea7\u751f\u8d26\u5355 delta"
+  ],
+  "one_command_repro": "cd Python && python3 run_fsds_business_impact_pack.py"
+}
