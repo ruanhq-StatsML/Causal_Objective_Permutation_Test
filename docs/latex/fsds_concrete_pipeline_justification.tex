@@ -1,0 +1,151 @@
+% Concrete pipeline justification: X, Y, W, algorithm per step, measured incremental value
+\documentclass[11pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable,p hyperref}
+\usepackage{enumitem}
+
+\title{Concrete FSDS Pipeline Justification:\\
+Objects $(X,Y,W,T)$, Algorithm per Step, and Measured Deltas}
+\author{Repository-grounded (artifacts dated 2026-10-03)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note replaces narrative claims with a \textbf{step ledger}: for each product track (uplift two-batch, agent SoT, multi-agent, federated blocks), we state exactly what \textbf{$X$} and \textbf{$Y$} are, which \textbf{function} runs, what statistic is produced, and what \textbf{incremental value} was observed in checked-in demos or benchmarks (numbers cited verbatim from JSON).
+\end{abstract}
+
+\section{Notation shared across tracks}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning in this repository \\
+\midrule
+$X$ & Covariates fed to monitors (user features, trace scalars, or block columns $X_k$) \\
+$Y$ & Outcome (binary conversion / task success); used in AUUC, ATE slices, DRPerm \\
+$T$ & \textbf{Treatment} arm in uplift ($T\in\{0,1\}$); \emph{not} the batch label \\
+$W$ & \textbf{Batch} label: $W=0$ REF window, $W=1$ LIVE window (FSDS batch shift) \\
+$\hat\tau(X)$ & Uplift/CATE ranker fit on REF train only; frozen on LIVE eval \\
+$\hat e(W\mid X)$ & Batch propensity (GradientBoosting in benchmark; RF in attribution) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Track A --- Two-batch uplift (primary production path)}
+
+\subsection{Data objects (Hillstrom and benchmark DGPs)}
+\begin{itemize}[nosep]
+  \item \textbf{$X\in\mathbb{R}^{n\times p}$}: customer covariates (Hillstrom: blocked columns \texttt{block\_0..}; synthetic: injected shift on feature subsets).
+  \item \textbf{$Y\in\{0,1\}$}: campaign response / conversion.
+  \item \textbf{$T\in\{0,1\}$}: treatment vs control \emph{within} each batch.
+  \item \textbf{$W$}: not stored per row in CSV; implied by split: REF pools vs LIVE pool.
+  \item \textbf{Train/eval split}: $\hat\tau$ from \texttt{X\_ref\_tr}, \texttt{t\_ref\_tr}, \texttt{y\_ref\_tr}; LIVE scored on \texttt{X\_live} with frozen $\hat\tau$.
+\end{itemize}
+
+\subsection{Step ledger (code path \texttt{run\_uplift\_subset\_benchmark.py} $\rightarrow$ \texttt{run\_uplift\_subset\_localization})}
+
+\begin{longtable}{@{}p{0.06\textwidth}p{0.22\textwidth}p{0.28\textwidth}p{0.18\textwidth}p{0.20\textwidth}@{}}
+\toprule
+Step & Inputs $(X,Y,T,W)$ & Algorithm (function) & Output statistic & Role \\
+\midrule
+\endhead
+G0 & $T$ on LIVE & \texttt{check\_srm} ($\chi^2$) & SRM flag & Exclude bad randomization \\
+G1 & $X_{\mathrm{ref\_pool}}, X_{\mathrm{live}}$ & \texttt{\_rbf\_mmd2} & $\widehat{\mathrm{MMD}}^2$ (e.g.\ Hillstrom $0.00162$) & Global covariate shift \\
+G2 & $X,W$ stacked & GBM $\hat e(W\mid X)$, \texttt{propensity\_overlap\_ess} & ESS$_{\mathrm{ovlp}}$ (Hillstrom $0.990$) & Comparable support gate \\
+G3 & $X_{\mathrm{ref\_eval}}, Y_{\mathrm{ref}}; X_{\mathrm{live}}, Y_{\mathrm{live}}$; $W$ batch & \texttt{DRPerm} (RF $\hat\mu$, RF $\hat e$, pseudo-outcome, permute) & PO $p$ (Hillstrom $0.727$; synthetic\_concept $0.030$ reject) & Concept / $Y\mid X$ gate \\
+L1a & REF train; LOCO drop group $g$ & \texttt{loco\_auuc\_monitor}: retrain X-learner, AUUC & $\mathrm{drop}_{\mathrm{live}}^{(g)}$ & Which features drive ranking on LIVE \\
+L1b & $X_{\mathrm{ref\_eval}}, X_{\mathrm{live}}$ by groups & \texttt{logo\_mmd\_groups} & LOGO-MMD drop per block & Covariate shift localization \\
+L1c & LIVE $\hat\tau(X_{\mathrm{live}})$ & \texttt{auuc\_live\_by\_domain\_quintile} & AUUC per quintile $Q_k$ & User-subset ranking \\
+L1d & Pairs $(Q_a,Q_b)$ & \texttt{pairwise\_auuc\_compare} & $\Delta\mathrm{AUUC}$ (Hillstrom Q3 vs Q4: $-0.126$) & Cap worse slice \\
+L1e & $\hat e(W\mid X)$ on LIVE & \texttt{auuc\_live\_on\_overlap\_support} & AUUC$_{\mathrm{ovlp}}$ vs global & Narrow-support trigger \\
+L2 & Slices on LIVE & \texttt{pairwise\_slice\_uplift\_compare} & $\Delta\widehat{\tau}^{\mathrm{obs}}$ & Effect diagnostic (PO-gated REALLOCATE) \\
+R & All above in \texttt{loc} dict & \texttt{business\_rules\_from\_localization} + \texttt{attach\_uplift\_rule\_economics} & Rule + \texttt{econ\_bucket} & OPEX cap vs CAPEX ticket \\
+\bottomrule
+\end{longtable}
+
+\subsection{Measured incremental value (uplift bench, sim economics)}
+\begin{itemize}[nosep]
+  \item \textbf{Hillstrom (PO accept, $ \widehat{\mathrm{MMD}}^2$ small)}: emitted REALLOCATE cap on \texttt{domain\_quintile\_3} (AUUC$_{\mathrm{live}}=-0.0557$, $n_{\mathrm{live}}=240$); sim OPEX tag \textbf{\$546.00} saved treat spend (config: treat cost \$6.5, treat rate 0.35) --- \texttt{uplift\_two\_layer\_benchmark.json}.
+  \item \textbf{Four scenarios combined}: $\sum \texttt{estimated\_opex\_net\_usd}=\$3{,}271$; RELEARN CAPEX tickets \$2{,}500$\,$\times$4 $=\$10{,}000$ \textbf{excluded} from OPEX net --- \texttt{summarize\_rule\_economics}.
+  \item \textbf{Decision delta vs ``retrain on alert''}: on Hillstrom, MMD$^2=0.0016$ + PO $p=0.73$ $\Rightarrow$ rules prioritize cap/narrow (OPEX); RELEARN ticket logged but \textbf{not} counted as immediate ROI --- trial steps A/B in formulation before CAPEX.
+  \item \textbf{synthetic\_concept (PO reject $p=0.030$)}: same pipeline escalates Layer-2 / RELEARN \emph{eligibility} in rules while still emitting quintile caps first --- demonstrates \textbf{separate} concept gate on $(X,Y,W)$ stack, not on MMD alone.
+\end{itemize}
+
+\section{Track B --- Agent SoT (boss six-point demo)}
+
+\subsection{Data objects}
+\begin{itemize}[nosep]
+  \item \textbf{$X$}: \texttt{trace\_features}$\in\mathbb{R}^p$ per episode from \texttt{agentic\_dgp} (concat branch embedding mean + scalars: tool counts, failures, latency).
+  \item \textbf{$Y$}: episode \texttt{success}$\in\{0,1\}$ (simulated from budget alignment + quality); used in \texttt{success\_probability} / MC eval, \textbf{not} in RF batch classifier.
+  \item \textbf{$W$}: REF batch vs LIVE batch indicator when stacking $X_{\mathrm{old}}, X_{\mathrm{new}}$ in \texttt{covariate\_attribution}.
+  \item \textbf{Branch embeddings $Z$}: $(B\times d)$ skeleton vectors (plan, retrieve, \ldots); drive \texttt{allocate\_branch\_budgets}, not the RF on $X$ directly.
+\end{itemize}
+
+\subsection{Step ledger (\texttt{FSDSSoT.fit\_plan})}
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Step & Algorithm & Key output & Measured delta \\
+\midrule
+1 & \texttt{covariate\_attribution}($X_{\mathrm{old}},X_{\mathrm{new}}$): RF on $W$, perm VIMP, MMD$^2$, domain AUC & \texttt{SoTAttributionReport} & Explains batch shift on traces \\
+2 & \texttt{evaluate\_decomposability}($Z$) & parallel clusters & Topology gate \\
+3 & \texttt{allocate\_branch\_budgets}($\kappa,s_b,q_b,\mathrm{need}$) & $L_b$, tier, checks & See row 4 \\
+4 & \texttt{estimate\_economics} vs \texttt{uniform\_plan} & \$/episode & \textbf{33.6\%} cost$\downarrow$; \$0.012/ep save; eval success +2pp in multi-agent MC \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Incremental value justify}: uniform \$0.0356/ep $\rightarrow$ FSDS \$0.0236/ep at $\kappa\in[0.85,0.9]$ (\texttt{boss\_delivery\_six\_points.json}); mechanism is \emph{measurable} token/check reduction on \texttt{BranchBudget} list, not hand-waved ``efficiency.''
+
+\section{Track C --- Multi-agent debate demo}
+
+\subsection{Data objects}
+\begin{itemize}[nosep]
+  \item \textbf{$X$}: same trace-feature batches as Track B built from \texttt{build\_multi\_agent\_trace} episodes.
+  \item \textbf{$Z$}: $(3\times d)$ role utterance embeddings (pro, con, judge).
+  \item \textbf{$Y$}: MC binary success from \texttt{simulate\_episode\_outcome} (Bernoulli at $p_{\mathrm{succ}}$).
+  \item \textbf{$W$}: REF vs LIVE trace batches (LIVE adds shift on \texttt{con} embedding).
+\end{itemize}
+
+\subsection{Steps and deltas}
+\begin{enumerate}[nosep]
+  \item \texttt{fit\_agent\_plan}($Z,X_0,X_1$): steps 1--4 as Track B on 3 segments $\Rightarrow$ per-role $L$, tier (\texttt{multi\_agent\_fsds\_economics.json}).
+  \item MC 50 episodes: uniform swarm mean cost \$0.02064 vs FSDS \$0.01252 $\Rightarrow$ \textbf{39.3\%} cost$\downarrow$, mean success $0.66\rightarrow 0.68$.
+  \item \texttt{debate\_early\_stop\_round} on round tensors: stop at round 4/5 $\Rightarrow$ \textbf{20\%} debate-round cost$\downarrow$ (\texttt{multi\_agent\_debate\_early\_stop.json}).
+\end{enumerate}
+
+\section{Track D --- Federated vertical blocks}
+
+\subsection{Data objects}
+\begin{itemize}[nosep]
+  \item \textbf{$X_k$}: columns owned by client/node $k$ only (legal demo: cols $0{:}5$, finance $5{:}10$, product $10{:}15$).
+  \item \textbf{$Y$}: optional global outcome for PO typing demo; block monitor uses primarily $X_k$ REF vs LIVE.
+  \item \textbf{$W$}: implicit (REF index vs LIVE index); server never receives row-level $X$.
+\end{itemize}
+
+\subsection{Steps (\texttt{local\_block\_fsds} + protocol bench)}
+\begin{enumerate}[nosep]
+  \item Local: \texttt{covariate\_attribution}($X_{k,\mathrm{ref}},X_{k,\mathrm{live}}$) $\Rightarrow$ block MMD$^2$, domain AUC, VIMP top.
+  \item Upload: \texttt{LocalAttributionPayload} ($3|F_k|+3$ scalars per protocol accounting).
+  \item Server: merge rank, \texttt{DriftOFSFDRClosedLoop} (FDR $\alpha=0.05$ on bench).
+  \item Legal demo: \texttt{legal\_agent\_block} MMD$^2=0.041$ vs finance $0.0037$ $\Rightarrow$ server action targets legal OFS, not global shutdown.
+\end{enumerate}
+
+\textbf{Incremental value}: (i) Spambase protocol --- \textbf{1410$\times$} fewer uplink scalars than centralized $(n_{\mathrm{ref}}+n_{\mathrm{live}})\times p$ matrix; top-1 hit locates injected block. (ii) Legal narrative sim \textbf{\$125k/quarter} unlock is \emph{strategic}, not computed from tokens --- justified only when replacing a hard ban with monitored rollout.
+
+\section{Track E --- LangGraph checkpoint demo}
+
+\textbf{$X$}: trace features from 5 node checkpoints per episode; \textbf{$Z$}: node state embeddings; LIVE shift injected on \texttt{tool\_call} row. \texttt{fit\_agent\_plan} $\Rightarrow$ net savings \$0.01535/ep on plan (\texttt{langgraph\_fsds\_hook.json}). Incremental = skip replay of stable nodes in policy hook (conditional edge), not full graph relearn (CAPEX).
+
+\section{CAPEX co-sharing tied to concrete gates}
+A RELEARN ticket is emitted only when rules + formulation require \textbf{all} of: ESS/SRM OK; AUUC fails on deployed support; DRPerm $p\le\alpha$; $|\bar{\hat\tau}_k-\widehat{\tau}^{\mathrm{obs}}_k|$ large (see \texttt{uplift\_fsds\_two\_batch\_formulation.tex} trial paragraph). In bench, tickets are \texttt{capex\_ticket} USD 2500 with zero OPEX net increment --- finance approves CAPEX separately after Step B windows fail.
+
+\section{Reproduce numbers}
+\begin{verbatim}
+cd Python && python3 run_fsds_business_impact_pack.py
+\end{verbatim}
+Primary artifacts: \texttt{artifacts/uplift\_two\_layer\_benchmark.json}, \texttt{boss\_delivery\_six\_points.json}, \texttt{multi\_agent\_fsds\_economics.json}, \texttt{federated\_legal\_agent\_blocks.json}.
+
+\end{document}
