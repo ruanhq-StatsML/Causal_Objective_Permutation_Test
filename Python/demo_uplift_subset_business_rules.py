@@ -11,6 +11,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 from loco_auuc.data import split_ref_live
 from loco_auuc.learners import make_learner
+from fsds_sot.impact_receipt import build_uplift_rule_receipt
 from loco_auuc.subset_localization import run_uplift_subset_localization
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -69,6 +70,9 @@ def main() -> int:
         overlap_ess=0.7,
     )
 
+    report["impact_receipts"] = [
+        build_uplift_rule_receipt(br, report) for br in report.get("business_rules", [])
+    ]
     out = ART / "uplift_subset_business_rules.json"
     with open(out, "w") as f:
         json.dump(report, f, indent=2, default=str)

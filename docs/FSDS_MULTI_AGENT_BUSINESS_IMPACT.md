@@ -136,9 +136,9 @@ Then the **full uplift ladder** applies: REALLOCATE before RELEARN; PO-risk gate
 
 | Priority | Opportunity | Why now | Effort |
 |----------|-------------|---------|--------|
-| **P0** | `demo_fsds_multi_agent_economics.py` | Closes the only **quantified** gap vs SoT boss demo | Small: reuse `build_multi_agent_trace` + `estimate_economics` |
-| **P0** | **Impact receipt** emitter in `closed_loop.suggest_intervention` | Unifies agent + uplift ops logs for finance | Small JSON schema + docs |
-| **P1** | **Uplift $ model** next to `business_rules_from_localization` | Maps cap quintile → expected saved spend / saved bad conversions | Medium: needs margin + cost inputs |
+| **P0** | `demo_fsds_multi_agent_economics.py` | Closes the only **quantified** gap vs SoT boss demo | **Done** → `artifacts/multi_agent_fsds_economics.json` |
+| **P0** | **Impact receipt** in `fsds_sot/impact_receipt.py` + `closed_loop.suggest_intervention` | Unifies agent + uplift ops logs for finance | **Done** |
+| **P1** | **Uplift $ model** via `attach_uplift_rule_economics` on business rules | Maps cap quintile → saved spend (sim defaults) | **Done** (sim); prod overrides margin/cost |
 | **P1** | **LangGraph / checkpoint** hook doc + sample | Wide adoption; segment = node state | Doc + 1 example |
 | **P1** | Federated demo narrative: **“legal agent block”** synthetic shift | Tells cross-silo story with existing 7-dataset bench | Medium |
 | **P2** | Multi-agent **debate early-stop** when dispersion ↓ (link self-consistency demo) | Direct token ROI | Medium |

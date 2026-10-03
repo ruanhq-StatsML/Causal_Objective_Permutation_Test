@@ -1,0 +1,139 @@
+{
+  "generated_at_utc": "2026-10-03T02:11:54.675975+00:00",
+  "pattern": "multi_agent_debate",
+  "playbook_hint": "Down-weight redundant roles; merge by concept dedup.",
+  "scenario": "3-role debate (pro/con/judge); LIVE drift on con utterance embedding",
+  "gates": {
+    "mmd2": 0.013474874730203368,
+    "domain_auc": 1.0,
+    "overlap_ok": true
+  },
+  "economics_from_plan": {
+    "baseline_latency_tokens": 480,
+    "fsds_latency_tokens": 480,
+    "latency_reduction_pct": 0.0,
+    "baseline_compute_cost_usd": 0.00864,
+    "fsds_compute_cost_usd": 0.0053265000000000005,
+    "cost_savings_pct": 45.12354651162791,
+    "check_cost_usd": 0.006,
+    "net_savings_usd": 0.008813499999999998,
+    "fsds_overhead_usd": 0.0005,
+    "roi_multiple": 8.202307568538771,
+    "baseline_total_cost_usd": 0.02064,
+    "fsds_total_cost_usd": 0.0118265,
+    "baseline_check_cost_usd": 0.012,
+    "expected_value_usd": 0.3082661151369942,
+    "baseline_expected_value_usd": 0.3006749999999167,
+    "net_economic_gain_usd": 0.01640461513707754,
+    "roi_pct": 5.105461972544635
+  },
+  "monte_carlo_eval": {
+    "uniform_debate_swarm": {
+      "mean_success": 0.66,
+      "mean_cost_usd": 0.020639999999999995,
+      "mean_total_tokens": 1440.0,
+      "mean_checks": 6.0
+    },
+    "fsds_routed_debate": {
+      "mean_success": 0.68,
+      "mean_cost_usd": 0.012522390000000001,
+      "mean_total_tokens": 1164.54,
+      "mean_checks": 3.0
+    },
+    "success_delta": 0.020000000000000018,
+    "cost_reduction_pct": 39.32950581395347,
+    "checks_delta": -3.0
+  },
+  "per_role_budget": [
+    {
+      "role": "pro",
+      "L_tokens": 336,
+      "tier": "medium",
+      "checks": 1,
+      "shift_score": 0.9285565198035016
+    },
+    {
+      "role": "con",
+      "L_tokens": 287,
+      "tier": "small",
+      "checks": 1,
+      "shift_score": 0.8319759748250113
+    },
+    {
+      "role": "judge",
+      "L_tokens": 480,
+      "tier": "medium",
+      "checks": 1,
+      "shift_score": 0.9999999988613995
+    }
+  ],
+  "closed_loop_window": {
+    "accepted": false,
+    "drift_proxy": 0.14911079542524744,
+    "rung": "RETOPOLOGY",
+    "intervention": {
+      "rung": "REALLOCATE",
+      "parallel": true,
+      "n_branches": 3,
+      "top_shift_branch": 2,
+      "domain_auc": 1.0,
+      "overlap_ok": true,
+      "type": "reallocate",
+      "budgets": [
+        {
+          "branch": 0,
+          "L": 336,
+          "tier": "medium"
+        },
+        {
+          "branch": 1,
+          "L": 287,
+          "tier": "small"
+        },
+        {
+          "branch": 2,
+          "L": 480,
+          "tier": "medium"
+        }
+      ],
+      "impact_receipt": {
+        "episode_id": "38fce4ea-e0a",
+        "pattern": "multi_agent_debate",
+        "ref_window": "ref_debate_traces_60",
+        "live_window": "live_debate_traces_60",
+        "shift_summary": {
+          "mmd2": 0.013474874730203368,
+          "domain_auc": 1.0,
+          "overlap_ok": true,
+          "overlap_ess": 0.9643640793049559
+        },
+        "action": "reallocate",
+        "kpi_before_after": {
+          "expected_value_usd": [
+            0.3006749999999167,
+            0.3082661151369942
+          ],
+          "usd_per_episode": [
+            0.02064,
+            0.0118265
+          ],
+          "cost_savings_pct": 45.12354651162791,
+          "latency_reduction_pct": 0.0
+        },
+        "estimated_net_gain_usd": 0.01640461513707754,
+        "rule_ids": [
+          "agent_reallocate",
+          "reallocate",
+          "segment_budget_branch_2"
+        ],
+        "generated_at_utc": "2026-10-03T02:11:54.675964+00:00"
+      }
+    }
+  },
+  "business_readout": {
+    "headline_usd_per_episode_save": 0.008813499999999998,
+    "net_economic_gain_usd_plan_proxy": 0.01640461513707754,
+    "roi_multiple_vs_impl": 8.202307568538771,
+    "justification": "Receipt ties REALLOCATE segment budgets to MMD/domain AUC; down-weight redundant con when shift localizes to judge/pro."
+  }
+}

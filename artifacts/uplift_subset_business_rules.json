@@ -309,6 +309,233 @@
       "better": "domain_quintile_2"
     }
   ],
+  "concept_slice_uplift_live": [
+    {
+      "subset": "domain_quintile_1",
+      "n_live": 299,
+      "mean_domain_score": 0.7240384615384616,
+      "auuc_live": -0.0028355024345015473,
+      "empirical_ate": 0.07019428776076642,
+      "mean_tau_hat": 0.0010220791301333398
+    },
+    {
+      "subset": "domain_quintile_2",
+      "n_live": 285,
+      "mean_domain_score": 0.813859649122807,
+      "auuc_live": 0.012419360446970326,
+      "empirical_ate": 0.025179856115107924,
+      "mean_tau_hat": -0.023049173214710363
+    },
+    {
+      "subset": "domain_quintile_3",
+      "n_live": 302,
+      "mean_domain_score": 0.8692466887417216,
+      "auuc_live": 0.0008955068192366619,
+      "empirical_ate": 0.013245033112582738,
+      "mean_tau_hat": -0.02709265189702657
+    },
+    {
+      "subset": "domain_quintile_4",
+      "n_live": 252,
+      "mean_domain_score": 0.9118551587301587,
+      "auuc_live": -0.016514823691065786,
+      "empirical_ate": -0.02380952380952378,
+      "mean_tau_hat": -0.04633924343230576
+    },
+    {
+      "subset": "domain_quintile_5",
+      "n_live": 362,
+      "mean_domain_score": 0.9609461325966849,
+      "auuc_live": 0.025823006600824778,
+      "empirical_ate": -0.08823888617489006,
+      "mean_tau_hat": -0.012001318785335655
+    }
+  ],
+  "pairwise_empirical_ate": [
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_5",
+      "metric": "empirical_ate",
+      "value_a": 0.07019428776076642,
+      "value_b": -0.08823888617489006,
+      "delta_a_minus_b": 0.15843317393565648,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_5",
+      "metric": "empirical_ate",
+      "value_a": 0.025179856115107924,
+      "value_b": -0.08823888617489006,
+      "delta_a_minus_b": 0.11341874228999799,
+      "higher_uplift_subset": "domain_quintile_2"
+    },
+    {
+      "subset_a": "domain_quintile_3",
+      "subset_b": "domain_quintile_5",
+      "metric": "empirical_ate",
+      "value_a": 0.013245033112582738,
+      "value_b": -0.08823888617489006,
+      "delta_a_minus_b": 0.1014839192874728,
+      "higher_uplift_subset": "domain_quintile_3"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_4",
+      "metric": "empirical_ate",
+      "value_a": 0.07019428776076642,
+      "value_b": -0.02380952380952378,
+      "delta_a_minus_b": 0.0940038115702902,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_4",
+      "subset_b": "domain_quintile_5",
+      "metric": "empirical_ate",
+      "value_a": -0.02380952380952378,
+      "value_b": -0.08823888617489006,
+      "delta_a_minus_b": 0.06442936236536628,
+      "higher_uplift_subset": "domain_quintile_4"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_3",
+      "metric": "empirical_ate",
+      "value_a": 0.07019428776076642,
+      "value_b": 0.013245033112582738,
+      "delta_a_minus_b": 0.05694925464818368,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_4",
+      "metric": "empirical_ate",
+      "value_a": 0.025179856115107924,
+      "value_b": -0.02380952380952378,
+      "delta_a_minus_b": 0.048989379924631704,
+      "higher_uplift_subset": "domain_quintile_2"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_2",
+      "metric": "empirical_ate",
+      "value_a": 0.07019428776076642,
+      "value_b": 0.025179856115107924,
+      "delta_a_minus_b": 0.04501443164565849,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_3",
+      "subset_b": "domain_quintile_4",
+      "metric": "empirical_ate",
+      "value_a": 0.013245033112582738,
+      "value_b": -0.02380952380952378,
+      "delta_a_minus_b": 0.03705455692210652,
+      "higher_uplift_subset": "domain_quintile_3"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_3",
+      "metric": "empirical_ate",
+      "value_a": 0.025179856115107924,
+      "value_b": 0.013245033112582738,
+      "delta_a_minus_b": 0.011934823002525186,
+      "higher_uplift_subset": "domain_quintile_2"
+    }
+  ],
+  "pairwise_mean_tau_by_slice": [
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_4",
+      "metric": "mean_tau_hat",
+      "value_a": 0.0010220791301333398,
+      "value_b": -0.04633924343230576,
+      "delta_a_minus_b": 0.0473613225624391,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_4",
+      "subset_b": "domain_quintile_5",
+      "metric": "mean_tau_hat",
+      "value_a": -0.04633924343230576,
+      "value_b": -0.012001318785335655,
+      "delta_a_minus_b": -0.03433792464697011,
+      "higher_uplift_subset": "domain_quintile_5"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_3",
+      "metric": "mean_tau_hat",
+      "value_a": 0.0010220791301333398,
+      "value_b": -0.02709265189702657,
+      "delta_a_minus_b": 0.02811473102715991,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_2",
+      "metric": "mean_tau_hat",
+      "value_a": 0.0010220791301333398,
+      "value_b": -0.023049173214710363,
+      "delta_a_minus_b": 0.024071252344843704,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_4",
+      "metric": "mean_tau_hat",
+      "value_a": -0.023049173214710363,
+      "value_b": -0.04633924343230576,
+      "delta_a_minus_b": 0.0232900702175954,
+      "higher_uplift_subset": "domain_quintile_2"
+    },
+    {
+      "subset_a": "domain_quintile_3",
+      "subset_b": "domain_quintile_4",
+      "metric": "mean_tau_hat",
+      "value_a": -0.02709265189702657,
+      "value_b": -0.04633924343230576,
+      "delta_a_minus_b": 0.019246591535279193,
+      "higher_uplift_subset": "domain_quintile_3"
+    },
+    {
+      "subset_a": "domain_quintile_3",
+      "subset_b": "domain_quintile_5",
+      "metric": "mean_tau_hat",
+      "value_a": -0.02709265189702657,
+      "value_b": -0.012001318785335655,
+      "delta_a_minus_b": -0.015091333111690915,
+      "higher_uplift_subset": "domain_quintile_5"
+    },
+    {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_5",
+      "metric": "mean_tau_hat",
+      "value_a": 0.0010220791301333398,
+      "value_b": -0.012001318785335655,
+      "delta_a_minus_b": 0.013023397915468995,
+      "higher_uplift_subset": "domain_quintile_1"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_5",
+      "metric": "mean_tau_hat",
+      "value_a": -0.023049173214710363,
+      "value_b": -0.012001318785335655,
+      "delta_a_minus_b": -0.011047854429374709,
+      "higher_uplift_subset": "domain_quintile_5"
+    },
+    {
+      "subset_a": "domain_quintile_2",
+      "subset_b": "domain_quintile_3",
+      "metric": "mean_tau_hat",
+      "value_a": -0.023049173214710363,
+      "value_b": -0.02709265189702657,
+      "delta_a_minus_b": 0.004043478682316207,
+      "higher_uplift_subset": "domain_quintile_2"
+    }
+  ],
+  "po_risk_concept_mode": false,
   "overlap_support_auuc": {
     "subset": "overlap_support_band",
     "n_live": 1074,
@@ -352,7 +579,24 @@
     },
     "top_logo_mmd_group": "block_a",
     "top_loco_live_group": "block_b",
-    "x_stable_but_gap_large": true
+    "x_stable_but_gap_large": true,
+    "top_empirical_ate_quintile": {
+      "subset": "domain_quintile_1",
+      "n_live": 299,
+      "mean_domain_score": 0.7240384615384616,
+      "auuc_live": -0.0028355024345015473,
+      "empirical_ate": 0.07019428776076642,
+      "mean_tau_hat": 0.0010220791301333398
+    },
+    "largest_pairwise_ate_gap": {
+      "subset_a": "domain_quintile_1",
+      "subset_b": "domain_quintile_5",
+      "metric": "empirical_ate",
+      "value_a": 0.07019428776076642,
+      "value_b": -0.08823888617489006,
+      "delta_a_minus_b": 0.15843317393565648,
+      "higher_uplift_subset": "domain_quintile_1"
+    }
   },
   "business_rules": [
     {
@@ -371,6 +615,17 @@
           "n_live": 362,
           "auuc_live": 0.025823006600824778,
           "mean_domain_score": 0.9609461325966849
+        },
+        "economics": {
+          "margin_usd_per_conversion": 48.0,
+          "treatment_cost_usd": 6.5,
+          "currency": "USD",
+          "simulated": true,
+          "n_users_capped_est": 252,
+          "n_treatments_avoided_est": 88,
+          "estimated_saved_spend_usd": 572.0,
+          "estimated_incremental_margin_usd": 0.0,
+          "estimated_net_impact_usd": 572.0
         }
       }
     },
@@ -384,7 +639,14 @@
         "auuc_live": 0.02173432407661729,
         "drop_ref": 0.018080862894122127,
         "drop_live": -0.006300789958276617,
-        "drop_gap": -0.024381652852398746
+        "drop_gap": -0.024381652852398746,
+        "economics": {
+          "margin_usd_per_conversion": 48.0,
+          "treatment_cost_usd": 6.5,
+          "currency": "USD",
+          "simulated": true,
+          "estimated_net_impact_usd": 0.0
+        }
       }
     },
     {
@@ -400,8 +662,131 @@
         "hints": [
           "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
           "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
-        ]
+        ],
+        "economics": {
+          "margin_usd_per_conversion": 48.0,
+          "treatment_cost_usd": 6.5,
+          "currency": "USD",
+          "simulated": true,
+          "estimated_net_impact_usd": -2500.0,
+          "note": "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+        }
       }
+    },
+    {
+      "priority": 4,
+      "action": "MONITOR",
+      "rule": "Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain_quintile_1 vs domain_quintile_5 (\u0394ATE=0.1584) \u2014 do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.",
+      "evidence": {
+        "subset_a": "domain_quintile_1",
+        "subset_b": "domain_quintile_5",
+        "metric": "empirical_ate",
+        "value_a": 0.07019428776076642,
+        "value_b": -0.08823888617489006,
+        "delta_a_minus_b": 0.15843317393565648,
+        "higher_uplift_subset": "domain_quintile_1",
+        "economics": {
+          "margin_usd_per_conversion": 48.0,
+          "treatment_cost_usd": 6.5,
+          "currency": "USD",
+          "simulated": true,
+          "estimated_net_impact_usd": 0.0
+        }
+      }
+    }
+  ],
+  "impact_receipts": [
+    {
+      "episode_id": "9b55e7f9-04a",
+      "pattern": "uplift_two_batch",
+      "ref_window": "ref_uplift_window",
+      "live_window": "live_uplift_window",
+      "shift_summary": {
+        "mmd2_x": null,
+        "auuc_live_global": 0.015433534118340675,
+        "po_pvalue": null,
+        "diagnosis": "concept_drift_or_tau_change"
+      },
+      "action": "REALLOCATE",
+      "kpi_before_after": {
+        "auuc_live": 0.015433534118340675,
+        "estimated_saved_spend_usd": 572.0,
+        "estimated_incremental_margin_usd": 0.0
+      },
+      "estimated_net_gain_usd": 572.0,
+      "rule_ids": [
+        "uplift_p1_REALLOCATE"
+      ],
+      "generated_at_utc": "2026-10-03T02:12:09.009386+00:00"
+    },
+    {
+      "episode_id": "f649946f-1b4",
+      "pattern": "uplift_two_batch",
+      "ref_window": "ref_uplift_window",
+      "live_window": "live_uplift_window",
+      "shift_summary": {
+        "mmd2_x": null,
+        "auuc_live_global": 0.015433534118340675,
+        "po_pvalue": null,
+        "diagnosis": "concept_drift_or_tau_change"
+      },
+      "action": "REALLOCATE",
+      "kpi_before_after": {
+        "auuc_live": 0.015433534118340675,
+        "estimated_saved_spend_usd": null,
+        "estimated_incremental_margin_usd": null
+      },
+      "estimated_net_gain_usd": 0.0,
+      "rule_ids": [
+        "uplift_p2_REALLOCATE"
+      ],
+      "generated_at_utc": "2026-10-03T02:12:09.009427+00:00"
+    },
+    {
+      "episode_id": "06767ef2-099",
+      "pattern": "uplift_two_batch",
+      "ref_window": "ref_uplift_window",
+      "live_window": "live_uplift_window",
+      "shift_summary": {
+        "mmd2_x": null,
+        "auuc_live_global": 0.015433534118340675,
+        "po_pvalue": null,
+        "diagnosis": "concept_drift_or_tau_change"
+      },
+      "action": "RELEARN",
+      "kpi_before_after": {
+        "auuc_live": 0.015433534118340675,
+        "estimated_saved_spend_usd": null,
+        "estimated_incremental_margin_usd": null
+      },
+      "estimated_net_gain_usd": -2500.0,
+      "rule_ids": [
+        "uplift_p2_RELEARN"
+      ],
+      "generated_at_utc": "2026-10-03T02:12:09.009441+00:00"
+    },
+    {
+      "episode_id": "b0475214-f78",
+      "pattern": "uplift_two_batch",
+      "ref_window": "ref_uplift_window",
+      "live_window": "live_uplift_window",
+      "shift_summary": {
+        "mmd2_x": null,
+        "auuc_live_global": 0.015433534118340675,
+        "po_pvalue": null,
+        "diagnosis": "concept_drift_or_tau_change"
+      },
+      "action": "MONITOR",
+      "kpi_before_after": {
+        "auuc_live": 0.015433534118340675,
+        "estimated_saved_spend_usd": null,
+        "estimated_incremental_margin_usd": null
+      },
+      "estimated_net_gain_usd": 0.0,
+      "rule_ids": [
+        "uplift_p4_MONITOR"
+      ],
+      "generated_at_utc": "2026-10-03T02:12:09.009453+00:00"
     }
   ]
 }

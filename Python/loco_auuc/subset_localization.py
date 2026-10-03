@@ -209,6 +209,57 @@ def business_rules_from_localization(
             )
         )
     rules.sort(key=lambda r: r.priority)
+    return attach_uplift_rule_economics(rules, loc)
+
+
+def attach_uplift_rule_economics(
+    rules: List[BusinessRule],
+    loc: Dict[str, Any],
+    *,
+    margin_usd_per_conversion: float = 48.0,
+    treatment_cost_usd: float = 6.5,
+    treat_rate: float = 0.35,
+) -> List[BusinessRule]:
+    """
+    Simulated P&L tags on REALLOCATE / cap rules (finance-facing; override in prod).
+    """
+    g_auuc = loc.get("auuc_live_global")
+    for rule in rules:
+        ev = dict(rule.evidence)
+        econ: Dict[str, Any] = {
+            "margin_usd_per_conversion": margin_usd_per_conversion,
+            "treatment_cost_usd": treatment_cost_usd,
+            "currency": "USD",
+            "simulated": True,
+        }
+        n_cap = 0
+        if "worst" in ev and isinstance(ev["worst"], dict):
+            n_cap = int(ev["worst"].get("n_live", 0))
+        elif "n_live" in ev:
+            n_cap = int(ev.get("n_live", 0))
+        if rule.action in ("REALLOCATE", "REFRESH_REF") and n_cap > 0:
+            n_treat = max(1, int(n_cap * treat_rate))
+            saved_spend = n_treat * treatment_cost_usd
+            econ["n_users_capped_est"] = n_cap
+            econ["n_treatments_avoided_est"] = n_treat
+            econ["estimated_saved_spend_usd"] = round(saved_spend, 2)
+            if g_auuc is not None and g_auuc < 0:
+                econ["estimated_incremental_margin_usd"] = round(
+                    0.15 * n_treat * margin_usd * abs(g_auuc), 2
+                )
+            else:
+                econ["estimated_incremental_margin_usd"] = 0.0
+            econ["estimated_net_impact_usd"] = round(
+                econ["estimated_saved_spend_usd"] + econ["estimated_incremental_margin_usd"],
+                2,
+            )
+        elif rule.action == "RELEARN":
+            econ["estimated_net_impact_usd"] = -2500.0
+            econ["note"] = "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+        else:
+            econ["estimated_net_impact_usd"] = 0.0
+        ev["economics"] = econ
+        rule.evidence = ev
     return rules
 
 

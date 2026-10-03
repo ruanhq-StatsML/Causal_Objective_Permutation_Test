@@ -2,6 +2,12 @@
 
 from .pipeline import FSDSSoT, SoTPlan, SoTAttributionReport
 from .economics import SoTEconomicsReport, estimate_economics, net_economic_gain_usd
+from .impact_receipt import (
+    ImpactReceipt,
+    build_agent_impact_receipt,
+    build_uplift_rule_receipt,
+    merge_receipt_into_intervention,
+)
 from .mcts_search import optimize_budget_for_success
 from .closed_loop import (
     LoopState,
@@ -56,4 +62,8 @@ __all__ = [
     "OnlinePFIStep",
     "run_online_pfi_stream",
     "plot_online_pfi_dashboard",
+    "ImpactReceipt",
+    "build_agent_impact_receipt",
+    "build_uplift_rule_receipt",
+    "merge_receipt_into_intervention",
 ]

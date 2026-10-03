@@ -59,7 +59,17 @@ def decay_reference(X_old: np.ndarray, X_new: np.ndarray, *, alpha: float = 0.85
     return blend
 
 
-def suggest_intervention(plan: SoTPlan, report: SoTAttributionReport, rung: LadderRung) -> Dict[str, Any]:
+def suggest_intervention(
+    plan: SoTPlan,
+    report: SoTAttributionReport,
+    rung: LadderRung,
+    *,
+    econ: Optional["SoTEconomicsReport"] = None,
+    pattern: str = "sot",
+    ref_window: str = "ref_batch",
+    live_window: str = "live_batch",
+    attach_impact_receipt: bool = True,
+) -> Dict[str, Any]:
     """Map ladder rung + plan to operational hints (for logging / policy hooks)."""
     top_shift_branch = int(np.argmax([b.expansion_tokens for b in plan.branch_budgets]))
     actions: Dict[str, Any] = {
@@ -88,6 +98,18 @@ def suggest_intervention(plan: SoTPlan, report: SoTAttributionReport, rung: Ladd
     else:
         actions["type"] = "relearn"
         actions["hint"] = "agod_or_data_collection"
+    if attach_impact_receipt:
+        from .impact_receipt import build_agent_impact_receipt, merge_receipt_into_intervention
+
+        receipt = build_agent_impact_receipt(
+            intervention=actions,
+            report=report,
+            econ=econ,
+            pattern=pattern,
+            ref_window=ref_window,
+            live_window=live_window,
+        )
+        actions = merge_receipt_into_intervention(actions, receipt)
     return actions
 
 
@@ -111,7 +133,7 @@ def iterate_once(
     or falls below ``stabilize_threshold``.
     """
     ctrl = controller or FSDSSoT()
-    report, plan, _econ = ctrl.fit_plan(
+    report, plan, econ = ctrl.fit_plan(
         X_old,
         X_new,
         branch_embeddings,
@@ -119,7 +141,7 @@ def iterate_once(
         **plan_kw,
     )
     proxy = drift_proxy(report)
-    intervention = suggest_intervention(plan, report, state.rung)
+    intervention = suggest_intervention(plan, report, state.rung, econ=econ)
 
     if state.baseline_drift is None:
         state.baseline_drift = proxy
