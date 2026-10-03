@@ -20,6 +20,7 @@ from fsds_sot.applications import (
     adaptive_sample_count,
     build_langgraph_node_trace,
     build_multi_agent_trace,
+    build_plan_execute_trace,
     build_rag_multihop_trace,
     build_react_trace,
     build_self_consistency_trace,
@@ -119,6 +120,7 @@ def _collab_note(pattern: AgentPattern) -> str:
         AgentPattern.RAG_BRANCH: "Multi-hop retrieve; hops collaborate via parallel chunk budget when decomposable.",
         AgentPattern.SELF_CONSISTENCY: "N chain samples; dispersion drives adaptive N (fewer samples when chains agree).",
         AgentPattern.LANGGRAPH: "Checkpoint nodes collaborate via graph trace batch; retry only drifted nodes in prod hook.",
+        AgentPattern.PLAN_EXECUTE: "Planner steps collaborate sequentially; mid-plan drift localizes budget to failing step.",
     }
     return notes.get(pattern, "")
 
@@ -285,6 +287,37 @@ def main() -> int:
             )
         return np.stack(rows)
 
+    # --- Plan-and-execute ---
+    def pe_ep(rng: np.random.Generator):
+        steps = rng.normal(size=(5, D))
+        steps[2] += rng.normal(scale=1.4, size=D)
+        q = np.linspace(0.88, 0.62, 5)
+        seg = build_plan_execute_trace(steps, execution_quality=q)
+        shift = np.linalg.norm(seg.embeddings - seg.embeddings.mean(axis=0, keepdims=True), axis=1)
+        shift = shift / (shift.max() + 1e-9)
+        return seg, q, shift
+
+    def pe_batch(n: int, live: bool, seed: int) -> np.ndarray:
+        rows = []
+        for i in range(n):
+            rng = np.random.default_rng(seed + i)
+            steps = rng.normal(size=(5, D))
+            if live:
+                steps[2] += 0.9
+            rows.append(build_plan_execute_trace(steps).trace_features)
+        return np.stack(rows)
+
+    scenarios.append(
+        _mc_pattern(
+            name="plan_execute_midstep_drift",
+            pattern=AgentPattern.PLAN_EXECUTE,
+            build_episode=pe_ep,
+            trace_batch=pe_batch,
+            need=np.array([0.5, 0.55, 0.92, 0.7, 0.65]),
+            min_tokens=np.array([0, 0, 300, 0, 0]),
+        )
+    )
+
     scenarios.append(
         _mc_pattern(
             name="langgraph_tool_call_drift",
@@ -297,7 +330,7 @@ def main() -> int:
     )
 
     # --- Stacked collaboration: FSDS role budget + debate early-stop ---
-    ma = scenarios[-2]  # multi_agent row
+    ma = next(s for s in scenarios if s.get("scenario_id") == "multi_agent_debate_con_drift")
     rounds_rng = np.random.default_rng(7)
     base = rounds_rng.normal(size=(3, D))
     round_embs = []

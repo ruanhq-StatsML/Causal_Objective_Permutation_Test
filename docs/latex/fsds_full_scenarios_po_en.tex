@@ -24,7 +24,7 @@
 
 \begin{abstract}
 This is the \textbf{full English} position paper for review: uplift fulfillment, single-agent SoT, and \emph{multi-agent collaboration} patterns (ReAct chains, multi-hop RAG, self-consistency samples, pro/con/judge debate, LangGraph checkpoints, and stacked micro+macro levers).
-For each scenario we state \textbf{where} \texttt{fit\_agent\_plan} / two-batch localization runs, objects $X,Y,Z,W$ (and $T$ in uplift), \textbf{incremental value} vs uniform baselines, and \textbf{attached tables} R1--R9 regenerated from JSON.
+For each scenario we state \textbf{where} \texttt{fit\_agent\_plan} / two-batch localization runs, objects $X,Y,Z,W$ (and $T$ in uplift), \textbf{incremental value} vs uniform baselines, and \textbf{attached tables} R1--R9 regenerated from JSON (nine collaboration runs including plan--execute and stacked debate levers).
 Collaboration means multiple segments, roles, hops, or rounds sharing one FSDS attribution window---shift on one participant triggers budget reallocation for the team, not a blind global token cut.
 \end{abstract}
 
@@ -38,7 +38,7 @@ FSDS compares REF to LIVE on $X$ (and uses $Y$ for concept gates in uplift).
 
 \paragraph{Agent collaboration focus.}
 Unlike single-branch copilots, collaborative agents expose \textbf{$Z$} (segment embeddings) for Object~2 budgeting while \textbf{$X$} (\texttt{trace\_features}) drives batch shift detection on $W$.
-Table~\ref{tab:agent-collab} reports five patterns plus a \textbf{stacked} multi-agent row (role FSDS + round early-stop); Table~\ref{tab:agent-xy} documents how roles/hops/chains interact.
+Table~\ref{tab:agent-collab} reports six MC patterns (ReAct, RAG, self-consistency, multi-agent, plan--execute, LangGraph) plus \textbf{stacked} micro+macro rows; Table~\ref{tab:agent-xy} documents how roles/hops/chains/steps interact.
 
 \section{Uplift and enterprise surfaces (Tables R1--R6)}
 
@@ -68,6 +68,9 @@ Parallel chain embeddings collaborate via dispersion; FSDS reduces checks/tokens
 \paragraph{Multi-agent debate (\texttt{multi\_agent\_debate\_con\_drift}).}
 Pro, con, and judge share one plan; con drift under LIVE mimics adversarial channel shift; FSDS down-weights con tier while preserving judge budget on critical path.
 
+\paragraph{Plan--execute (\texttt{plan\_execute\_midstep\_drift}).}
+Five planner steps collaborate; drift on step~3 mimics a failing sub-task in a long horizon plan---FSDS adds budget/checks on the weak step without inflating the whole plan uniformly.
+
 \paragraph{LangGraph (\texttt{langgraph\_tool\_call\_drift}).}
 Five checkpoint nodes collaborate; tool\_call drift matches production hook---partial replay instead of full graph CAPEX relearn.
 
@@ -95,8 +98,11 @@ cd Python
 python3 run_fsds_business_impact_pack.py
 python3 demo_fsds_agent_collaboration_suite.py
 python3 export_fsds_results_tables_tex.py
+python3 export_fsds_full_po_monolithic.py
 cd ../docs/latex
 pdflatex fsds_full_scenarios_po_en.tex
+# single-file share (no \\input):
+pdflatex fsds_full_scenarios_po_en_monolithic.tex
 \end{verbatim}
 
 \paragraph{Related LaTeX.}

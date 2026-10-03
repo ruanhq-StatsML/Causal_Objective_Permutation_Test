@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-10-03T10:02:17.782752+00:00",
-  "method": "FSDSSoT.fit_plan via fit_agent_plan; uniform_plan baseline; MC n_eval\u224845",
+  "generated_at_utc": "2026-10-03T14:17:58.739111+00:00",
+  "method": "FSDSSoT.fit_plan via fit_agent_plan; uniform_plan baseline; MC n_eval=24, batch=28",
   "scenarios": [
     {
       "scenario_id": "react_observation_drift",
@@ -112,6 +112,34 @@
         "cost_save_usd_per_episode": 0.00781,
         "cost_reduction_pct": 37.82,
         "checks_delta": -3.0
+      }
+    },
+    {
+      "scenario_id": "plan_execute_midstep_drift",
+      "pattern": "plan_execute",
+      "playbook": "Re-plan step with high PO-risk; sequential inside coupled steps.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Planner steps collaborate sequentially; mid-plan drift localizes budget to failing step.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.030800000000000004,
+        "mean_total_tokens": 1800.0,
+        "mean_checks": 10.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.01888825,
+        "mean_total_tokens": 1781.125,
+        "mean_checks": 5.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.01191,
+        "cost_reduction_pct": 38.67,
+        "checks_delta": -5.0
       }
     },
     {

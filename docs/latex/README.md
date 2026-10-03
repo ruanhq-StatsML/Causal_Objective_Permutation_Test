@@ -65,6 +65,7 @@ cd ../docs/latex && pdflatex fsds_full_scenarios_po_en.tex
 ```
 
 - [`fsds_full_scenarios_po_en.tex`](fsds_full_scenarios_po_en.tex) — polished narratives + `\input` R1–R6 and R7–R9
+- [`fsds_full_scenarios_po_en_monolithic.tex`](fsds_full_scenarios_po_en_monolithic.tex) — **single-file 全量** (tables inlined; `export_fsds_full_po_monolithic.py`)
 - [`fsds_agent_collaboration_tables_generated.tex`](fsds_agent_collaboration_tables_generated.tex) — agent MC suite tables
 - [`fsds_results_tables_generated.tex`](fsds_results_tables_generated.tex) — uplift + executive rollup tables
 
