@@ -1,6 +1,6 @@
 # Two-layer uplift localization — benchmark business insights
 
-Generated: 2026-10-01 23:19 UTC. Script: `Python/run_uplift_subset_benchmark.py`.
+Generated: 2026-10-03 02:21 UTC. Script: `Python/run_uplift_subset_benchmark.py`.
 
 Layers: **L1** = AUUC / LOCO / pairwise AUUC (ranking). **L2** = empirical ATE + mean τ̂ (effect).
 
@@ -23,10 +23,14 @@ Layers: **L1** = AUUC / LOCO / pairwise AUUC (ranking). **L2** = empirical ATE +
 
 ### Business rules (ops)
 - **[REALLOCATE]** (P1): Cap uplift in domain quintile 'domain_quintile_3' (AUUC_live=-0.0557, n=240); continue in 'domain_quintile_4' where ranking remains stronger.
+  - *Economics (sim):* net impact **$546.00**, saved spend **$546.00**
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0167).
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0033).
 - **[RELEARN]** (P2): X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+  - *Economics (sim):* net impact **$-2500.00**, saved spend **$0.00**
 - **[MONITOR]** (P4): Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain_quintile_3 vs domain_quintile_5 (ΔATE=0.1043) — do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.
+
+- **Scenario economics (sim):** total net impact **$-1954.00**, saved spend **$546.00** across 5 rules.
 
 ## hillstrom_covariate_drift
 
@@ -47,6 +51,9 @@ Layers: **L1** = AUUC / LOCO / pairwise AUUC (ranking). **L2** = empirical ATE +
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0105).
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0065).
 - **[RELEARN]** (P2): X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+  - *Economics (sim):* net impact **$-2500.00**, saved spend **$0.00**
+
+- **Scenario economics (sim):** total net impact **$-2500.00**, saved spend **$0.00** across 4 rules.
 
 ## synthetic_covariate
 
@@ -67,10 +74,15 @@ Layers: **L1** = AUUC / LOCO / pairwise AUUC (ranking). **L2** = empirical ATE +
 
 ### Business rules (ops)
 - **[REALLOCATE]** (P1): Cap uplift in domain quintile 'domain_quintile_2' (AUUC_live=-0.0338, n=200); continue in 'domain_quintile_4' where ranking remains stronger.
+  - *Economics (sim):* net impact **$455.00**, saved spend **$455.00**
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=0.0144).
 - **[RELEARN]** (P2): X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+  - *Economics (sim):* net impact **$-2500.00**, saved spend **$0.00**
 - **[REALLOCATE]** (P3): Restrict targeting to overlap-support users on LIVE (AUUC_live=0.0226 on support band vs global 0.0112).
+  - *Economics (sim):* net impact **$1813.50**, saved spend **$1813.50**
 - **[MONITOR]** (P4): Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain_quintile_4 vs domain_quintile_5 (ΔATE=0.1675) — do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.
+
+- **Scenario economics (sim):** total net impact **$-231.50**, saved spend **$2268.50** across 5 rules.
 
 ## synthetic_concept
 
@@ -92,7 +104,11 @@ Layers: **L1** = AUUC / LOCO / pairwise AUUC (ranking). **L2** = empirical ATE +
 ### Business rules (ops)
 - **[REALLOCATE]** (P1): Pause or cap uplift targeting on LIVE until AUUC_live (-0.0026) recovers above 0.000.
 - **[REALLOCATE]** (P1): Cap uplift in domain quintile 'domain_quintile_3' (AUUC_live=-0.0408, n=200); continue in 'domain_quintile_2' where ranking remains stronger.
+  - *Economics (sim):* net impact **$456.31**, saved spend **$455.00**
 - **[REALLOCATE]** (P1): Concept drift (PO-risk): observed uplift differs by slice — higher empirical ATE in 'domain_quintile_2' vs pairwise partner (ΔATE=0.1841 on empirical_ate); shift today's targeting budget toward the high-uplift slice after SRM/overlap checks.
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=0.0704).
 - **[REALLOCATE]** (P2): Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0297).
 - **[RELEARN]** (P2): X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+  - *Economics (sim):* net impact **$-2500.00**, saved spend **$0.00**
+
+- **Scenario economics (sim):** total net impact **$-2043.69**, saved spend **$455.00** across 6 rules.

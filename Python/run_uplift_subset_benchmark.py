@@ -25,6 +25,7 @@ from loco_auuc.benchmark_datasets import UpliftBatch, all_benchmarks  # noqa: E4
 from loco_auuc.data import split_ref_live  # noqa: E402
 from loco_auuc.learners import make_learner  # noqa: E402
 from loco_auuc.monitor import propensity_overlap_ess  # noqa: E402
+from fsds_sot.impact_receipt import build_uplift_rule_receipt
 from loco_auuc.subset_localization import run_uplift_subset_localization  # noqa: E402
 
 ART = ROOT / "artifacts"
@@ -351,8 +352,27 @@ def run_one_batch(batch: UpliftBatch, *, n_perm: int = 48, seed: int = 42) -> Di
         "layer1_narrative": _layer1_summary(report),
         "layer2_narrative": _layer2_summary(report),
         "business_rules": report["business_rules"],
+        "impact_receipts": [
+            build_uplift_rule_receipt(br, report) for br in report["business_rules"]
+        ],
+        "economics_summary": _economics_summary(report["business_rules"]),
     }
     return compact
+
+
+def _economics_summary(rules: List[Dict[str, Any]]) -> Dict[str, Any]:
+    total_net = 0.0
+    total_saved = 0.0
+    for br in rules:
+        econ = (br.get("evidence") or {}).get("economics") or {}
+        total_net += float(econ.get("estimated_net_impact_usd", 0.0))
+        total_saved += float(econ.get("estimated_saved_spend_usd", 0.0))
+    return {
+        "simulated": True,
+        "estimated_net_impact_usd_total": round(total_net, 2),
+        "estimated_saved_spend_usd_total": round(total_saved, 2),
+        "n_rules": len(rules),
+    }
 
 
 def write_markdown(results: List[Dict[str, Any]], path: Path) -> None:
@@ -386,6 +406,21 @@ def write_markdown(results: List[Dict[str, Any]], path: Path) -> None:
         lines.append("### Business rules (ops)")
         for br in r["business_rules"]:
             lines.append(f"- **[{br['action']}]** (P{br['priority']}): {br['rule']}")
+            econ = (br.get("evidence") or {}).get("economics")
+            if econ and econ.get("estimated_net_impact_usd"):
+                lines.append(
+                    f"  - *Economics (sim):* net impact **${econ['estimated_net_impact_usd']:.2f}**, "
+                    f"saved spend **${econ.get('estimated_saved_spend_usd', 0):.2f}**"
+                )
+        es = r.get("economics_summary") or {}
+        if es.get("estimated_net_impact_usd_total"):
+            lines.append("")
+            lines.append(
+                f"- **Scenario economics (sim):** total net impact "
+                f"**${es['estimated_net_impact_usd_total']:.2f}**, "
+                f"saved spend **${es.get('estimated_saved_spend_usd_total', 0):.2f}** "
+                f"across {es.get('n_rules', 0)} rules."
+            )
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

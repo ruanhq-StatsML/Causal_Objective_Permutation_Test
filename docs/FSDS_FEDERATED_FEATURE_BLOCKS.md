@@ -125,6 +125,16 @@ Tradeoff: large **|F_k|** → stable local normalization, higher upload (top-k s
 
 ---
 
+## 8b. Legal / Finance / Product agent blocks (GTM narrative)
+
+Cross-silo sales copilot demo with **impact receipts** and revenue-unlock framing:
+
+```bash
+cd Python && python3 demo_federated_legal_agent_blocks.py
+```
+
+See `docs/FSDS_FEDERATED_LEGAL_AGENT_BLOCKS.md` and `artifacts/federated_legal_agent_blocks.json`.
+
 ## 9. Run the federated-block demo
 
 ```bash

@@ -245,7 +245,7 @@ def attach_uplift_rule_economics(
             econ["estimated_saved_spend_usd"] = round(saved_spend, 2)
             if g_auuc is not None and g_auuc < 0:
                 econ["estimated_incremental_margin_usd"] = round(
-                    0.15 * n_treat * margin_usd * abs(g_auuc), 2
+                    0.15 * n_treat * margin_usd_per_conversion * abs(g_auuc), 2
                 )
             else:
                 econ["estimated_incremental_margin_usd"] = 0.0

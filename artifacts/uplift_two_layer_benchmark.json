@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-10-01T23:19:37.427430+00:00",
+  "generated_utc": "2026-10-03T02:21:49.227558+00:00",
   "runs": [
     {
       "dataset": "hillstrom",
@@ -221,6 +221,17 @@
               "n_live": 228,
               "auuc_live": 0.07034157196064278,
               "mean_domain_score": 0.8797478327289182
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "n_users_capped_est": 240,
+              "n_treatments_avoided_est": 84,
+              "estimated_saved_spend_usd": 546.0,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 546.0
             }
           }
         },
@@ -234,7 +245,14 @@
             "auuc_live": 0.032099391166390275,
             "drop_ref": -0.08678560396613327,
             "drop_live": -0.01669349597234191,
-            "drop_gap": 0.07009210799379137
+            "drop_gap": 0.07009210799379137,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -247,7 +265,14 @@
             "auuc_live": 0.018676528182577815,
             "drop_ref": 0.017893677328939796,
             "drop_live": -0.0032706329885294518,
-            "drop_gap": -0.021164310317469247
+            "drop_gap": -0.021164310317469247,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -263,7 +288,15 @@
             "hints": [
               "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
               "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
-            ]
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": -2500.0,
+              "note": "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+            }
           }
         },
         {
@@ -277,10 +310,140 @@
             "value_a": 0.11005291005291006,
             "value_b": 0.005720823798627012,
             "delta_a_minus_b": 0.10433208625428304,
-            "higher_uplift_subset": "domain_quintile_3"
+            "higher_uplift_subset": "domain_quintile_3",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         }
-      ]
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "778ce6a8-4c2",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": 546.0,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 546.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:40.405333+00:00"
+        },
+        {
+          "episode_id": "4c57c7a1-145",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:40.405393+00:00"
+        },
+        {
+          "episode_id": "76d7ba59-b0e",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:40.405412+00:00"
+        },
+        {
+          "episode_id": "a3061423-17b",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": -2500.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:40.405424+00:00"
+        },
+        {
+          "episode_id": "17ff6893-2a0",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "MONITOR",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p4_MONITOR"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:40.405435+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_net_impact_usd_total": -1954.0,
+        "estimated_saved_spend_usd_total": 546.0,
+        "n_rules": 5
+      }
     },
     {
       "dataset": "hillstrom_covariate_drift",
@@ -405,7 +568,14 @@
           "rule": "Pause or cap uplift targeting on LIVE until AUUC_live (-0.0181) recovers above 0.000.",
           "evidence": {
             "auuc_live_global": -0.018124682914907805,
-            "diagnosis": "concept_drift_or_tau_change"
+            "diagnosis": "concept_drift_or_tau_change",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -418,7 +588,14 @@
             "auuc_live": -0.007642203845410489,
             "drop_ref": -0.0012389602235416616,
             "drop_live": -0.010482479069497317,
-            "drop_gap": -0.009243518845955655
+            "drop_gap": -0.009243518845955655,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -431,7 +608,14 @@
             "auuc_live": -0.011608441697231846,
             "drop_ref": 0.005135127794137488,
             "drop_live": -0.00651624121767596,
-            "drop_gap": -0.011651369011813448
+            "drop_gap": -0.011651369011813448,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -447,10 +631,118 @@
             "hints": [
               "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
               "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
-            ]
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": -2500.0,
+              "note": "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+            }
           }
         }
-      ]
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "fc8665df-931",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:54.534589+00:00"
+        },
+        {
+          "episode_id": "96872072-ad7",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:54.534628+00:00"
+        },
+        {
+          "episode_id": "98af656e-9c2",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:54.534639+00:00"
+        },
+        {
+          "episode_id": "e2ae90bb-3e4",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": -2500.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T02:20:54.534649+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_net_impact_usd_total": -2500.0,
+        "estimated_saved_spend_usd_total": 0.0,
+        "n_rules": 4
+      }
     },
     {
       "dataset": "synthetic_covariate",
@@ -672,6 +964,17 @@
               "n_live": 176,
               "auuc_live": 0.09134932688802237,
               "mean_domain_score": 0.9004261363636363
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "n_users_capped_est": 200,
+              "n_treatments_avoided_est": 70,
+              "estimated_saved_spend_usd": 455.0,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 455.0
             }
           }
         },
@@ -685,7 +988,14 @@
             "auuc_live": -0.0032466432958659685,
             "drop_ref": -0.016085281377747986,
             "drop_live": 0.014448051366546779,
-            "drop_gap": 0.030533332744294765
+            "drop_gap": 0.030533332744294765,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -701,7 +1011,15 @@
             "hints": [
               "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
               "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
-            ]
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": -2500.0,
+              "note": "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+            }
           }
         },
         {
@@ -713,7 +1031,18 @@
             "n_live": 798,
             "lo": 0.15,
             "hi": 0.85,
-            "auuc_live": 0.022593077512736006
+            "auuc_live": 0.022593077512736006,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "n_users_capped_est": 798,
+              "n_treatments_avoided_est": 279,
+              "estimated_saved_spend_usd": 1813.5,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 1813.5
+            }
           }
         },
         {
@@ -727,10 +1056,140 @@
             "value_a": 0.048747090236888946,
             "value_b": -0.11879913255624824,
             "delta_a_minus_b": 0.1675462227931372,
-            "higher_uplift_subset": "domain_quintile_4"
+            "higher_uplift_subset": "domain_quintile_4",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         }
-      ]
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "fc454802-af2",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": 455.0,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 455.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:21.752926+00:00"
+        },
+        {
+          "episode_id": "c6519b94-cc8",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:21.752981+00:00"
+        },
+        {
+          "episode_id": "9be75afe-a6d",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": -2500.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:21.752994+00:00"
+        },
+        {
+          "episode_id": "b28ccec9-c1f",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": 1813.5,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 1813.5,
+          "rule_ids": [
+            "uplift_p3_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:21.753004+00:00"
+        },
+        {
+          "episode_id": "5e4b5f7e-38a",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "MONITOR",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p4_MONITOR"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:21.753014+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_net_impact_usd_total": -231.5,
+        "estimated_saved_spend_usd_total": 2268.5,
+        "n_rules": 5
+      }
     },
     {
       "dataset": "synthetic_concept",
@@ -942,7 +1401,14 @@
           "rule": "Pause or cap uplift targeting on LIVE until AUUC_live (-0.0026) recovers above 0.000.",
           "evidence": {
             "auuc_live_global": -0.0025911722872646314,
-            "diagnosis": "concept_drift_or_tau_change"
+            "diagnosis": "concept_drift_or_tau_change",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -961,6 +1427,17 @@
               "n_live": 143,
               "auuc_live": 0.051385574647545444,
               "mean_domain_score": 0.7819930069930069
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "n_users_capped_est": 200,
+              "n_treatments_avoided_est": 70,
+              "estimated_saved_spend_usd": 455.0,
+              "estimated_incremental_margin_usd": 1.31,
+              "estimated_net_impact_usd": 456.31
             }
           }
         },
@@ -975,7 +1452,14 @@
             "value_a": 0.07269076305220878,
             "value_b": -0.11144457783113249,
             "delta_a_minus_b": 0.18413534088334127,
-            "higher_uplift_subset": "domain_quintile_2"
+            "higher_uplift_subset": "domain_quintile_2",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -988,7 +1472,14 @@
             "auuc_live": -0.07303068662138561,
             "drop_ref": -0.02164751929918792,
             "drop_live": 0.07043951433412098,
-            "drop_gap": 0.09208703363330889
+            "drop_gap": 0.09208703363330889,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -1001,7 +1492,14 @@
             "auuc_live": 0.02706797293230395,
             "drop_ref": 0.002448805038024816,
             "drop_live": -0.02965914521956858,
-            "drop_gap": -0.032107950257593394
+            "drop_gap": -0.032107950257593394,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": 0.0
+            }
           }
         },
         {
@@ -1017,10 +1515,164 @@
             "hints": [
               "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
               "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
-            ]
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "estimated_net_impact_usd": -2500.0,
+              "note": "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+            }
           }
         }
-      ]
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "2926a207-b16",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227203+00:00"
+        },
+        {
+          "episode_id": "14c3625f-454",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": 455.0,
+            "estimated_incremental_margin_usd": 1.31
+          },
+          "estimated_net_gain_usd": 456.31,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227240+00:00"
+        },
+        {
+          "episode_id": "2e7fe624-3e4",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227252+00:00"
+        },
+        {
+          "episode_id": "7079b486-dba",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227262+00:00"
+        },
+        {
+          "episode_id": "e2eb4957-7a9",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227271+00:00"
+        },
+        {
+          "episode_id": "36882ce4-500",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": -2500.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T02:21:49.227281+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_net_impact_usd_total": -2043.69,
+        "estimated_saved_spend_usd_total": 455.0,
+        "n_rules": 6
+      }
     }
   ]
 }

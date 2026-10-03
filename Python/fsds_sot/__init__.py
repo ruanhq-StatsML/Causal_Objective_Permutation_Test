@@ -6,6 +6,7 @@ from .impact_receipt import (
     ImpactReceipt,
     build_agent_impact_receipt,
     build_uplift_rule_receipt,
+    build_federated_block_receipt,
     merge_receipt_into_intervention,
 )
 from .mcts_search import optimize_budget_for_success
@@ -65,5 +66,6 @@ __all__ = [
     "ImpactReceipt",
     "build_agent_impact_receipt",
     "build_uplift_rule_receipt",
+    "build_federated_block_receipt",
     "merge_receipt_into_intervention",
 ]

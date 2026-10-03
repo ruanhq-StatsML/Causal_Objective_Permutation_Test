@@ -23,6 +23,7 @@ class AgentPattern(str, Enum):
     MULTI_AGENT = "multi_agent_debate"
     RAG_BRANCH = "rag_per_chunk"
     SELF_CONSISTENCY = "self_consistency"
+    LANGGRAPH = "langgraph_checkpoint"
 
 
 @dataclass
@@ -141,6 +142,23 @@ def build_rag_multihop_trace(
     return SegmentTrace(AgentPattern.RAG_BRANCH, names, Z, q, trace)
 
 
+def build_langgraph_node_trace(
+    node_names: Sequence[str],
+    state_embs: np.ndarray,
+    *,
+    node_success: Optional[np.ndarray] = None,
+) -> SegmentTrace:
+    """
+    LangGraph-style checkpoints: one segment per executed graph node (state embedding).
+    """
+    Z = _normalize_rows(state_embs)
+    names = tuple(node_names)
+    q = node_success if node_success is not None else np.full(len(names), 0.74)
+    q = np.asarray(q, dtype=float)
+    trace = np.concatenate([Z.mean(axis=0), np.array([len(names), float(q.std()), float(q.min())])])
+    return SegmentTrace(AgentPattern.LANGGRAPH, names, Z, q, trace)
+
+
 def build_multi_agent_trace(
     role_names: Sequence[str],
     utterance_embs: np.ndarray,
@@ -182,4 +200,5 @@ def pattern_playbook() -> dict[str, str]:
         AgentPattern.MULTI_AGENT.value: "Down-weight redundant roles; merge by concept dedup.",
         AgentPattern.RAG_BRANCH.value: "Per-chunk L and retrieve k; parallel chunk expand.",
         AgentPattern.SELF_CONSISTENCY.value: "Dispersion on chain embeddings → adaptive sample count N.",
+        AgentPattern.LANGGRAPH.value: "Per-node checkpoint embed; re-run only drifted nodes; receipt on handoff.",
     }

@@ -19,7 +19,7 @@ Plus **(0) batch covariate monitoring** on trace features \(\Dold\) vs \(\Dnew\)
 | **Multi-agent debate** | Round × role (pro/con/judge) | Utterance embeddings | Agreement / task success | Merge weights; prune redundant agents |
 | **Orchestrator–workers** | Worker handoff messages | Worker output embedding | Downstream success | Route to worker with lowest shift on needed skill |
 | **SWE / code agent** | File region or edit hunk | Diff-context embedding | Tests pass | Re-run only hot files; cap edits on stable hunks |
-| **LangGraph / state machine** | Graph nodes | Node state vector | Edge success | Re-execute drifted nodes only |
+| **LangGraph / state machine** | Graph nodes | Node state vector | Edge success | Re-execute drifted nodes only — see `docs/FSDS_LANGGRAPH_INTEGRATION.md` |
 | **MCP / tool orchestra** | Per-tool call block | Tool args + result embed | Valid JSON / API OK | Tool budget; skip duplicate calls |
 
 ## Same math, different \(\phi\)

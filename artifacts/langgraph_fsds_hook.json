@@ -1,0 +1,106 @@
+{
+  "generated_at_utc": "2026-10-03T02:18:24.486501+00:00",
+  "pattern": "langgraph_checkpoint",
+  "playbook": "Per-node checkpoint embed; re-run only drifted nodes; receipt on handoff.",
+  "scenario": "tool_call node drifted on LIVE; FSDS raises budget on tool_call, trims stable nodes",
+  "gates": {
+    "mmd2": 0.0009831304379868122,
+    "domain_auc": 1.0,
+    "overlap_ok": true
+  },
+  "per_node_budget": [
+    {
+      "node": "router",
+      "L": 347,
+      "tier": "medium",
+      "shift": 0.8445760403107606
+    },
+    {
+      "node": "retrieve",
+      "L": 520,
+      "tier": "medium",
+      "shift": 0.9508599571275493
+    },
+    {
+      "node": "reason",
+      "L": 520,
+      "tier": "medium",
+      "shift": 0.999999998945574
+    },
+    {
+      "node": "tool_call",
+      "L": 475,
+      "tier": "small",
+      "shift": 0.836871882680417
+    },
+    {
+      "node": "respond",
+      "L": 477,
+      "tier": "small",
+      "shift": 0.661254750722494
+    }
+  ],
+  "economics": {
+    "baseline_latency_tokens": 520,
+    "fsds_latency_tokens": 520,
+    "latency_reduction_pct": 0.0,
+    "baseline_compute_cost_usd": 0.015600000000000001,
+    "fsds_compute_cost_usd": 0.00975,
+    "cost_savings_pct": 44.52247191011236,
+    "check_cost_usd": 0.01,
+    "net_savings_usd": 0.015349999999999999,
+    "fsds_overhead_usd": 0.0005,
+    "roi_multiple": 9.418126422043512,
+    "baseline_total_cost_usd": 0.0356,
+    "fsds_total_cost_usd": 0.02025,
+    "baseline_check_cost_usd": 0.02,
+    "expected_value_usd": 0.3133112528440373,
+    "baseline_expected_value_usd": 0.3098249999999503,
+    "net_economic_gain_usd": 0.018836252844087024,
+    "roi_pct": 5.453065888134829
+  },
+  "impact_receipt": {
+    "episode_id": "041a8a90-538",
+    "pattern": "langgraph_checkpoint",
+    "ref_window": "ref_checkpoints_50",
+    "live_window": "live_checkpoints_50",
+    "shift_summary": {
+      "mmd2": 0.0009831304379868122,
+      "domain_auc": 1.0,
+      "overlap_ok": true,
+      "overlap_ess": 0.9880993868678946
+    },
+    "action": "reallocate",
+    "kpi_before_after": {
+      "expected_value_usd": [
+        0.3098249999999503,
+        0.3133112528440373
+      ],
+      "usd_per_episode": [
+        0.0356,
+        0.02025
+      ],
+      "cost_savings_pct": 44.52247191011236,
+      "latency_reduction_pct": 0.0
+    },
+    "estimated_net_gain_usd": 0.018836252844087024,
+    "rule_ids": [
+      "agent_reallocate",
+      "reallocate",
+      "segment_budget_branch_1"
+    ],
+    "generated_at_utc": "2026-10-03T02:18:24.486550+00:00"
+  },
+  "langgraph_integration": {
+    "log_per_checkpoint": {
+      "node_id": "str",
+      "state_embedding": "float[d] or hash\u2192lookup",
+      "tool_ok": "bool",
+      "latency_ms": "int",
+      "batch_label_W": "0=REF window, 1=LIVE window"
+    },
+    "sidecar_schedule": "hourly fit_plan on rolling REF vs LIVE trace matrices",
+    "action_hook": "read intervention.impact_receipt \u2192 LangGraph conditional edge / skip node",
+    "example_conditional": "if receipt.shift_summary.mmd2 > tau: re-run tool_call only"
+  }
+}

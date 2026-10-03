@@ -115,6 +115,46 @@ def build_uplift_rule_receipt(
     return receipt.to_dict()
 
 
+def build_federated_block_receipt(
+    block_dict: Dict[str, Any],
+    global_mmd2: float,
+    *,
+    action_hint: str = "",
+    scenario: str = "federated_vertical_blocks",
+    ref_window: str = "ref_federated",
+    live_window: str = "live_federated",
+) -> Dict[str, Any]:
+    """Per-silo receipt for enterprise compliance / GTM."""
+    bid = str(block_dict.get("block_id", "block"))
+    drift = str(block_dict.get("drift_type", "unknown"))
+    net = 0.0
+    if drift in ("feature_drift", "compound"):
+        net = 15_000.0  # sim: avoided wrongful global shutdown
+    elif drift == "stable":
+        net = 500.0  # sim: uplink + monitor only
+
+    receipt = ImpactReceipt(
+        episode_id=f"fed_{bid}",
+        pattern=scenario,
+        ref_window=ref_window,
+        live_window=live_window,
+        shift_summary={
+            "block_mmd2": block_dict.get("mmd2"),
+            "block_domain_auc": block_dict.get("domain_auc"),
+            "overlap_ess": block_dict.get("overlap_ess"),
+            "drift_type": drift,
+            "global_mmd2": global_mmd2,
+        },
+        action=action_hint[:120] if action_hint else f"monitor_{bid}",
+        kpi_before_after={"po_risk_pvalue": block_dict.get("po_risk_pvalue")},
+        estimated_net_gain_usd=float(net),
+        rule_ids=[f"fed_block_{bid}", f"drift_{drift}"],
+    )
+    out = receipt.to_dict()
+    out["simulated"] = True
+    return out
+
+
 def merge_receipt_into_intervention(
     intervention: Dict[str, Any],
     receipt: Dict[str, Any],

@@ -139,8 +139,9 @@ Then the **full uplift ladder** applies: REALLOCATE before RELEARN; PO-risk gate
 | **P0** | `demo_fsds_multi_agent_economics.py` | Closes the only **quantified** gap vs SoT boss demo | **Done** → `artifacts/multi_agent_fsds_economics.json` |
 | **P0** | **Impact receipt** in `fsds_sot/impact_receipt.py` + `closed_loop.suggest_intervention` | Unifies agent + uplift ops logs for finance | **Done** |
 | **P1** | **Uplift $ model** via `attach_uplift_rule_economics` on business rules | Maps cap quintile → saved spend (sim defaults) | **Done** (sim); prod overrides margin/cost |
-| **P1** | **LangGraph / checkpoint** hook doc + sample | Wide adoption; segment = node state | Doc + 1 example |
-| **P1** | Federated demo narrative: **“legal agent block”** synthetic shift | Tells cross-silo story with existing 7-dataset bench | Medium |
+| **P1** | **LangGraph / checkpoint** hook doc + sample | Wide adoption; segment = node state | **Done** — `demo_fsds_langgraph_hook.py`, `docs/FSDS_LANGGRAPH_INTEGRATION.md` |
+| **P1** | Federated **legal/finance/product** agent blocks + receipts | Cross-silo GTM | **Done** — `demo_federated_legal_agent_blocks.py` |
+| **P1** | Uplift benchmark JSON/MD **economics_summary** | Boss-ready cap $ | **Done** — `run_uplift_subset_benchmark.py` |
 | **P2** | Multi-agent **debate early-stop** when dispersion ↓ (link self-consistency demo) | Direct token ROI | Medium |
 | **P2** | **A/B**: uniform swarm vs FSDS-routed swarm | Proof for enterprise procurement | Needs production traffic |
 | **P2** | ρ → ROI calibration (federated P2) | Tie attribution accuracy to campaign $ | Research + sim |
