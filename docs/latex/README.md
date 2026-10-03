@@ -63,6 +63,18 @@ xelatex fsds_embedding_mapping_mmd_zh.tex
 - [`fsds_embedding_mapping_mmd_zh.tex`](fsds_embedding_mapping_mmd_zh.tex) — 中文版（ctex）
 - Companion: [`fsds_embedding_logic_en.tex`](fsds_embedding_logic_en.tex), [`../FSDS_EMBEDDING_LOGIC_ZH.md`](../FSDS_EMBEDDING_LOGIC_ZH.md)
 
+## Full conclusion PO (English) — recommended executive PDF
+
+```bash
+cd Python && python3 export_fsds_results_tables_tex.py && python3 export_fsds_full_conclusion_monolithic.py
+cd ../docs/latex && pdflatex fsds_full_conclusion_po_en.tex
+# single file:
+pdflatex fsds_full_conclusion_po_en_monolithic.tex
+```
+
+- [`fsds_full_conclusion_po_en.tex`](fsds_full_conclusion_po_en.tex) — **C1–C8 conclusions**, incremental table, appendices R1–R10b
+- [`fsds_full_conclusion_po_en_monolithic.tex`](fsds_full_conclusion_po_en_monolithic.tex) — tables inlined
+
 ## Full scenario PO (English, uplift + agent collaboration, tables R1–R9)
 
 **Recommended full PDF:**
