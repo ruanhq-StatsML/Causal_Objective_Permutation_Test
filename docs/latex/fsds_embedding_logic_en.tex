@@ -1,0 +1,84 @@
+% Embedding contract for FSDS agent tracks (Z vs X, ReAct, multi-agent)
+% Compile: pdflatex fsds_embedding_logic_en.tex
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{FSDS Agent Embedding Logic:\\
+Requirements for $Z$ (Segments) vs $X$ (Batch Traces)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+FSDS agent integration uses \textbf{two embedding layers}: segment matrix $Z\in\mathbb{R}^{B\times d}$ drives \emph{within-episode} budgets, while episode vectors $X\in\mathbb{R}^{p}$ (built from $\mathrm{mean}(Z)$ plus scalars) drive \emph{REF vs LIVE} batch monitoring.
+This note specifies production requirements for ReAct and multi-agent debate---the patterns called out as most practical in the full scenario PO.
+\end{abstract}
+
+\section{Two layers (do not merge)}
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Object & Shape & Consumer & Role \\
+\midrule
+$Z$ & $(B,d)$ & \texttt{allocate\_branch\_budgets} & Per-segment shift, $L_b$, tier, checks \\
+$X$ & $(n,p)$ batches & \texttt{covariate\_attribution} & MMD$^2$, domain AUC, VIMP on $W$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Requirement E0:} Every episode logs both $Z$ and one row of $X$; sidecar stacks rows into $X_{\mathrm{ref}}$, $X_{\mathrm{live}}$.
+
+\section{Building $Z$}
+Each row is L2-normalized (\texttt{\_normalize\_rows} in \texttt{applications.py}):
+\[
+\tilde{Z}_b = \frac{Z_b}{\|Z_b\|_2+\epsilon}.
+\]
+\paragraph{ReAct ($B=3$).} Rows: thought, action, observation embeddings (dim $d$ fixed across production).
+\paragraph{Multi-agent ($B=3$).} Rows: pro, con, judge \emph{utterance} embeddings; LIVE demos inject drift on con.
+
+\section{Building $X$ from $Z$}
+Pattern-specific \texttt{trace\_features} (concatenation contract):
+\begin{align*}
+X_{\mathrm{ep}} &= \big[\;\mathrm{mean}_b(\tilde{Z}_b)\;;\;\text{scalars}\;\big] \in \mathbb{R}^{p}, \\
+\text{scalars}_{\mathrm{ReAct}} &= [\;B,\;\mathrm{mean}(q),\;\min(q)\;], \\
+\text{scalars}_{\mathrm{MA}} &= [\;B,\;\mathrm{std}(\tilde{Z}),\;0\;].
+\end{align*}
+\textbf{Requirements E1--E3:} Fixed $p$ per pattern; same encoder for REF/LIVE; no LIVE-fitted normalization leaking into REF.
+
+\section{Within-episode shift scores}
+Reference centroid $c=\mathrm{mean}_b(\tilde{Z}_b)$,
+\[
+s_b = \frac{\|\tilde{Z}_b-c\|_2}{\max_{b'}\|\tilde{Z}_{b'}-c\|_2}.
+\]
+Budget (see \texttt{budget.py}):
+\[
+L_b = \mathrm{clip}(\kappa\, s_b\, q_b\, \mathrm{need}_b,\, L_{\min,b},\, C_{\mathrm{lat}}).
+\]
+ReAct: high $s_{\mathrm{obs}}$ $\Rightarrow$ more checks on observation, trim thought/action $L_b$.
+Multi-agent: high $s_{\mathrm{con}}$ $\Rightarrow$ smaller tier on con; judge keeps floor tokens (Table~R10b in full PO).
+
+\section{Multi-agent: two tensor contracts}
+\begin{itemize}[nosep]
+  \item \textbf{Micro (FSDS):} $Z\in\mathbb{R}^{3\times d}$ for the round you will execute; \texttt{fit\_agent\_plan}.
+  \item \textbf{Macro (early-stop):} $E\in\mathbb{R}^{R\times B\times d}$ round--role embeddings; \texttt{debate\_early\_stop\_round} uses inter-round centroid dispersion.
+\end{itemize}
+Do not feed $(R,B,d)$ into \texttt{fit\_plan} as $Z$; roles for budgeting are the current-round $(B,d)$ slice.
+
+\section{Production checklist}
+\begin{enumerate}
+  \item Fixed encoder, dimension $d$; store $\tilde{Z}$ and $X_{\mathrm{ep}}$ per episode.
+  \item Rolling REF/LIVE windows of $X$; hourly/daily \texttt{fit\_agent\_plan}.
+  \item Debate: log $E$ each round; run early-stop before round $r{+}1$.
+  \item Validate: inject drift on one row of $Z$ only $\Rightarrow$ argmax$_b s_b$ matches; $X$ batches show MMD$^2>0$.
+\end{enumerate}
+
+\paragraph{Code.}
+\texttt{fsds\_sot/applications.py}, \texttt{pipeline.py}, \texttt{demo\_fsds\_agent\_collaboration\_suite.py}.
+
+\paragraph{Chinese mirror.}
+\texttt{docs/FSDS\_EMBEDDING\_LOGIC\_ZH.md}.
+
+\end{document}

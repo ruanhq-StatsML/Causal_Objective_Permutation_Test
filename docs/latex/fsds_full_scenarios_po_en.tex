@@ -44,6 +44,13 @@ Stacking \texttt{debate\_early\_stop\_round} adds macro savings when round centr
 \paragraph{Incremental value rule (all tracks).}
 Diagnostics (MMD, domain AUC, overlap) \emph{gate}; dollars attach when \texttt{fit\_agent\_plan} budgets execute and receipts log \texttt{rule\_ids}.
 
+\section{Embedding logic (requirements for ReAct and multi-agent)}
+\label{sec:embedding}
+FSDS uses \textbf{two layers}: segment matrix $Z\in\mathbb{R}^{B\times d}$ (per thought/action/obs or pro/con/judge) for \emph{within-episode} budgets, and episode vectors $X=\texttt{trace\_features}$ stacked into REF/LIVE batches for \emph{between-window} MMD/domain AUC.
+Rows of $Z$ are L2-normalized; $\texttt{trace\_features}=\mathrm{concat}(\mathrm{mean}(Z),\ \text{scalars})$.
+Multi-agent early-stop uses a separate tensor $(R,B,d)$ over debate rounds---not the same as budgeting $Z$.
+Full specification: \texttt{docs/latex/fsds\_embedding\_logic\_en.tex} and \texttt{docs/FSDS\_EMBEDDING\_LOGIC\_ZH.md}.
+
 \section{ReAct: practical deployment elaboration}
 \label{sec:react-practical}
 
