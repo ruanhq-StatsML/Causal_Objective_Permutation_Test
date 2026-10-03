@@ -159,6 +159,39 @@ def build_langgraph_node_trace(
     return SegmentTrace(AgentPattern.LANGGRAPH, names, Z, q, trace)
 
 
+def debate_inter_round_dispersion(round_role_embs: np.ndarray) -> float:
+    """
+    Multi-agent debate: (R, B, d) utterance embeddings across R rounds and B roles.
+
+    Uses per-round centroids (mean over roles) then dispersion across rounds —
+    falls as pro/con/judge converge, unlike pooling all roles (always high).
+    """
+    R = np.asarray(round_role_embs, dtype=float)
+    if R.ndim != 3 or R.shape[0] < 2:
+        return 1.0
+    centroids = _normalize_rows(R.mean(axis=1))
+    return chain_dispersion(centroids)
+
+
+def debate_early_stop_round(
+    round_role_embs: np.ndarray,
+    *,
+    max_rounds: int = 5,
+    dispersion_target: float = 0.14,
+    min_rounds: int = 2,
+) -> int:
+    """Return recommended stop round in [min_rounds, max_rounds]."""
+    R = np.asarray(round_role_embs, dtype=float)
+    n = min(max_rounds, R.shape[0])
+    stop = n
+    for r in range(min_rounds - 1, n):
+        disp = debate_inter_round_dispersion(R[: r + 1])
+        if disp <= dispersion_target:
+            stop = r + 1
+            break
+    return int(stop)
+
+
 def build_multi_agent_trace(
     role_names: Sequence[str],
     utterance_embs: np.ndarray,

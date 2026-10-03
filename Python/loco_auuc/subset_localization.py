@@ -240,6 +240,7 @@ def attach_uplift_rule_economics(
         if rule.action in ("REALLOCATE", "REFRESH_REF") and n_cap > 0:
             n_treat = max(1, int(n_cap * treat_rate))
             saved_spend = n_treat * treatment_cost_usd
+            econ["econ_bucket"] = "opex"
             econ["n_users_capped_est"] = n_cap
             econ["n_treatments_avoided_est"] = n_treat
             econ["estimated_saved_spend_usd"] = round(saved_spend, 2)
@@ -254,9 +255,12 @@ def attach_uplift_rule_economics(
                 2,
             )
         elif rule.action == "RELEARN":
-            econ["estimated_net_impact_usd"] = -2500.0
-            econ["note"] = "CAPEX ticket; net positive only if post-holdout AUUC SLA restored"
+            econ["econ_bucket"] = "capex_ticket"
+            econ["estimated_capex_ticket_usd"] = 2500.0
+            econ["estimated_net_impact_usd"] = 0.0
+            econ["note"] = "CAPEX ticket (excluded from OPEX scenario total); ROI after holdout AUUC SLA"
         else:
+            econ["econ_bucket"] = "neutral"
             econ["estimated_net_impact_usd"] = 0.0
         ev["economics"] = econ
         rule.evidence = ev

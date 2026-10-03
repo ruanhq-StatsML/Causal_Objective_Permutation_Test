@@ -142,7 +142,9 @@ Then the **full uplift ladder** applies: REALLOCATE before RELEARN; PO-risk gate
 | **P1** | **LangGraph / checkpoint** hook doc + sample | Wide adoption; segment = node state | **Done** — `demo_fsds_langgraph_hook.py`, `docs/FSDS_LANGGRAPH_INTEGRATION.md` |
 | **P1** | Federated **legal/finance/product** agent blocks + receipts | Cross-silo GTM | **Done** — `demo_federated_legal_agent_blocks.py` |
 | **P1** | Uplift benchmark JSON/MD **economics_summary** | Boss-ready cap $ | **Done** — `run_uplift_subset_benchmark.py` |
-| **P2** | Multi-agent **debate early-stop** when dispersion ↓ (link self-consistency demo) | Direct token ROI | Medium |
+| **P2** | Multi-agent **debate early-stop** when dispersion ↓ | Direct token ROI | **Done** — `demo_fsds_multi_agent_debate_early_stop.py` |
+| **P2** | **OPEX vs CAPEX** uplift economics split | Boss-readable scenario $ | **Done** — `uplift_economics.summarize_rule_economics` |
+| **P2** | One-shot **business impact pack** + dashboard PNG | Sales deck | **Done** — `run_fsds_business_impact_pack.py` |
 | **P2** | **A/B**: uniform swarm vs FSDS-routed swarm | Proof for enterprise procurement | Needs production traffic |
 | **P2** | ρ → ROI calibration (federated P2) | Tie attribution accuracy to campaign $ | Research + sim |
 

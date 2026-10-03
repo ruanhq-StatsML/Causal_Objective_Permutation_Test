@@ -10,6 +10,8 @@ pdflatex fsds_monitoring_full_standalone.tex
 
 **Master file:** [`fsds_monitoring_full_standalone.tex`](fsds_monitoring_full_standalone.tex)
 
+**Single file (all `\input` inlined, copy-paste friendly):** [`fsds_monitoring_full_monolithic.tex`](fsds_monitoring_full_monolithic.tex)
+
 - **Part I:** Two-batch uplift (`uplift_fsds_two_batch_formulation.tex`, benchmark tables, subset localization results, subset insights)
 - **Part II:** Federated cross-block FSDS (communication efficiency, protocol, 5-dataset results)
 

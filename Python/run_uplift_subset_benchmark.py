@@ -26,6 +26,7 @@ from loco_auuc.data import split_ref_live  # noqa: E402
 from loco_auuc.learners import make_learner  # noqa: E402
 from loco_auuc.monitor import propensity_overlap_ess  # noqa: E402
 from fsds_sot.impact_receipt import build_uplift_rule_receipt
+from fsds_sot.uplift_economics import summarize_rule_economics
 from loco_auuc.subset_localization import run_uplift_subset_localization  # noqa: E402
 
 ART = ROOT / "artifacts"
@@ -355,24 +356,9 @@ def run_one_batch(batch: UpliftBatch, *, n_perm: int = 48, seed: int = 42) -> Di
         "impact_receipts": [
             build_uplift_rule_receipt(br, report) for br in report["business_rules"]
         ],
-        "economics_summary": _economics_summary(report["business_rules"]),
+        "economics_summary": summarize_rule_economics(report["business_rules"]),
     }
     return compact
-
-
-def _economics_summary(rules: List[Dict[str, Any]]) -> Dict[str, Any]:
-    total_net = 0.0
-    total_saved = 0.0
-    for br in rules:
-        econ = (br.get("evidence") or {}).get("economics") or {}
-        total_net += float(econ.get("estimated_net_impact_usd", 0.0))
-        total_saved += float(econ.get("estimated_saved_spend_usd", 0.0))
-    return {
-        "simulated": True,
-        "estimated_net_impact_usd_total": round(total_net, 2),
-        "estimated_saved_spend_usd_total": round(total_saved, 2),
-        "n_rules": len(rules),
-    }
 
 
 def write_markdown(results: List[Dict[str, Any]], path: Path) -> None:
@@ -413,14 +399,19 @@ def write_markdown(results: List[Dict[str, Any]], path: Path) -> None:
                     f"saved spend **${econ.get('estimated_saved_spend_usd', 0):.2f}**"
                 )
         es = r.get("economics_summary") or {}
-        if es.get("estimated_net_impact_usd_total"):
+        if es.get("estimated_opex_net_usd") is not None:
             lines.append("")
             lines.append(
-                f"- **Scenario economics (sim):** total net impact "
-                f"**${es['estimated_net_impact_usd_total']:.2f}**, "
+                f"- **Scenario OPEX (sim):** net **${es.get('estimated_opex_net_usd', 0):.2f}**, "
                 f"saved spend **${es.get('estimated_saved_spend_usd_total', 0):.2f}** "
-                f"across {es.get('n_rules', 0)} rules."
+                f"({es.get('n_opex_rules', 0)} cap/realloc rules)."
             )
+            if es.get("estimated_capex_tickets_usd"):
+                lines.append(
+                    f"- **RELEARN CAPEX tickets (separate):** "
+                    f"**${es['estimated_capex_tickets_usd']:.2f}** "
+                    f"({es.get('n_capex_tickets', 0)} ticket(s), not in OPEX net)."
+                )
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

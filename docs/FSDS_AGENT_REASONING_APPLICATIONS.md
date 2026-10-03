@@ -16,7 +16,7 @@ Plus **(0) batch covariate monitoring** on trace features \(\Dold\) vs \(\Dnew\)
 | **RAG agent** | One segment per retrieved chunk | Chunk embedding in answer context | Citation hit | top-\(k\) per segment; drop redundant chunks |
 | **Self-Consistency** | Each sampled chain | Chain final-state embedding | Vote margin | Adaptive \(N\); stop when dispersion low |
 | **Reflexion** | Draft vs critique vs revise | Iteration embeddings | Critic score | Stop early; rewrite only shifted spans |
-| **Multi-agent debate** | Round × role (pro/con/judge) | Utterance embeddings | Agreement / task success | Merge weights; prune redundant agents |
+| **Multi-agent debate** | Round × role (pro/con/judge) | Utterance embeddings | Agreement / task success | Merge weights; prune redundant agents; **early-stop** when round centroids converge (`docs/FSDS_DEBATE_EARLY_STOP.md`) |
 | **Orchestrator–workers** | Worker handoff messages | Worker output embedding | Downstream success | Route to worker with lowest shift on needed skill |
 | **SWE / code agent** | File region or edit hunk | Diff-context embedding | Tests pass | Re-run only hot files; cap edits on stable hunks |
 | **LangGraph / state machine** | Graph nodes | Node state vector | Edge success | Re-execute drifted nodes only — see `docs/FSDS_LANGGRAPH_INTEGRATION.md` |
