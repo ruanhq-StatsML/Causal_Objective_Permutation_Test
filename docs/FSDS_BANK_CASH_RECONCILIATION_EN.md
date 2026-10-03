@@ -11,3 +11,5 @@ See **Chinese master**: `docs/FSDS_BANK_CASH_RECONCILIATION_ZH.md`.
 **Prepaid API:** Savings may skip a top-up before checking balance moves.
 
 **Acceptance:** Match `baseline_api_usd − actual` to receipt `rule_ids` within tolerance at month close.
+
+**Credit-risk fulfillment PO (English LaTeX):** `docs/latex/fsds_treasury_credit_risk_po.tex` — treasury Eq. for checking balance + limit-increase cap scenario on the same two-batch spine.
