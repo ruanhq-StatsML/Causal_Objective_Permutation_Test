@@ -170,3 +170,8 @@ Uplift 的 **ranking** 在 **τ̂(X_customer)**；agent 的 **ranking** 在 **se
 | MC 对比 | `demo_fsds_agent_collaboration_suite.py` |
 
 英文 spec：`docs/latex/fsds_embedding_logic_en.tex`。
+
+**映射表 + MMD/预算公式（中英 LaTeX）：**
+
+- 中文：`docs/latex/fsds_embedding_mapping_mmd_zh.tex`（推荐 `xelatex`）
+- 英文：`docs/latex/fsds_embedding_mapping_mmd_en.tex`

@@ -52,6 +52,17 @@ cd docs/latex && pdflatex fsds_treasury_credit_risk_po.tex
 
 File: [`fsds_treasury_credit_risk_po.tex`](fsds_treasury_credit_risk_po.tex) — checking-account reconciliation (retained vs cash in), `impact_receipt` GL mapping, and credit origination fulfillment via the same two-batch uplift spine.
 
+## Embedding mapping tables + MMD computation (EN + 中文 LaTeX)
+
+```bash
+cd docs/latex && pdflatex fsds_embedding_mapping_mmd_en.tex
+xelatex fsds_embedding_mapping_mmd_zh.tex
+```
+
+- [`fsds_embedding_mapping_mmd_en.tex`](fsds_embedding_mapping_mmd_en.tex) — ReAct / multi-agent / RAG / LangGraph maps; eq. MMD$^2$, shift, $L_b$
+- [`fsds_embedding_mapping_mmd_zh.tex`](fsds_embedding_mapping_mmd_zh.tex) — 中文版（ctex）
+- Companion: [`fsds_embedding_logic_en.tex`](fsds_embedding_logic_en.tex), [`../FSDS_EMBEDDING_LOGIC_ZH.md`](../FSDS_EMBEDDING_LOGIC_ZH.md)
+
 ## Full scenario PO (English, uplift + agent collaboration, tables R1–R9)
 
 **Recommended full PDF:**

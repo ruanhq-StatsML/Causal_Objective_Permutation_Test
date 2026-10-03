@@ -1,0 +1,117 @@
+% 生产映射表（ReAct 等）与 MMD / 预算计算逻辑 — 中文版
+% 编译: xelatex fsds_embedding_mapping_mmd_zh.tex  (推荐)
+% 或: pdflatex + ctex 环境
+\documentclass[11pt,a4paper]{ctexart}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{FSDS 嵌入映射表与计算逻辑\\[0.2em]
+\large 与编码器无关：最后一层 / 池化 / 句向量仅约定 $d$ 与行语义}
+\author{仓库契约（\texttt{applications.py}、\texttt{attribution.py}）}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\textbf{用什么神经网络表示不重要}（最后一层 hidden、层均值、外部 sentence embedding 均可），生产只需固定维度 $d$，并按逻辑段映射到 $Z$ 的每一行。
+本文给出直观的 \textbf{ReAct 及其他 pattern 参数映射表}，以及代码中实现的 \textbf{MMD}$^2$、overlap ESS、episode 内 \textbf{shift/预算} 公式。
+当 LIVE 窗在正确 segment 上注入漂移时，$X$ 批间 MMD 升高，且 $Z$ 上 shift 峰值与该段一致——与 demo 验收一致。
+\end{abstract}
+
+\section{两层契约（简述）}
+\begin{itemize}[nosep]
+  \item $Z\in\mathbb{R}^{B\times d}$：每段/角色/hop/节点一行，行 L2 归一化。
+  \item $X_{\mathrm{ep}}$：\texttt{trace\_features} $=$ concat$(\mathrm{mean}(Z),$ 标量$)$；REF/LIVE 两批做监控。
+  \item 辩论 early-stop：独立张量 $E\in\mathbb{R}^{R\times B\times d}$，\textbf{不能}代替预算用的 $Z$。
+\end{itemize}
+
+\section{ReAct 映射表（生产字段 $\rightarrow$ 代码）}
+\label{tab:react-map-zh}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.20\textwidth}p{0.10\textwidth}p{0.22\textwidth}p{0.18\textwidth}p{0.22\textwidth}@{}}
+\toprule
+生产日志字段 & $Z$ 行 $b$ & 代码参数 & \texttt{trace\_features} & 预算杠杆 \\
+\midrule
+规划/推理状态向量 & 0 & \texttt{thought\_emb} & $\mathrm{mean}(Z)$ 块 & $L_0$, tier, checks \\
+工具调用+参数嵌入 & 1 & \texttt{action\_emb} & $\mathrm{mean}(Z)$ 块 & $L_1$ \\
+API/检索/环境回包 & 2 & \texttt{observation\_emb} & $\mathrm{mean}(Z)$；min$(q)$ & $L_2$（漂移常在此） \\
+可选重复步 & $3+$ & \texttt{extra\_steps} & 标量 $B$ & 每行独立预算 \\
+段质量 & $q_b$ & \texttt{tool\_ok}$\rightarrow$\texttt{quality} & mean$(q)$ & 乘在 $L_b$ 上 \\
+业务关键度 & --- & \texttt{need\_weights} & --- & 如 observation need 更大 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{策略提示：} observation 漂移 $\Rightarrow$ 只加厚 row~2 的 check/tier，勿均匀加大 thought（playbook：Budget Observation vs Thought）。
+
+\section{其他 pattern 映射表}
+
+\subsection{多 Agent 辩论}
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+生产 & $Z$ 行 & 代码 & 说明 \\
+\midrule
+正方发言嵌入 & 0 & \texttt{build\_multi\_agent\_trace} & 通常较稳 \\
+反方发言嵌入 & 1 & 同上 & bench 中 LIVE 漂移 \\
+裁判/仲裁 & 2 & 同上 & 高 need、token 地板 \\
+第 $r$ 轮各 role & $(R,B,d)$ & \texttt{debate\_early\_stop\_round} & 宏观停轮，非预算 $Z$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{RAG 多跳}
+每跳聚合向量 $\rightarrow$ $Z$ 的一行；\texttt{build\_rag\_multihop\_trace}；漂移常打在 retrieve$\rightarrow$reason 之间的 hop。
+
+\subsection{LangGraph}
+每个 checkpoint 节点状态 $\rightarrow$ 一行 $Z$；\texttt{build\_langgraph\_node\_trace}；demo 在 \texttt{tool\_call} 注入漂移，条件边只重试该节点。
+
+\subsection{Plan--execute / Self-consistency}
+Plan：每步计划嵌入一行。Self-consistency：每条 chain 样本一行；dispersion 驱动 \texttt{adaptive\_sample\_count}（与 FSDS 预算并列的样本数杠杆）。
+
+\section{Episode 内计算：shift 与预算}
+行归一化 $\tilde{Z}_b = Z_b/\|Z_b\|_2$，质心 $c=\frac{1}{B}\sum_b \tilde{Z}_b$，
+\begin{equation}
+\label{eq:shift-zh}
+s_b = \frac{\|\tilde{Z}_b - c\|_2}{\max_{b'} \|\tilde{Z}_{b'} - c\|_2 + \epsilon}.
+\end{equation}
+记 $\bar{s}_b = s_b/\sum_{b'} s_{b'}$，质量 $q_b$，关键度 $\eta_b$，
+\begin{equation}
+\label{eq:budget-zh}
+L_b = \mathrm{clip}\big(\kappa\,\bar{s}_b\, q_b\, \eta_b,\; L_{\min,b},\; C_{\mathrm{lat}}\big).
+\end{equation}
+check 与 tier 随 $\bar{s}_b$ 与 $(1-q_b)$ 放大（\texttt{budget.py}）。
+
+\section{批间监控：$X$ 上 MMD$^2$（REF vs LIVE）}
+RBF 核 $k_\sigma(u,v)=\exp(-\|u-v\|^2/(2\sigma^2))$，实现 \texttt{rbf\_mmd2}（默认 $\sigma=1$）：
+\begin{equation}
+\label{eq:mmd-zh}
+\widehat{\mathrm{MMD}}^2
+= \frac{1}{n_0^2}\sum_{i,i'} k(X^0_i,X^0_{i'})
++ \frac{1}{n_1^2}\sum_{j,j'} k(X^1_j,X^1_{j'})
+- \frac{2}{n_0 n_1}\sum_{i,j} k(X^0_i,X^1_j).
+\end{equation}
+\textbf{含义：}\eqref{eq:mmd-zh} 越大，说明 REF 窗与 LIVE 窗的 trace 分布差异越大（「MMD 升高」即指此量上升）。
+
+同批数据上 RF 预测 $W\in\{\mathrm{REF},\mathrm{LIVE}\}$，得 domain AUC、列 VIMP；对 $\hat{e}(W|X)$ 做 overlap ESS，低于阈值则先 REFRESH 再 cap（\texttt{covariate\_attribution}）。
+
+\section{注入漂移时的验收三联}
+\begin{enumerate}
+  \item \textbf{段级：}只扰动 $Z$ 的第 $b^\*$ 行 $\Rightarrow$ $\arg\max_b s_b = b^\*$（式 \eqref{eq:shift-zh}）。
+  \item \textbf{批级：}LIVE 窗 episode 同样扰动 $\Rightarrow$ 式 \eqref{eq:mmd-zh} 相对 REF 升高。
+  \item \textbf{策略级：}\texttt{fit\_agent\_plan} 相对 uniform 提高 $L_{b^\*}$/checks；写 \texttt{impact\_receipt}。
+\end{enumerate}
+
+\section{代码索引}
+\texttt{applications.py}（建 $Z$/$X$）；\texttt{attribution.py}（MMD/ESS）；\texttt{pipeline.py}、\texttt{budget.py}（预算）；\texttt{demo\_fsds\_agent\_collaboration\_suite.py}（MC）。
+
+\paragraph{英文版：}\texttt{fsds\_embedding\_mapping\_mmd\_en.tex}。
+
+\end{document}
