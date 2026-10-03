@@ -1,0 +1,179 @@
+% FSDS on agent reasoning: extended applications and closed-loop self-iteration
+% Compile standalone or \input into FSDS_SoT_complete_writeup.tex after macros.
+
+\section{Agent-reasoning applications beyond SoT scheduling}
+\label{sec:agent-apps}
+
+FSDS treats each agent episode as a structured feature object and compares a
+reference batch to a live batch. Skeleton-of-Thought (SoT) is one instance:
+branch embeddings supply Object~1 (topology) and Object~2 (budget). The same
+pattern applies wherever an agent exposes \emph{segmentable} states---steps,
+tool observations, sub-agents, or memory windows---and a batch label
+(old vs.\ new traffic, model version, or policy regime).
+
+\begin{table}[t]
+\centering
+\small
+\caption{Agent-reasoning application map. Each row uses FSDS for monitoring
+(covariate $\VIMP$) and, when $Y$ is defined, concept attribution; scheduling
+actions follow the separation principle ($\CS$ $\to$ structure/route;
+$\CD$ $\to$ content/scoring/verify).}
+\label{tab:agent-apps}
+\begin{tabular}{@{}p{0.18\linewidth}p{0.26\linewidth}p{0.22\linewidth}p{0.26\linewidth}@{}}
+\toprule
+Pattern & Natural batch / segments & Proxy $Y$ & FSDS-driven action \\
+\midrule
+SoT / plan--execute &
+Skeleton branches $\{\z_b\}$ &
+Verifier, task success &
+Suggested $K$, merge/order; $L_b$, tier, checks \\
+ReAct / tool loop &
+Each \texttt{Observation} span &
+Tool validity, grounding &
+Continue vs.\ re-call tool; block noisy obs \\
+Multi-agent &
+Per-agent message embeddings &
+Handoff success, subtask $Y$ &
+Which agent to activate; merge conflicts \\
+Self-consistency &
+$N$ sample chains &
+Vote margin, dispersion &
+Adaptive $N$; targeted resampling \\
+Reflexion &
+Draft vs.\ critique embeddings &
+Self-critic score &
+Iterate again? rewrite which span \\
+RAG agent &
+Per retrieved chunk / sub-query &
+Citation support &
+Re-retrieve depth; drop bad chunks \\
+Supervisor--worker &
+Worker outputs at step $t$ &
+Supervisor approval &
+Re-route worker; adjust parallel width \\
+Streaming memory &
+Time windows of embeddings &
+PRM step score &
+KV invalidate; re-encode modality \\
+Human escalation &
+High-risk cells (Panel~3) &
+Escalation outcome &
+Abstain / human-in-the-loop trigger \\
+Speculative drafts &
+Draft vs.\ verify embeddings &
+Accept/reject draft &
+Which draft to expand; early reject \\
+Code agent &
+Edit spans / test logs &
+Tests pass, lint &
+Re-run tests; patch which file span \\
+Tool registry &
+Call features vs.\ schema version &
+Parse/422 errors &
+Route to fallback API; freeze tool \\
+Multi-hop RAG &
+Hop-$k$ chunk embeddings &
+Answer groundedness &
+Stop hops; widen query at hop $k^\star$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Opportunity criteria.} A new application is a good fit when
+(i)~segments are cheap to embed or featurise online,
+(ii)~a reference batch exists (rolling window, canary, or A/B control),
+(iii)~an action lever exists (budget, route, verify, retrieve, freeze), and
+(iv)~overlap between batches is sufficient or covariate-only mode is acceptable.
+
+\section{Closed-loop self-iteration}
+\label{sec:closed-loop}
+
+Production use is not a one-shot attribution. We close the loop: \emph{measure
+$\to$ attribute $\to$ act $\to$ re-measure $\to$ escalate or accept}. This is the
+self-iteration protocol that ties batch monitoring (procedure~0), SoT topology
+(procedure~1), budget execution (procedure~2), merge (procedure~3), and fallback
+(procedure~4) into a single control cycle.
+
+\begin{algorithm}[t]
+\caption{FSDS closed-loop iteration (per traffic window)}
+\label{alg:closed-loop}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} reference window $\Dold$, live window $\Dnew$, policy $\pi_0$
+\STATE Extract $\X$, optional $Y$; fit covariate attribution; test overlap
+\IF{overlap poor}
+  \STATE Report covariate-only; $\pi \leftarrow \pi_{\mathrm{safe}}$; \textbf{return}
+\ENDIF
+\STATE Localise drift shares on segments (nodes, branches, agents, windows)
+\STATE Select intervention $a \sim \pi(\cdot \mid g)$ from cost ladder
+\STATE Apply $a$ (re-plan, budget, route, retrieve, verify, rollback)
+\STATE Collect $\Dnew'$ on the next window; re-run FSDS($\Dold$, $\Dnew'$)
+\IF{target drift share $\downarrow$ and KPI non-inferior}
+  \STATE \textbf{Accept} $a$; set $\Dold \leftarrow$ decay($\Dold$, $\Dnew'$)
+\ELSE
+  \STATE \textbf{Escalate} one rung on ladder or invoke fallback
+\ENDIF
+\STATE Persist $(g, a, \Delta\mathrm{KPI})$ for AGOD / offline retrain (slow loop)
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Intervention ladder (self-iteration order).}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Reallocate} --- $L_b$, tier, checks, retrieval depth (cheapest).
+  \item \textbf{Re-topology} --- merge, reorder, change $K_{\mathrm{final}}$, disable parallel.
+  \item \textbf{Re-ground} --- re-retrieve, tool re-call, verify/backtrack span.
+  \item \textbf{Re-configure} --- prompt/template, rollback model version.
+  \item \textbf{Re-learn} --- AGOD adapter update, targeted data collection.
+\end{enumerate}
+Each iteration consumes one window; escalation stops when overlap fails or the
+ladder is exhausted (abstain / human).
+
+\paragraph{Self-iteration metrics.} Track (i)~drift share on the targeted feature
+group, (ii)~KPI vs.\ pre-intervention baseline (success, span, cost),
+(i)~intervention acceptance rate, (iv)~mean rungs to stabilise. A stable system
+shows decaying drift share without KPI regression---evidence that the loop is
+converging, not chasing noise.
+
+\section{Implemented self-iteration stack (code)}
+\label{sec:impl-loop}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Repository modules for closed-loop agent reasoning (branch
+\texttt{cursor/fsds-sot-tot-manuscript-7451}).}
+\label{tab:impl-loop}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Module / demo & Role in the loop \\
+\midrule
+\texttt{closed\_loop.py} &
+\texttt{iterate\_once}, \texttt{run\_self\_iteration}, ladder, reference decay \\
+\texttt{applications.py} &
+ReAct, plan--execute, multi-agent, RAG hops, self-consistency segments \\
+\texttt{demo\_fsds\_closed\_loop.py} & SoT batch: two-window drift decay \\
+\texttt{demo\_fsds\_react\_agent.py} & ReAct segment budgets + economics \\
+\texttt{demo\_fsds\_rag\_multihop\_loop.py} &
+Multi-hop reground until \texttt{stabilize\_threshold} \\
+\texttt{demo\_fsds\_self\_consistency\_loop.py} &
+Dispersion $\downarrow$ $\Rightarrow$ adaptive $N^\star$ + loop accept \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Reference update.} After an accepted window, $\Dold \leftarrow
+\alpha \Dold + (1-\alpha)\Dnew'$ with $\alpha\in[0.8,0.95]$ so the control
+system tracks a moving baseline without forgetting recent fixes.
+
+\section{Roadmap: remaining hooks}
+\label{sec:roadmap}
+
+Production hooks still to wire (same estimators, new $\phi$ only):
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Live KPI guard} --- non-inferiority test on conversion / resolution
+  before accepting an intervention.
+  \item \textbf{Code-agent span PO-risk} --- edit-hunk $Y$ from CI logs.
+  \item \textbf{Tool-registry batch} --- schema-version covariate block in Panel~4.
+\end{itemize}
+SoT remains the reference implementation; other rows in
+Table~\ref{tab:agent-apps} reuse the same estimators and differ only in
+$\phi(\cdot)$ and $\pi$.

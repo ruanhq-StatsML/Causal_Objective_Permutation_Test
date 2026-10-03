@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\begin{document}
+\title{LOCO--AUUC Uplift Monitoring: Benchmark Report}
+\date{2026-10-01}
+\maketitle
+\section{AUUC integral}
+Our score: $ \mathrm{AUUC} = \frac{1}{n}\int_0^1 g(f)\,df $ where $g(f)$ is cumulative gain
+at population fraction $f$ after sorting by $\hat\tau$:
+$g_k = (\bar Y_{T,k}-\bar Y_{C,k})(n_{T,k}+n_{C,k})$.
+Matches \texttt{sklift.metrics.uplift\_auc\_score} up to normalization (see \texttt{integral\_check}).
+\section{Results}
+\subsection{hillstrom}
+Online PFI (1 window): MMD$^2$=0.0014, domain AUC=0.9381, overlap ESS=0.690.
+\begin{tabular}{lrrrrl}
+\toprule
+Learner & AUUC$_{\ref}$ & AUUC$_{\live}$ & gap & diag & $\Delta$ sklift \\
+\midrule
+sklearn\_xlearner & -0.0449 & 0.0154 & -0.0603 & concept_drift_or_tau & 0.00000 \\
+tarnet & -0.0227 & -0.0131 & -0.0096 & concept_drift_or_tau & 0.00000 \\
+dragonnet & -0.0105 & 0.0463 & -0.0568 & concept_drift_or_tau & 0.00000 \\
+registry\_rf\_x & -0.0451 & 0.0017 & -0.0468 & concept_drift_or_tau & 0.00000 \\
+registry\_logistic\_x & -0.0004 & 0.0486 & -0.0490 & concept_drift_or_tau & 0.00000 \\
+\bottomrule
+\end{tabular}
+\subsection{hillstrom\_covariate\_drift}
+Online PFI (1 window): MMD$^2$=0.0039, domain AUC=1.0000, overlap ESS=1.000.
+\begin{tabular}{lrrrrl}
+\toprule
+Learner & AUUC$_{\ref}$ & AUUC$_{\live}$ & gap & diag & $\Delta$ sklift \\
+\midrule
+sklearn\_xlearner & 0.0144 & -0.0181 & 0.0325 & concept_drift_or_tau & 0.00000 \\
+tarnet & -0.0241 & 0.0284 & -0.0525 & concept_drift_or_tau & 0.00000 \\
+dragonnet & 0.0147 & -0.0164 & 0.0311 & concept_drift_or_tau & 0.00000 \\
+registry\_rf\_x & -0.0341 & -0.0093 & -0.0248 & concept_drift_or_tau & 0.00000 \\
+registry\_logistic\_x & 0.0152 & -0.0236 & 0.0388 & concept_drift_or_tau & 0.00000 \\
+\bottomrule
+\end{tabular}
+\subsection{synthetic\_covariate}
+Online PFI (1 window): MMD$^2$=0.0029, domain AUC=0.9999, overlap ESS=0.753.
+\begin{tabular}{lrrrrl}
+\toprule
+Learner & AUUC$_{\ref}$ & AUUC$_{\live}$ & gap & diag & $\Delta$ sklift \\
+\midrule
+sklearn\_xlearner & -0.0160 & 0.0112 & -0.0272 & concept_drift_or_tau & 0.00000 \\
+tarnet & -0.0392 & 0.0106 & -0.0498 & concept_drift_or_tau & 0.00000 \\
+dragonnet & -0.0566 & 0.0297 & -0.0863 & concept_drift_or_tau & 0.00000 \\
+registry\_rf\_x & -0.0277 & 0.0386 & -0.0663 & concept_drift_or_tau & 0.00000 \\
+registry\_logistic\_x & -0.0515 & 0.0231 & -0.0746 & concept_drift_or_tau & 0.00000 \\
+\bottomrule
+\end{tabular}
+\subsection{synthetic\_concept}
+Online PFI (1 window): MMD$^2$=0.0015, domain AUC=1.0000, overlap ESS=0.893.
+\begin{tabular}{lrrrrl}
+\toprule
+Learner & AUUC$_{\ref}$ & AUUC$_{\live}$ & gap & diag & $\Delta$ sklift \\
+\midrule
+sklearn\_xlearner & 0.0088 & -0.0026 & 0.0114 & concept_drift_or_tau & 0.00000 \\
+tarnet & -0.0590 & 0.0257 & -0.0847 & concept_drift_or_tau & 0.00000 \\
+dragonnet & 0.0261 & -0.0554 & 0.0815 & concept_drift_or_tau & 0.00000 \\
+registry\_rf\_x & -0.0820 & -0.0080 & -0.0741 & concept_drift_or_tau & 0.00000 \\
+registry\_logistic\_x & 0.0620 & -0.0328 & 0.0949 & concept_drift_or_tau & 0.00000 \\
+\bottomrule
+\end{tabular}
+\section{Method}
+LOCO: remove feature group, retrain on REF, recompute AUUC on REF holdout and LIVE.
+Model Registry: swap \texttt{model\_mu}, \texttt{model\_tau}, \texttt{model\_e} components.
+\end{document}

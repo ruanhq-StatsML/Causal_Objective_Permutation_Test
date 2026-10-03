@@ -1,0 +1,138 @@
+% Auto-generated from uplift_two_layer_benchmark.json — run_uplift_subset_benchmark.py
+\paragraph{Two-batch subset localization (empirical).}
+Monitor probe: sklearn X-learner; REF/LIVE splits as in \texttt{benchmark\_datasets}; gates include $\widehat{\mathrm{MMD}}^2$, ESS overlap on $\hat e(W\mid X)$, DRPerm PO-risk ($n_{\mathrm{perm}}=32$--$48$). Layer~1: LOCO--AUUC, domain-quintile AUUC, pairwise ranking. Layer~2: empirical ATE and $\bar{\hat\tau}$ per quintile; L2 REALLOCATE rules require PO-risk reject.
+Generated (UTC): 2026-10-03T03:13:19.019029+00:00.
+
+\subparagraph{hillstrom.}
+Gates: $\widehat{\mathrm{MMD}}^2=0.0016$, $\mathrm{ESS}_{\mathrm{ovlp}}=0.990$, PO-risk $p=0.7273$ (accept). Diagnosis: \texttt{concept\_drift\_or\_tau\_change}. Regime: \texttt{x\_stable\_gap\_large\_check\_loco\_and\_po\_risk}.
+Global Layer~1: $\mathrm{AUUC}_{\mathrm{ref}}=-0.0449$, $\mathrm{AUUC}_{\mathrm{live}}=0.0154$, $\Delta_{\mathrm{AUUC}}=-0.0603$.
+
+\noindent\textbf{LOCO--AUUC (top groups).}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule Group & $\mathrm{drop}_{\mathrm{ref}}$ & $\mathrm{drop}_{\mathrm{live}}$ & $\mathrm{drop\_gap}$ \\
+\midrule
+block\_0 & -0.0868 & -0.0167 & 0.0701 \\
+block\_1 & 0.0179 & -0.0033 & -0.0212 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise AUUC (L1): cap \texttt{domain\_quintile\_3}, continue \texttt{domain\_quintile\_4} ($|\Delta\mathrm{AUUC}|=0.1260$).
+\noindent\textbf{LIVE quintiles (L1 AUUC + L2 effect).}
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule Slice & $n$ & $\mathrm{AUUC}_{\mathrm{live}}$ & $\widehat{\tau}^{\mathrm{obs}}$ & $\bar{\hat\tau}$ & $\hat s$ \\
+\midrule
+Q1 & 220 & 0.0492 & 0.0613 & 0.0837 & 0.559 \\
+Q2 & 260 & 0.0422 & 0.0868 & 0.0856 & 0.701 \\
+Q3 & 240 & -0.0557 & 0.1101 & 0.0831 & 0.782 \\
+Q4 & 228 & 0.0703 & 0.0789 & 0.0764 & 0.880 \\
+Q5 & 252 & -0.0031 & 0.0057 & 0.0638 & 0.961 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise empirical ATE (L2): \texttt{domain\_quintile\_3} vs \texttt{domain\_quintile\_5}, $\Delta\widehat{\tau}^{\mathrm{obs}}=0.1043$ (higher: \texttt{domain\_quintile\_3}).
+\noindent\textbf{Business rules emitted.}
+\begin{itemize}\itemsep2pt
+\item[\textsc{REALLOCATE} (P1).] Cap uplift in domain quintile 'domain\_quintile\_3' (AUUC\_live=-0.0557, n=240); continue in 'domain\_quintile\_4' where ranking remains stronger.
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=-0.0167).
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=-0.0033).
+\item[\textsc{RELEARN} (P2).] X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+\item[\textsc{MONITOR} (P4).] Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain\_quintile\_3 vs domain\_quintile\_5 (ΔATE=0.1043) — do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.
+\end{itemize}
+
+\subparagraph{hillstrom\_covariate\_drift.}
+Gates: $\widehat{\mathrm{MMD}}^2=0.0041$, $\mathrm{ESS}_{\mathrm{ovlp}}=0.683$, PO-risk $p=1.0000$ (accept). Diagnosis: \texttt{concept\_drift\_or\_tau\_change}. Regime: \texttt{x\_stable\_gap\_large\_check\_loco\_and\_po\_risk}.
+Global Layer~1: $\mathrm{AUUC}_{\mathrm{ref}}=0.0144$, $\mathrm{AUUC}_{\mathrm{live}}=-0.0181$, $\Delta_{\mathrm{AUUC}}=0.0325$.
+
+\noindent\textbf{LOCO--AUUC (top groups).}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule Group & $\mathrm{drop}_{\mathrm{ref}}$ & $\mathrm{drop}_{\mathrm{live}}$ & $\mathrm{drop\_gap}$ \\
+\midrule
+block\_0 & -0.0012 & -0.0105 & -0.0092 \\
+block\_1 & 0.0051 & -0.0065 & -0.0117 \\
+\bottomrule\end{tabular}\end{center}
+\noindent\textbf{LIVE quintiles (L1 AUUC + L2 effect).}
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule Slice & $n$ & $\mathrm{AUUC}_{\mathrm{live}}$ & $\widehat{\tau}^{\mathrm{obs}}$ & $\bar{\hat\tau}$ & $\hat s$ \\
+\midrule
+Q1 & 6 & nan & nan & nan & 0.987 \\
+Q2 & 0 & nan & nan & nan & nan \\
+Q3 & 0 & nan & nan & nan & nan \\
+Q4 & 0 & nan & nan & nan & nan \\
+Q5 & 1194 & -0.0184 & 0.0964 & 0.0849 & 1.000 \\
+\bottomrule\end{tabular}\end{center}
+\noindent\textbf{Business rules emitted.}
+\begin{itemize}\itemsep2pt
+\item[\textsc{REALLOCATE} (P1).] Pause or cap uplift targeting on LIVE until AUUC\_live (-0.0181) recovers above 0.000.
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=-0.0105).
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=-0.0065).
+\item[\textsc{RELEARN} (P2).] X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+\end{itemize}
+
+\subparagraph{synthetic\_covariate.}
+Gates: $\widehat{\mathrm{MMD}}^2=0.0034$, $\mathrm{ESS}_{\mathrm{ovlp}}=0.756$, PO-risk $p=0.3636$ (accept). Diagnosis: \texttt{concept\_drift\_or\_tau\_change}. Regime: \texttt{x\_stable\_gap\_large\_check\_loco\_and\_po\_risk}.
+Global Layer~1: $\mathrm{AUUC}_{\mathrm{ref}}=-0.0160$, $\mathrm{AUUC}_{\mathrm{live}}=0.0112$, $\Delta_{\mathrm{AUUC}}=-0.0272$.
+
+\noindent\textbf{LOCO--AUUC (top groups).}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule Group & $\mathrm{drop}_{\mathrm{ref}}$ & $\mathrm{drop}_{\mathrm{live}}$ & $\mathrm{drop\_gap}$ \\
+\midrule
+block\_1 & -0.0161 & 0.0144 & 0.0305 \\
+block\_0 & -0.0034 & 0.0022 & 0.0056 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise AUUC (L1): cap \texttt{domain\_quintile\_2}, continue \texttt{domain\_quintile\_4} ($|\Delta\mathrm{AUUC}|=0.1252$).
+\noindent\textbf{LIVE quintiles (L1 AUUC + L2 effect).}
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule Slice & $n$ & $\mathrm{AUUC}_{\mathrm{live}}$ & $\widehat{\tau}^{\mathrm{obs}}$ & $\bar{\hat\tau}$ & $\hat s$ \\
+\midrule
+Q1 & 195 & -0.0165 & -0.0212 & 0.0046 & 0.726 \\
+Q2 & 200 & -0.0338 & 0.0399 & 0.0089 & 0.815 \\
+Q3 & 186 & -0.0163 & 0.0312 & 0.0141 & 0.863 \\
+Q4 & 176 & 0.0913 & 0.0487 & 0.0015 & 0.900 \\
+Q5 & 243 & 0.0155 & -0.1188 & -0.0114 & 0.948 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise empirical ATE (L2): \texttt{domain\_quintile\_4} vs \texttt{domain\_quintile\_5}, $\Delta\widehat{\tau}^{\mathrm{obs}}=0.1675$ (higher: \texttt{domain\_quintile\_4}).
+\noindent\textbf{Business rules emitted.}
+\begin{itemize}\itemsep2pt
+\item[\textsc{REALLOCATE} (P1).] Cap uplift in domain quintile 'domain\_quintile\_2' (AUUC\_live=-0.0338, n=200); continue in 'domain\_quintile\_4' where ranking remains stronger.
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=0.0144).
+\item[\textsc{RELEARN} (P2).] X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+\item[\textsc{REALLOCATE} (P3).] Restrict targeting to overlap-support users on LIVE (AUUC\_live=0.0226 on support band vs global 0.0112).
+\item[\textsc{MONITOR} (P4).] Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain\_quintile\_4 vs domain\_quintile\_5 (ΔATE=0.1675) — do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.
+\end{itemize}
+
+\subparagraph{synthetic\_concept.}
+Gates: $\widehat{\mathrm{MMD}}^2=0.0020$, $\mathrm{ESS}_{\mathrm{ovlp}}=0.991$, PO-risk $p=0.0303$ (reject). Diagnosis: \texttt{concept\_drift\_or\_tau\_change}. Regime: \texttt{x\_stable\_gap\_large\_check\_loco\_and\_po\_risk}.
+Global Layer~1: $\mathrm{AUUC}_{\mathrm{ref}}=0.0088$, $\mathrm{AUUC}_{\mathrm{live}}=-0.0026$, $\Delta_{\mathrm{AUUC}}=0.0114$.
+
+\noindent\textbf{LOCO--AUUC (top groups).}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule Group & $\mathrm{drop}_{\mathrm{ref}}$ & $\mathrm{drop}_{\mathrm{live}}$ & $\mathrm{drop\_gap}$ \\
+\midrule
+block\_1 & -0.0216 & 0.0704 & 0.0921 \\
+block\_0 & 0.0024 & -0.0297 & -0.0321 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise AUUC (L1): cap \texttt{domain\_quintile\_3}, continue \texttt{domain\_quintile\_2} ($|\Delta\mathrm{AUUC}|=0.0922$).
+\noindent\textbf{LIVE quintiles (L1 AUUC + L2 effect).}
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule Slice & $n$ & $\mathrm{AUUC}_{\mathrm{live}}$ & $\widehat{\tau}^{\mathrm{obs}}$ & $\bar{\hat\tau}$ & $\hat s$ \\
+\midrule
+Q1 & 171 & -0.0194 & 0.0389 & 0.0632 & 0.737 \\
+Q2 & 143 & 0.0514 & 0.0727 & 0.0891 & 0.782 \\
+Q3 & 200 & -0.0408 & -0.1114 & 0.0607 & 0.806 \\
+Q4 & 261 & -0.0006 & -0.0802 & 0.0565 & 0.836 \\
+Q5 & 225 & 0.0186 & 0.0421 & 0.0537 & 0.882 \\
+\bottomrule\end{tabular}\end{center}
+\noindent Top pairwise empirical ATE (L2): \texttt{domain\_quintile\_2} vs \texttt{domain\_quintile\_3}, $\Delta\widehat{\tau}^{\mathrm{obs}}=0.1841$ (higher: \texttt{domain\_quintile\_2}).
+\noindent\textbf{Business rules emitted.}
+\begin{itemize}\itemsep2pt
+\item[\textsc{REALLOCATE} (P1).] Pause or cap uplift targeting on LIVE until AUUC\_live (-0.0026) recovers above 0.000.
+\item[\textsc{REALLOCATE} (P1).] Cap uplift in domain quintile 'domain\_quintile\_3' (AUUC\_live=-0.0408, n=200); continue in 'domain\_quintile\_2' where ranking remains stronger.
+\item[\textsc{REALLOCATE} (P1).] Concept drift (PO-risk): observed uplift differs by slice — higher empirical ATE in 'domain\_quintile\_2' vs pairwise partner (ΔATE=0.1841 on empirical\_ate); shift today's targeting budget toward the high-uplift slice afte\ldots
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=0.0704).
+\item[\textsc{REALLOCATE} (P2).] Uplift ranking on LIVE depends on group 'block\_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop\_live=-0.0297).
+\item[\textsc{RELEARN} (P2).] X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.
+\end{itemize}

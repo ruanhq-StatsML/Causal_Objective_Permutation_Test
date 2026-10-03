@@ -1,0 +1,1119 @@
+{
+  "text_only": {
+    "modality": "text",
+    "n_features": 16,
+    "mmd2": 0.01666682175990052,
+    "domain_auc": 1.0,
+    "modality_vimp_mass": 0.06718749999999989,
+    "overlap_ok": true,
+    "overlap_ess": 0.9471301149963778,
+    "top_features": [
+      {
+        "feature": "text_h13",
+        "vimp": 0.02760416666666668,
+        "mmd_loco": 7.9534800198032e-06
+      },
+      {
+        "feature": "text_h8",
+        "vimp": 0.007812499999999986,
+        "mmd_loco": -8.424882515414844e-06
+      },
+      {
+        "feature": "text_h5",
+        "vimp": 0.007291666666666641,
+        "mmd_loco": 2.0267037320487874e-05
+      },
+      {
+        "feature": "text_h10",
+        "vimp": 0.006249999999999978,
+        "mmd_loco": 2.512035886869171e-05
+      },
+      {
+        "feature": "text_h3",
+        "vimp": 0.005208333333333315,
+        "mmd_loco": -8.971882853862911e-06
+      },
+      {
+        "feature": "text_h9",
+        "vimp": 0.0026041666666666574,
+        "mmd_loco": 6.800139288089257e-07
+      },
+      {
+        "feature": "text_h12",
+        "vimp": 0.002083333333333326,
+        "mmd_loco": -1.6129919209316446e-05
+      },
+      {
+        "feature": "text_h6",
+        "vimp": 0.0015624999999999944,
+        "mmd_loco": -2.4198533948138756e-05
+      }
+    ]
+  },
+  "per_modality": {
+    "embedding": {
+      "modality": "embedding",
+      "n_features": 120,
+      "mmd2": 0.016666666666666666,
+      "domain_auc": 1.0,
+      "modality_vimp_mass": 0.0,
+      "overlap_ok": true,
+      "overlap_ess": 0.9556280348775552,
+      "top_features": [
+        {
+          "feature": "emb_b0_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ]
+    },
+    "structured": {
+      "modality": "structured",
+      "n_features": 4,
+      "mmd2": 0.2087500531390189,
+      "domain_auc": 0.99625,
+      "modality_vimp_mass": 0.44843750000000016,
+      "overlap_ok": true,
+      "overlap_ess": 0.8815440616626262,
+      "top_features": [
+        {
+          "feature": "tool_fail",
+          "vimp": 0.35156250000000006,
+          "mmd_loco": 0.10318867441451024
+        },
+        {
+          "feature": "latency_proxy",
+          "vimp": 0.08229166666666672,
+          "mmd_loco": -0.010208006275115394
+        },
+        {
+          "feature": "tool_calls",
+          "vimp": 0.014583333333333393,
+          "mmd_loco": -0.4165756961605152
+        },
+        {
+          "feature": "n_branches",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ]
+    },
+    "text": {
+      "modality": "text",
+      "n_features": 16,
+      "mmd2": 0.01666682175990052,
+      "domain_auc": 1.0,
+      "modality_vimp_mass": 0.04166666666666652,
+      "overlap_ok": true,
+      "overlap_ess": 0.9442534735532137,
+      "top_features": [
+        {
+          "feature": "text_h13",
+          "vimp": 0.006770833333333309,
+          "mmd_loco": 7.9534800198032e-06
+        },
+        {
+          "feature": "text_h3",
+          "vimp": 0.004687499999999983,
+          "mmd_loco": -8.971882853862911e-06
+        },
+        {
+          "feature": "text_h11",
+          "vimp": 0.004166666666666652,
+          "mmd_loco": -2.742971945356859e-05
+        },
+        {
+          "feature": "text_h14",
+          "vimp": 0.004166666666666652,
+          "mmd_loco": -2.8069134117951478e-06
+        },
+        {
+          "feature": "text_h4",
+          "vimp": 0.0036458333333333204,
+          "mmd_loco": 2.958162026022934e-05
+        },
+        {
+          "feature": "text_h7",
+          "vimp": 0.003124999999999989,
+          "mmd_loco": 1.4098783550676314e-05
+        },
+        {
+          "feature": "text_h5",
+          "vimp": 0.003124999999999989,
+          "mmd_loco": 2.0267037320487874e-05
+        },
+        {
+          "feature": "text_h0",
+          "vimp": 0.003124999999999989,
+          "mmd_loco": 3.821771416620545e-05
+        }
+      ]
+    }
+  },
+  "global_concat": {
+    "modality": "concat_all",
+    "n_features": 140,
+    "mmd2": 0.016666666666666666,
+    "domain_auc": 1.0,
+    "modality_vimp_mass": 0.18072916666666664,
+    "overlap_ok": true,
+    "overlap_ess": 0.8770212762304581,
+    "top_features": [
+      {
+        "feature": "structured::tool_fail",
+        "vimp": 0.17812499999999998,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "structured::latency_proxy",
+        "vimp": 0.0026041666666666574,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d0",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d1",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d4",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d5",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d2",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d3",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      }
+    ]
+  },
+  "global_cov": {
+    "domain_auc": 1.0,
+    "mmd2": 0.016666666666666666,
+    "overlap_ok": true,
+    "overlap_ess": 0.8770212762304581
+  },
+  "feature_names": [
+    "embedding::emb_b0_d0",
+    "embedding::emb_b0_d1",
+    "embedding::emb_b0_d2",
+    "embedding::emb_b0_d3",
+    "embedding::emb_b0_d4",
+    "embedding::emb_b0_d5",
+    "embedding::emb_b0_d6",
+    "embedding::emb_b0_d7",
+    "embedding::emb_b0_d8",
+    "embedding::emb_b0_d9",
+    "embedding::emb_b0_d10",
+    "embedding::emb_b0_d11",
+    "embedding::emb_b0_d12",
+    "embedding::emb_b0_d13",
+    "embedding::emb_b0_d14",
+    "embedding::emb_b0_d15",
+    "embedding::emb_b0_d16",
+    "embedding::emb_b0_d17",
+    "embedding::emb_b0_d18",
+    "embedding::emb_b0_d19",
+    "embedding::emb_b0_d20",
+    "embedding::emb_b0_d21",
+    "embedding::emb_b0_d22",
+    "embedding::emb_b0_d23",
+    "embedding::emb_b1_d0",
+    "embedding::emb_b1_d1",
+    "embedding::emb_b1_d2",
+    "embedding::emb_b1_d3",
+    "embedding::emb_b1_d4",
+    "embedding::emb_b1_d5",
+    "embedding::emb_b1_d6",
+    "embedding::emb_b1_d7",
+    "embedding::emb_b1_d8",
+    "embedding::emb_b1_d9",
+    "embedding::emb_b1_d10",
+    "embedding::emb_b1_d11",
+    "embedding::emb_b1_d12",
+    "embedding::emb_b1_d13",
+    "embedding::emb_b1_d14",
+    "embedding::emb_b1_d15",
+    "embedding::emb_b1_d16",
+    "embedding::emb_b1_d17",
+    "embedding::emb_b1_d18",
+    "embedding::emb_b1_d19",
+    "embedding::emb_b1_d20",
+    "embedding::emb_b1_d21",
+    "embedding::emb_b1_d22",
+    "embedding::emb_b1_d23",
+    "embedding::emb_b2_d0",
+    "embedding::emb_b2_d1",
+    "embedding::emb_b2_d2",
+    "embedding::emb_b2_d3",
+    "embedding::emb_b2_d4",
+    "embedding::emb_b2_d5",
+    "embedding::emb_b2_d6",
+    "embedding::emb_b2_d7",
+    "embedding::emb_b2_d8",
+    "embedding::emb_b2_d9",
+    "embedding::emb_b2_d10",
+    "embedding::emb_b2_d11",
+    "embedding::emb_b2_d12",
+    "embedding::emb_b2_d13",
+    "embedding::emb_b2_d14",
+    "embedding::emb_b2_d15",
+    "embedding::emb_b2_d16",
+    "embedding::emb_b2_d17",
+    "embedding::emb_b2_d18",
+    "embedding::emb_b2_d19",
+    "embedding::emb_b2_d20",
+    "embedding::emb_b2_d21",
+    "embedding::emb_b2_d22",
+    "embedding::emb_b2_d23",
+    "embedding::emb_b3_d0",
+    "embedding::emb_b3_d1",
+    "embedding::emb_b3_d2",
+    "embedding::emb_b3_d3",
+    "embedding::emb_b3_d4",
+    "embedding::emb_b3_d5",
+    "embedding::emb_b3_d6",
+    "embedding::emb_b3_d7",
+    "embedding::emb_b3_d8",
+    "embedding::emb_b3_d9",
+    "embedding::emb_b3_d10",
+    "embedding::emb_b3_d11",
+    "embedding::emb_b3_d12",
+    "embedding::emb_b3_d13",
+    "embedding::emb_b3_d14",
+    "embedding::emb_b3_d15",
+    "embedding::emb_b3_d16",
+    "embedding::emb_b3_d17",
+    "embedding::emb_b3_d18",
+    "embedding::emb_b3_d19",
+    "embedding::emb_b3_d20",
+    "embedding::emb_b3_d21",
+    "embedding::emb_b3_d22",
+    "embedding::emb_b3_d23",
+    "embedding::emb_b4_d0",
+    "embedding::emb_b4_d1",
+    "embedding::emb_b4_d2",
+    "embedding::emb_b4_d3",
+    "embedding::emb_b4_d4",
+    "embedding::emb_b4_d5",
+    "embedding::emb_b4_d6",
+    "embedding::emb_b4_d7",
+    "embedding::emb_b4_d8",
+    "embedding::emb_b4_d9",
+    "embedding::emb_b4_d10",
+    "embedding::emb_b4_d11",
+    "embedding::emb_b4_d12",
+    "embedding::emb_b4_d13",
+    "embedding::emb_b4_d14",
+    "embedding::emb_b4_d15",
+    "embedding::emb_b4_d16",
+    "embedding::emb_b4_d17",
+    "embedding::emb_b4_d18",
+    "embedding::emb_b4_d19",
+    "embedding::emb_b4_d20",
+    "embedding::emb_b4_d21",
+    "embedding::emb_b4_d22",
+    "embedding::emb_b4_d23",
+    "structured::n_branches",
+    "structured::tool_calls",
+    "structured::tool_fail",
+    "structured::latency_proxy",
+    "text::text_h0",
+    "text::text_h1",
+    "text::text_h2",
+    "text::text_h3",
+    "text::text_h4",
+    "text::text_h5",
+    "text::text_h6",
+    "text::text_h7",
+    "text::text_h8",
+    "text::text_h9",
+    "text::text_h10",
+    "text::text_h11",
+    "text::text_h12",
+    "text::text_h13",
+    "text::text_h14",
+    "text::text_h15"
+  ],
+  "modality_slices": {
+    "embedding": [
+      0,
+      120
+    ],
+    "structured": [
+      120,
+      124
+    ],
+    "text": [
+      124,
+      140
+    ]
+  },
+  "fine_grain": {
+    "embedding": [
+      {
+        "feature": "embedding::emb_b0_d0",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d1",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d2",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d3",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d4",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d5",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d6",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d7",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d8",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d9",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d10",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "embedding::emb_b0_d11",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      }
+    ],
+    "structured": [
+      {
+        "feature": "structured::tool_fail",
+        "vimp": 0.17812499999999998,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "structured::latency_proxy",
+        "vimp": 0.0026041666666666574,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "structured::tool_calls",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "structured::n_branches",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      }
+    ],
+    "text": [
+      {
+        "feature": "text::text_h0",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h1",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h2",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h3",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h4",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h5",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h6",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h7",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h8",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h9",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h10",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      },
+      {
+        "feature": "text::text_h11",
+        "vimp": 0.0,
+        "mmd_loco": 0.0
+      }
+    ]
+  },
+  "two_layer_concat": {
+    "mmd2_full": 0.016666666666666666,
+    "domain_auc_full": 1.0,
+    "layer1_group_logo": [
+      {
+        "group": "structured",
+        "n_features": 4,
+        "mmd2_block": 0.2087500531390189,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "text",
+        "n_features": 16,
+        "mmd2_block": 0.01666682175990052,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "embedding",
+        "n_features": 120,
+        "mmd2_block": 0.016666666666666666,
+        "mmd_logo_delta": -3.123846784082798e-05,
+        "domain_logo_delta": 0.0
+      }
+    ],
+    "layer1_rank": [
+      "structured",
+      "text",
+      "embedding"
+    ],
+    "layer2_within_group": {
+      "embedding": [
+        {
+          "feature": "embedding::emb_b0_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d8",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d9",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d10",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "embedding::emb_b0_d11",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "structured": [
+        {
+          "feature": "structured::tool_fail",
+          "vimp": 0.04583333333333332,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "structured::n_branches",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "structured::tool_calls",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "structured::latency_proxy",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "text": [
+        {
+          "feature": "text::text_h0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h8",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h9",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h10",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "text::text_h11",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ]
+    }
+  },
+  "two_layer_text": {
+    "mmd2_full": 0.01666682175990052,
+    "domain_auc_full": 1.0,
+    "layer1_group_logo": [
+      {
+        "group": "text_low",
+        "n_features": 8,
+        "mmd2_block": 0.01707985207384054,
+        "mmd_logo_delta": -0.0003967863472523134,
+        "domain_logo_delta": -1.1102230246251565e-16
+      },
+      {
+        "group": "text_high",
+        "n_features": 8,
+        "mmd2_block": 0.017063608107152833,
+        "mmd_logo_delta": -0.00041303031394002154,
+        "domain_logo_delta": 0.0
+      }
+    ],
+    "layer1_rank": [
+      "text_low",
+      "text_high"
+    ],
+    "layer2_within_group": {
+      "text_high": [
+        {
+          "feature": "text_h14",
+          "vimp": 0.01354166666666666,
+          "mmd_loco": -2.8069134117951478e-06
+        },
+        {
+          "feature": "text_h13",
+          "vimp": 0.009374999999999994,
+          "mmd_loco": 7.9534800198032e-06
+        },
+        {
+          "feature": "text_h10",
+          "vimp": 0.008333333333333318,
+          "mmd_loco": 2.512035886869171e-05
+        },
+        {
+          "feature": "text_h8",
+          "vimp": 0.007812499999999972,
+          "mmd_loco": -8.424882515414844e-06
+        },
+        {
+          "feature": "text_h15",
+          "vimp": 0.0026041666666666574,
+          "mmd_loco": -2.422612599930346e-05
+        },
+        {
+          "feature": "text_h11",
+          "vimp": 0.0015624999999999944,
+          "mmd_loco": -2.742971945356859e-05
+        },
+        {
+          "feature": "text_h12",
+          "vimp": 0.0015624999999999944,
+          "mmd_loco": -1.6129919209316446e-05
+        },
+        {
+          "feature": "text_h9",
+          "vimp": 0.001041666666666663,
+          "mmd_loco": 6.800139288089257e-07
+        }
+      ],
+      "text_low": [
+        {
+          "feature": "text_h5",
+          "vimp": 0.008854166666666649,
+          "mmd_loco": 2.0267037320487874e-05
+        },
+        {
+          "feature": "text_h0",
+          "vimp": 0.004687499999999997,
+          "mmd_loco": 3.821771416620545e-05
+        },
+        {
+          "feature": "text_h7",
+          "vimp": 0.004687499999999983,
+          "mmd_loco": 1.4098783550676314e-05
+        },
+        {
+          "feature": "text_h3",
+          "vimp": 0.003124999999999989,
+          "mmd_loco": -8.971882853862911e-06
+        },
+        {
+          "feature": "text_h6",
+          "vimp": 0.003124999999999989,
+          "mmd_loco": -2.4198533948138756e-05
+        },
+        {
+          "feature": "text_h2",
+          "vimp": 0.0026041666666666574,
+          "mmd_loco": 2.9853489172150527e-06
+        },
+        {
+          "feature": "text_h4",
+          "vimp": 0.0026041666666666574,
+          "mmd_loco": 2.958162026022934e-05
+        },
+        {
+          "feature": "text_h1",
+          "vimp": 0.0,
+          "mmd_loco": -4.283291942068501e-07
+        }
+      ]
+    }
+  },
+  "two_layer_embedding_branches": {
+    "mmd2_full": 0.016666666666666666,
+    "domain_auc_full": 1.0,
+    "layer1_group_logo": [
+      {
+        "group": "emb_b0",
+        "n_features": 24,
+        "mmd2_block": 0.01666447968039645,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "emb_b1",
+        "n_features": 24,
+        "mmd2_block": 0.016666794885581013,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "emb_b2",
+        "n_features": 24,
+        "mmd2_block": 0.016667719830127423,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "emb_b3",
+        "n_features": 24,
+        "mmd2_block": 0.016668120332440608,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": 0.0
+      },
+      {
+        "group": "emb_b4",
+        "n_features": 24,
+        "mmd2_block": 0.016667173920856898,
+        "mmd_logo_delta": 0.0,
+        "domain_logo_delta": -1.1102230246251565e-16
+      }
+    ],
+    "layer1_rank": [
+      "emb_b0",
+      "emb_b1",
+      "emb_b2",
+      "emb_b3",
+      "emb_b4"
+    ],
+    "layer2_within_group": {
+      "emb_b0": [
+        {
+          "feature": "emb_b0_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b0_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "emb_b1": [
+        {
+          "feature": "emb_b1_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b1_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "emb_b2": [
+        {
+          "feature": "emb_b2_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b2_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "emb_b3": [
+        {
+          "feature": "emb_b3_d1",
+          "vimp": 0.002083333333333326,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b3_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ],
+      "emb_b4": [
+        {
+          "feature": "emb_b4_d0",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d1",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d2",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d3",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d4",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d5",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d6",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        },
+        {
+          "feature": "emb_b4_d7",
+          "vimp": 0.0,
+          "mmd_loco": 0.0
+        }
+      ]
+    }
+  },
+  "registry_deltas": {
+    "delta_mu_mean": -0.07070471178467708,
+    "delta_tau_mean": 0.002666448202245455,
+    "delta_pseudo_mean": 0.00024234266481663186,
+    "po_risk_observed": 0.004387518379494097,
+    "mean_mu_ref": 0.596996847888947,
+    "mean_mu_live": 0.52629213610427,
+    "mean_tau_ref": -0.026894929655563685,
+    "mean_tau_live": -0.02422848145331823
+  },
+  "modality_rank_by_global_vimp": [
+    "structured",
+    "embedding",
+    "text"
+  ],
+  "layer1_modality_rank_logo": [
+    "structured",
+    "text",
+    "embedding"
+  ]
+}

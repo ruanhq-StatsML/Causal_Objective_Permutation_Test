@@ -1,0 +1,39 @@
+{
+  "package": "fsds_sot_delivery",
+  "version_note": "branch cursor/fsds-sot-tot-manuscript-7451",
+  "zip_path": "delivery/fsds_sot_delivery.zip",
+  "rebuild": "bash delivery/build_fsds_sot_zip.sh",
+  "upstream_repo": "https://github.com/ruanhq-StatsML/Causal_Objective_Permutation_Test",
+  "related_branch_merchant_prototype": "cursor/fsds-merchant-prototype-1905",
+  "entry_demos": [
+    "Python/demo_fsds_modality_attribution.py",
+    "Python/demo_fsds_token_perturbation.py",
+    "Python/demo_fsds_feature_store_attribution.py"
+  ],
+  "core_module": "Python/fsds_sot",
+  "feature_store_module": "Python/feature_store",
+  "bundled_dataset": "data/feature_store",
+  "bundled_upstream_python": [
+    "Python/DRPerm.py",
+    "Python/model_registry_class.py"
+  ],
+  "modality_delivery_modules": [
+    "modality_dataloaders.py",
+    "modality_attribution.py",
+    "hierarchical_attribution.py",
+    "text_tokens.py",
+    "text_encoder.py",
+    "token_perturbation_audit.py"
+  ],
+  "feature_store_modules": [
+    "merchant_prototype.py",
+    "logo_mmd.py",
+    "multilevel_localization.py",
+    "cross_level.py"
+  ],
+  "user_supplied": [
+    "Python/fsds_sot/qwen_episode_encoder.py (from .example; Qwen embed script)"
+  ],
+  "inventory_doc": "delivery/fsds_sot_package/PACKAGE_INVENTORY.md",
+  "module_list": "delivery/fsds_sot_package/MODULE_LIST.txt"
+}

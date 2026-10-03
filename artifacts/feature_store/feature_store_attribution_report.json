@@ -1,0 +1,186 @@
+{
+  "dataset_dir": "/workspace/delivery/data/feature_store",
+  "relational": {
+    "n_users": 4000,
+    "n_merchants": 200,
+    "n_orders": 15000,
+    "merchant_feature_dim": 69,
+    "user_feature_dim": 27
+  },
+  "schema": "user -> order -> item -> merchant (W on merchant)",
+  "merchant_logo_mmd": {
+    "global_mmd": {
+      "mmd2": 0.3681093041030419,
+      "p_value": 0.004975124378109453,
+      "perm_mean": 0.00022097422320865146
+    },
+    "logo_mmd_top": [
+      {
+        "attribute": "gmv",
+        "n_features": 11,
+        "logo_drop": 0.14781486606492622,
+        "mmd_without": 0.22029443803811566,
+        "is_shift": true
+      },
+      {
+        "attribute": "user_rating",
+        "n_features": 11,
+        "logo_drop": 0.1452490481527413,
+        "mmd_without": 0.22286025595030057,
+        "is_shift": true
+      },
+      {
+        "attribute": "quantity",
+        "n_features": 11,
+        "logo_drop": -0.059405612484411674,
+        "mmd_without": 0.42751491658745355,
+        "is_shift": false
+      },
+      {
+        "attribute": "basket_size",
+        "n_features": 11,
+        "logo_drop": -0.07258109098676624,
+        "mmd_without": 0.4406903950898081,
+        "is_shift": false
+      },
+      {
+        "attribute": "delivery_mins",
+        "n_features": 11,
+        "logo_drop": -0.07650066801878763,
+        "mmd_without": 0.4446099721218295,
+        "is_shift": false
+      },
+      {
+        "attribute": "discount_rate",
+        "n_features": 11,
+        "logo_drop": -0.0780659114817881,
+        "mmd_without": 0.44617521558483,
+        "is_shift": false
+      }
+    ],
+    "per_group_mmd_top": [
+      {
+        "attribute": "gmv",
+        "group_mmd2": 1.2089920639366014,
+        "p_value": 0.004975124378109453,
+        "is_shift": true
+      },
+      {
+        "attribute": "user_rating",
+        "group_mmd2": 1.1505790397145612,
+        "p_value": 0.004975124378109453,
+        "is_shift": true
+      },
+      {
+        "attribute": "quantity",
+        "group_mmd2": 0.0052554857998236,
+        "p_value": 0.0945273631840796,
+        "is_shift": false
+      },
+      {
+        "attribute": "basket_size",
+        "group_mmd2": 0.0002430260405125173,
+        "p_value": 0.44776119402985076,
+        "is_shift": false
+      },
+      {
+        "attribute": "delivery_mins",
+        "group_mmd2": -0.00267244198154315,
+        "p_value": 0.7412935323383084,
+        "is_shift": false
+      },
+      {
+        "attribute": "discount_rate",
+        "group_mmd2": -0.0029418691749946158,
+        "p_value": 0.7860696517412935,
+        "is_shift": false
+      }
+    ]
+  },
+  "merchant_multilevel_tree": {
+    "root_mmd2": 0.3681093041030419,
+    "root_p": 0.004975124378109453,
+    "selected_leaves": [
+      "gmv__mean",
+      "gmv__median",
+      "gmv__q25",
+      "gmv__q75",
+      "gmv__std",
+      "gmv__roll5_std_avg",
+      "gmv__min",
+      "gmv__max",
+      "gmv__sum",
+      "gmv__roll5_mean_last",
+      "gmv__roll5_mean_avg",
+      "user_rating__mean",
+      "user_rating__median",
+      "user_rating__q25",
+      "user_rating__q75",
+      "user_rating__min",
+      "user_rating__max",
+      "user_rating__sum",
+      "user_rating__roll5_mean_last",
+      "user_rating__roll5_mean_avg"
+    ],
+    "n_tree_records": 35,
+    "l1_selected": [
+      "gmv",
+      "user_rating"
+    ]
+  },
+  "cross_level_merchant_vertical": {
+    "truth_vertical": 2,
+    "level1_selected_attrs": [
+      "gmv"
+    ],
+    "level1_global_mmd2": 0.2546312183355214,
+    "level1_global_p": 0.006622516556291391,
+    "level1_table": [
+      {
+        "group": "gmv",
+        "logo_vimp": 0.25269822652722296,
+        "stability": 1.0
+      },
+      {
+        "group": "quantity",
+        "logo_vimp": -0.16815564325109167,
+        "stability": 0.95
+      }
+    ],
+    "level2_selected_verticals": [
+      2
+    ],
+    "level2_table": [
+      {
+        "vertical": 2,
+        "newvs_existing_gap": 53.173274108899825,
+        "perm_p": 0.006622516556291391
+      },
+      {
+        "vertical": 1,
+        "newvs_existing_gap": 0.9528965549638144,
+        "perm_p": 0.3509933774834437
+      },
+      {
+        "vertical": 3,
+        "newvs_existing_gap": 0.9031777723385055,
+        "perm_p": 0.23178807947019867
+      },
+      {
+        "vertical": 5,
+        "newvs_existing_gap": 0.7275685390282263,
+        "perm_p": 0.4105960264900662
+      },
+      {
+        "vertical": 4,
+        "newvs_existing_gap": 0.6630299625092526,
+        "perm_p": 0.48344370860927155
+      },
+      {
+        "vertical": 0,
+        "newvs_existing_gap": 0.5123078748105918,
+        "perm_p": 0.4966887417218543
+      }
+    ]
+  }
+}

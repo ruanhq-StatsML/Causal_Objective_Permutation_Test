@@ -1,0 +1,1718 @@
+{
+  "generated_utc": "2026-10-03T03:13:19.019029+00:00",
+  "runs": [
+    {
+      "dataset": "hillstrom",
+      "gates": {
+        "overlap_ess_batch": 0.9897230666903237,
+        "mmd2_x": 0.0016239086883990334,
+        "po_risk_statistic": 0.00041994509830855733,
+        "po_risk_pvalue": 0.7272727272727273,
+        "po_risk_reject": false
+      },
+      "layer1_auuc_ranking": {
+        "auuc_ref": -0.044869266398657785,
+        "auuc_live": 0.015405895194048363,
+        "auuc_gap": -0.06027516159270615,
+        "loco_top3": [
+          {
+            "feature": "block_0",
+            "auuc_ref": 0.041916337567475495,
+            "auuc_live": 0.032099391166390275,
+            "drop_ref": -0.08678560396613327,
+            "drop_live": -0.01669349597234191,
+            "drop_gap": 0.07009210799379137
+          },
+          {
+            "feature": "block_1",
+            "auuc_ref": -0.06276294372759758,
+            "auuc_live": 0.018676528182577815,
+            "drop_ref": 0.017893677328939796,
+            "drop_live": -0.0032706329885294518,
+            "drop_gap": -0.021164310317469247
+          }
+        ],
+        "pairwise_auuc_top3": [
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_4",
+            "auuc_a": -0.05566460362590857,
+            "auuc_b": 0.07034157196064278,
+            "delta": -0.12600617558655136,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_4"
+          },
+          {
+            "subset_a": "domain_quintile_1",
+            "subset_b": "domain_quintile_3",
+            "auuc_a": 0.049182380319118674,
+            "auuc_b": -0.05566460362590857,
+            "delta": 0.10484698394502724,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_1"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_3",
+            "auuc_a": 0.042202165338256,
+            "auuc_b": -0.05566460362590857,
+            "delta": 0.09786676896416457,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_2"
+          }
+        ],
+        "logo_mmd_top2": [
+          {
+            "group": "block_0",
+            "logo_mmd_drop": 0.0009659331758452815,
+            "mmd_without_group": 0.0012360125496744256,
+            "mmd_full": 0.002201945725519707
+          },
+          {
+            "group": "block_1",
+            "logo_mmd_drop": -2.8232575351650434e-05,
+            "mmd_without_group": 0.0022301783008713575,
+            "mmd_full": 0.002201945725519707
+          }
+        ]
+      },
+      "layer2_uplift_effect": {
+        "po_risk_mode": false,
+        "slices": [
+          {
+            "subset": "domain_quintile_1",
+            "n_live": 220,
+            "mean_domain_score": 0.5589105158497857,
+            "auuc_live": 0.049182380319118674,
+            "empirical_ate": 0.06128364389233956,
+            "mean_tau_hat": 0.08371587667107938
+          },
+          {
+            "subset": "domain_quintile_2",
+            "n_live": 260,
+            "mean_domain_score": 0.7011010365800977,
+            "auuc_live": 0.042202165338256,
+            "empirical_ate": 0.08680987040653293,
+            "mean_tau_hat": 0.08563434223509442
+          },
+          {
+            "subset": "domain_quintile_3",
+            "n_live": 240,
+            "mean_domain_score": 0.7818977953206525,
+            "auuc_live": -0.05566460362590857,
+            "empirical_ate": 0.11005291005291006,
+            "mean_tau_hat": 0.08307453203761388
+          },
+          {
+            "subset": "domain_quintile_4",
+            "n_live": 228,
+            "mean_domain_score": 0.8797478327289182,
+            "auuc_live": 0.07034157196064278,
+            "empirical_ate": 0.07894736842105263,
+            "mean_tau_hat": 0.0764382246018099
+          },
+          {
+            "subset": "domain_quintile_5",
+            "n_live": 252,
+            "mean_domain_score": 0.9613319410255684,
+            "auuc_live": -0.0031219444390673374,
+            "empirical_ate": 0.005720823798627012,
+            "mean_tau_hat": 0.06376016518355467
+          }
+        ],
+        "pairwise_empirical_ate_top3": [
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.11005291005291006,
+            "value_b": 0.005720823798627012,
+            "delta_a_minus_b": 0.10433208625428304,
+            "higher_uplift_subset": "domain_quintile_3"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.08680987040653293,
+            "value_b": 0.005720823798627012,
+            "delta_a_minus_b": 0.08108904660790592,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_4",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.07894736842105263,
+            "value_b": 0.005720823798627012,
+            "delta_a_minus_b": 0.07322654462242562,
+            "higher_uplift_subset": "domain_quintile_4"
+          }
+        ],
+        "pairwise_mean_tau_top3": [
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08563434223509442,
+            "value_b": 0.06376016518355467,
+            "delta_a_minus_b": 0.021874177051539753,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_1",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08371587667107938,
+            "value_b": 0.06376016518355467,
+            "delta_a_minus_b": 0.019955711487524716,
+            "higher_uplift_subset": "domain_quintile_1"
+          },
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08307453203761388,
+            "value_b": 0.06376016518355467,
+            "delta_a_minus_b": 0.01931436685405921,
+            "higher_uplift_subset": "domain_quintile_3"
+          }
+        ]
+      },
+      "diagnosis": {
+        "mmd2_x": 0.0016239086883990334,
+        "auuc_gap": -0.06027516159270615,
+        "overlap_ess": 0.9897230666903237,
+        "loco_spearman": 0.9999999999999999,
+        "label": "concept_drift_or_tau_change",
+        "hints": [
+          "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+          "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+        ]
+      },
+      "subset_insight_regime": "x_stable_gap_large_check_loco_and_po_risk",
+      "strategy": "Regime=x_stable_gap_large_check_loco_and_po_risk; diagnose=concept_drift_or_tau_change; PO-risk p=0.727. Strategy: LOCO\u2013AUUC \u2192 L1 pairwise AUUC; if PO reject add L2 ATE REALLOCATE.",
+      "layer1_narrative": [
+        "Global ranking: AUUC_ref=-0.0449, AUUC_live=0.0154, gap=-0.0603.",
+        "Top LOCO (L1 feature): 'block_0' drop_live=-0.0167 \u2014 ranking on LIVE leans on this input.",
+        "Top pairwise AUUC (L1 users): domain_quintile_3 vs domain_quintile_4 \u0394=-0.1260; cap worse-ranking slice 'domain_quintile_3'.",
+        "Quintile spread: worst=domain_quintile_3 AUUC=-0.0557; best=domain_quintile_4 AUUC=0.0703."
+      ],
+      "layer2_narrative": [
+        "Layer 2 (effect): PO-risk not flagged \u2014 use empirical ATE / mean \u03c4\u0302 as diagnostic only, not primary REALLOCATE on ATE pairs.",
+        "Highest observed uplift slice: domain_quintile_3 empirical_ATE=0.1101, mean_tau_hat=0.0831.",
+        "Top pairwise ATE (L2): domain_quintile_3 vs domain_quintile_5 \u0394ATE=0.1043; shift spend toward 'domain_quintile_3'.",
+        "Top pairwise mean \u03c4\u0302 (model level): domain_quintile_2 vs domain_quintile_5 \u0394=0.0219."
+      ],
+      "business_rules": [
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Cap uplift in domain quintile 'domain_quintile_3' (AUUC_live=-0.0557, n=240); continue in 'domain_quintile_4' where ranking remains stronger.",
+          "evidence": {
+            "worst": {
+              "subset": "domain_quintile_3",
+              "n_live": 240,
+              "auuc_live": -0.05566460362590857,
+              "mean_domain_score": 0.7818977953206525
+            },
+            "best": {
+              "subset": "domain_quintile_4",
+              "n_live": 228,
+              "auuc_live": 0.07034157196064278,
+              "mean_domain_score": 0.8797478327289182
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "opex",
+              "n_users_capped_est": 240,
+              "n_treatments_avoided_est": 84,
+              "estimated_saved_spend_usd": 546.0,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 546.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0167).",
+          "evidence": {
+            "feature": "block_0",
+            "auuc_ref": 0.041916337567475495,
+            "auuc_live": 0.032099391166390275,
+            "drop_ref": -0.08678560396613327,
+            "drop_live": -0.01669349597234191,
+            "drop_gap": 0.07009210799379137,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0033).",
+          "evidence": {
+            "feature": "block_1",
+            "auuc_ref": -0.06276294372759758,
+            "auuc_live": 0.018676528182577815,
+            "drop_ref": 0.017893677328939796,
+            "drop_live": -0.0032706329885294518,
+            "drop_gap": -0.021164310317469247,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "RELEARN",
+          "rule": "X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.",
+          "evidence": {
+            "mmd2_x": 0.0016239086883990334,
+            "auuc_gap": -0.06027516159270615,
+            "overlap_ess": 0.9897230666903237,
+            "loco_spearman": 0.9999999999999999,
+            "label": "concept_drift_or_tau_change",
+            "hints": [
+              "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+              "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "capex_ticket",
+              "estimated_capex_ticket_usd": 2500.0,
+              "estimated_net_impact_usd": 0.0,
+              "note": "CAPEX ticket (excluded from OPEX scenario total); ROI after holdout AUUC SLA"
+            }
+          }
+        },
+        {
+          "priority": 4,
+          "action": "MONITOR",
+          "rule": "Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain_quintile_3 vs domain_quintile_5 (\u0394ATE=0.1043) \u2014 do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.",
+          "evidence": {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.11005291005291006,
+            "value_b": 0.005720823798627012,
+            "delta_a_minus_b": 0.10433208625428304,
+            "higher_uplift_subset": "domain_quintile_3",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        }
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "5b109727-f9d",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": 546.0,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 546.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:09.704431+00:00"
+        },
+        {
+          "episode_id": "51f679bd-7df",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:09.704486+00:00"
+        },
+        {
+          "episode_id": "91bc27ee-23d",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:09.704504+00:00"
+        },
+        {
+          "episode_id": "fd6cc1f9-3b0",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:09.704521+00:00"
+        },
+        {
+          "episode_id": "9abbab61-b94",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.015405895194048363,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "MONITOR",
+          "kpi_before_after": {
+            "auuc_live": 0.015405895194048363,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p4_MONITOR"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:09.704533+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_opex_net_usd": 546.0,
+        "estimated_saved_spend_usd_total": 546.0,
+        "estimated_capex_tickets_usd": 2500.0,
+        "estimated_net_impact_usd_total": 546.0,
+        "n_rules": 5,
+        "n_opex_rules": 1,
+        "n_capex_tickets": 1
+      }
+    },
+    {
+      "dataset": "hillstrom_covariate_drift",
+      "gates": {
+        "overlap_ess_batch": 0.6833799826271595,
+        "mmd2_x": 0.004118193106934202,
+        "po_risk_statistic": 1.4686468282315342e-07,
+        "po_risk_pvalue": 1.0,
+        "po_risk_reject": false
+      },
+      "layer1_auuc_ranking": {
+        "auuc_ref": 0.014413545656307088,
+        "auuc_live": -0.018124682914907805,
+        "auuc_gap": 0.0325382285712149,
+        "loco_top3": [
+          {
+            "feature": "block_0",
+            "auuc_ref": 0.01565250587984875,
+            "auuc_live": -0.007642203845410489,
+            "drop_ref": -0.0012389602235416616,
+            "drop_live": -0.010482479069497317,
+            "drop_gap": -0.009243518845955655
+          },
+          {
+            "feature": "block_1",
+            "auuc_ref": 0.0092784178621696,
+            "auuc_live": -0.011608441697231846,
+            "drop_ref": 0.005135127794137488,
+            "drop_live": -0.00651624121767596,
+            "drop_gap": -0.011651369011813448
+          }
+        ],
+        "pairwise_auuc_top3": [],
+        "logo_mmd_top2": [
+          {
+            "group": "block_1",
+            "logo_mmd_drop": 0.0008504738757772615,
+            "mmd_without_group": 0.003967485584602003,
+            "mmd_full": 0.004817959460379264
+          },
+          {
+            "group": "block_0",
+            "logo_mmd_drop": -0.3430517555721621,
+            "mmd_without_group": 0.3478697150325414,
+            "mmd_full": 0.004817959460379264
+          }
+        ]
+      },
+      "layer2_uplift_effect": {
+        "po_risk_mode": false,
+        "slices": [
+          {
+            "subset": "domain_quintile_1",
+            "n_live": 6,
+            "mean_domain_score": 0.9874999999999999,
+            "auuc_live": NaN,
+            "empirical_ate": NaN,
+            "mean_tau_hat": NaN
+          },
+          {
+            "subset": "domain_quintile_2",
+            "n_live": 0,
+            "mean_domain_score": NaN,
+            "auuc_live": NaN,
+            "empirical_ate": NaN,
+            "mean_tau_hat": NaN
+          },
+          {
+            "subset": "domain_quintile_3",
+            "n_live": 0,
+            "mean_domain_score": NaN,
+            "auuc_live": NaN,
+            "empirical_ate": NaN,
+            "mean_tau_hat": NaN
+          },
+          {
+            "subset": "domain_quintile_4",
+            "n_live": 0,
+            "mean_domain_score": NaN,
+            "auuc_live": NaN,
+            "empirical_ate": NaN,
+            "mean_tau_hat": NaN
+          },
+          {
+            "subset": "domain_quintile_5",
+            "n_live": 1194,
+            "mean_domain_score": 1.0,
+            "auuc_live": -0.018362756780574443,
+            "empirical_ate": 0.09638148194953451,
+            "mean_tau_hat": 0.08491691673062529
+          }
+        ],
+        "pairwise_empirical_ate_top3": [],
+        "pairwise_mean_tau_top3": []
+      },
+      "diagnosis": {
+        "mmd2_x": 0.004118193106934202,
+        "auuc_gap": 0.0325382285712149,
+        "overlap_ess": 0.6833799826271595,
+        "loco_spearman": 0.9999999999999999,
+        "label": "concept_drift_or_tau_change",
+        "hints": [
+          "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+          "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+        ]
+      },
+      "subset_insight_regime": "x_stable_gap_large_check_loco_and_po_risk",
+      "strategy": "Regime=x_stable_gap_large_check_loco_and_po_risk; diagnose=concept_drift_or_tau_change; PO-risk p=1.000. Strategy: LOCO\u2013AUUC \u2192 L1 pairwise AUUC; if PO reject add L2 ATE REALLOCATE.",
+      "layer1_narrative": [
+        "Global ranking: AUUC_ref=0.0144, AUUC_live=-0.0181, gap=0.0325.",
+        "Top LOCO (L1 feature): 'block_0' drop_live=-0.0105 \u2014 ranking on LIVE leans on this input.",
+        "Quintile spread: worst=domain_quintile_5 AUUC=-0.0184; best=domain_quintile_5 AUUC=-0.0184."
+      ],
+      "layer2_narrative": [
+        "Layer 2 (effect): PO-risk not flagged \u2014 use empirical ATE / mean \u03c4\u0302 as diagnostic only, not primary REALLOCATE on ATE pairs.",
+        "Highest observed uplift slice: domain_quintile_5 empirical_ATE=0.0964, mean_tau_hat=0.0849."
+      ],
+      "business_rules": [
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Pause or cap uplift targeting on LIVE until AUUC_live (-0.0181) recovers above 0.000.",
+          "evidence": {
+            "auuc_live_global": -0.018124682914907805,
+            "diagnosis": "concept_drift_or_tau_change",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0105).",
+          "evidence": {
+            "feature": "block_0",
+            "auuc_ref": 0.01565250587984875,
+            "auuc_live": -0.007642203845410489,
+            "drop_ref": -0.0012389602235416616,
+            "drop_live": -0.010482479069497317,
+            "drop_gap": -0.009243518845955655,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0065).",
+          "evidence": {
+            "feature": "block_1",
+            "auuc_ref": 0.0092784178621696,
+            "auuc_live": -0.011608441697231846,
+            "drop_ref": 0.005135127794137488,
+            "drop_live": -0.00651624121767596,
+            "drop_gap": -0.011651369011813448,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "RELEARN",
+          "rule": "X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.",
+          "evidence": {
+            "mmd2_x": 0.004118193106934202,
+            "auuc_gap": 0.0325382285712149,
+            "overlap_ess": 0.6833799826271595,
+            "loco_spearman": 0.9999999999999999,
+            "label": "concept_drift_or_tau_change",
+            "hints": [
+              "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+              "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "capex_ticket",
+              "estimated_capex_ticket_usd": 2500.0,
+              "estimated_net_impact_usd": 0.0,
+              "note": "CAPEX ticket (excluded from OPEX scenario total); ROI after holdout AUUC SLA"
+            }
+          }
+        }
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "5885ee9a-cdb",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:24.008586+00:00"
+        },
+        {
+          "episode_id": "a4221114-b73",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:24.008624+00:00"
+        },
+        {
+          "episode_id": "e38a7101-31d",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:24.008641+00:00"
+        },
+        {
+          "episode_id": "0b11075f-22c",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.018124682914907805,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": -0.018124682914907805,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:24.008652+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_opex_net_usd": 0.0,
+        "estimated_saved_spend_usd_total": 0.0,
+        "estimated_capex_tickets_usd": 2500.0,
+        "estimated_net_impact_usd_total": 0.0,
+        "n_rules": 4,
+        "n_opex_rules": 0,
+        "n_capex_tickets": 1
+      }
+    },
+    {
+      "dataset": "synthetic_covariate",
+      "gates": {
+        "overlap_ess_batch": 0.7561079624841507,
+        "mmd2_x": 0.003354902599920803,
+        "po_risk_statistic": 0.0010977725019495873,
+        "po_risk_pvalue": 0.36363636363636365,
+        "po_risk_reject": false
+      },
+      "layer1_auuc_ranking": {
+        "auuc_ref": -0.01595131264521731,
+        "auuc_live": 0.011201408070680811,
+        "auuc_gap": -0.02715272071589812,
+        "loco_top3": [
+          {
+            "feature": "block_1",
+            "auuc_ref": 0.0001339687325306752,
+            "auuc_live": -0.0032466432958659685,
+            "drop_ref": -0.016085281377747986,
+            "drop_live": 0.014448051366546779,
+            "drop_gap": 0.030533332744294765
+          },
+          {
+            "feature": "block_0",
+            "auuc_ref": -0.012541882616425245,
+            "auuc_live": 0.009027389199676729,
+            "drop_ref": -0.003409430028792064,
+            "drop_live": 0.002174018871004083,
+            "drop_gap": 0.005583448899796147
+          }
+        ],
+        "pairwise_auuc_top3": [
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_4",
+            "auuc_a": -0.03383502418185252,
+            "auuc_b": 0.09134932688802237,
+            "delta": -0.12518435106987488,
+            "worse": "domain_quintile_2",
+            "better": "domain_quintile_4"
+          },
+          {
+            "subset_a": "domain_quintile_1",
+            "subset_b": "domain_quintile_4",
+            "auuc_a": -0.016544701824111777,
+            "auuc_b": 0.09134932688802237,
+            "delta": -0.10789402871213415,
+            "worse": "domain_quintile_1",
+            "better": "domain_quintile_4"
+          },
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_4",
+            "auuc_a": -0.016287246971129536,
+            "auuc_b": 0.09134932688802237,
+            "delta": -0.1076365738591519,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_4"
+          }
+        ],
+        "logo_mmd_top2": [
+          {
+            "group": "block_0",
+            "logo_mmd_drop": 0.0012390191523676576,
+            "mmd_without_group": 0.0031372952892839284,
+            "mmd_full": 0.004376314441651586
+          },
+          {
+            "group": "block_1",
+            "logo_mmd_drop": -0.02103108503089827,
+            "mmd_without_group": 0.025407399472549858,
+            "mmd_full": 0.004376314441651586
+          }
+        ]
+      },
+      "layer2_uplift_effect": {
+        "po_risk_mode": false,
+        "slices": [
+          {
+            "subset": "domain_quintile_1",
+            "n_live": 195,
+            "mean_domain_score": 0.7260256410256409,
+            "auuc_live": -0.016544701824111777,
+            "empirical_ate": -0.02118912080961416,
+            "mean_tau_hat": 0.004604310498626444
+          },
+          {
+            "subset": "domain_quintile_2",
+            "n_live": 200,
+            "mean_domain_score": 0.8145625,
+            "auuc_live": -0.03383502418185252,
+            "empirical_ate": 0.03990399039903991,
+            "mean_tau_hat": 0.008879655581760253
+          },
+          {
+            "subset": "domain_quintile_3",
+            "n_live": 186,
+            "mean_domain_score": 0.8631048387096774,
+            "auuc_live": -0.016287246971129536,
+            "empirical_ate": 0.03125,
+            "mean_tau_hat": 0.014083226979483509
+          },
+          {
+            "subset": "domain_quintile_4",
+            "n_live": 176,
+            "mean_domain_score": 0.9004261363636363,
+            "auuc_live": 0.09134932688802237,
+            "empirical_ate": 0.048747090236888946,
+            "mean_tau_hat": 0.0014768559489433725
+          },
+          {
+            "subset": "domain_quintile_5",
+            "n_live": 243,
+            "mean_domain_score": 0.948045267489712,
+            "auuc_live": 0.015524154179513921,
+            "empirical_ate": -0.11879913255624824,
+            "mean_tau_hat": -0.011356752866178703
+          }
+        ],
+        "pairwise_empirical_ate_top3": [
+          {
+            "subset_a": "domain_quintile_4",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.048747090236888946,
+            "value_b": -0.11879913255624824,
+            "delta_a_minus_b": 0.1675462227931372,
+            "higher_uplift_subset": "domain_quintile_4"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.03990399039903991,
+            "value_b": -0.11879913255624824,
+            "delta_a_minus_b": 0.15870312295528816,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.03125,
+            "value_b": -0.11879913255624824,
+            "delta_a_minus_b": 0.15004913255624824,
+            "higher_uplift_subset": "domain_quintile_3"
+          }
+        ],
+        "pairwise_mean_tau_top3": [
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.014083226979483509,
+            "value_b": -0.011356752866178703,
+            "delta_a_minus_b": 0.025439979845662212,
+            "higher_uplift_subset": "domain_quintile_3"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.008879655581760253,
+            "value_b": -0.011356752866178703,
+            "delta_a_minus_b": 0.020236408447938954,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_1",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.004604310498626444,
+            "value_b": -0.011356752866178703,
+            "delta_a_minus_b": 0.01596106336480515,
+            "higher_uplift_subset": "domain_quintile_1"
+          }
+        ]
+      },
+      "diagnosis": {
+        "mmd2_x": 0.003354902599920803,
+        "auuc_gap": -0.02715272071589812,
+        "overlap_ess": 0.7561079624841507,
+        "loco_spearman": -0.9999999999999999,
+        "label": "concept_drift_or_tau_change",
+        "hints": [
+          "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+          "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+        ]
+      },
+      "subset_insight_regime": "x_stable_gap_large_check_loco_and_po_risk",
+      "strategy": "Regime=x_stable_gap_large_check_loco_and_po_risk; diagnose=concept_drift_or_tau_change; PO-risk p=0.364. Strategy: LOCO\u2013AUUC \u2192 L1 pairwise AUUC; if PO reject add L2 ATE REALLOCATE.",
+      "layer1_narrative": [
+        "Global ranking: AUUC_ref=-0.0160, AUUC_live=0.0112, gap=-0.0272.",
+        "Top LOCO (L1 feature): 'block_1' drop_live=0.0144 \u2014 ranking on LIVE leans on this input.",
+        "Top pairwise AUUC (L1 users): domain_quintile_2 vs domain_quintile_4 \u0394=-0.1252; cap worse-ranking slice 'domain_quintile_2'.",
+        "Quintile spread: worst=domain_quintile_2 AUUC=-0.0338; best=domain_quintile_4 AUUC=0.0913."
+      ],
+      "layer2_narrative": [
+        "Layer 2 (effect): PO-risk not flagged \u2014 use empirical ATE / mean \u03c4\u0302 as diagnostic only, not primary REALLOCATE on ATE pairs.",
+        "Highest observed uplift slice: domain_quintile_4 empirical_ATE=0.0487, mean_tau_hat=0.0015.",
+        "Top pairwise ATE (L2): domain_quintile_4 vs domain_quintile_5 \u0394ATE=0.1675; shift spend toward 'domain_quintile_4'.",
+        "Top pairwise mean \u03c4\u0302 (model level): domain_quintile_3 vs domain_quintile_5 \u0394=0.0254."
+      ],
+      "business_rules": [
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Cap uplift in domain quintile 'domain_quintile_2' (AUUC_live=-0.0338, n=200); continue in 'domain_quintile_4' where ranking remains stronger.",
+          "evidence": {
+            "worst": {
+              "subset": "domain_quintile_2",
+              "n_live": 200,
+              "auuc_live": -0.03383502418185252,
+              "mean_domain_score": 0.8145625
+            },
+            "best": {
+              "subset": "domain_quintile_4",
+              "n_live": 176,
+              "auuc_live": 0.09134932688802237,
+              "mean_domain_score": 0.9004261363636363
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "opex",
+              "n_users_capped_est": 200,
+              "n_treatments_avoided_est": 70,
+              "estimated_saved_spend_usd": 455.0,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 455.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=0.0144).",
+          "evidence": {
+            "feature": "block_1",
+            "auuc_ref": 0.0001339687325306752,
+            "auuc_live": -0.0032466432958659685,
+            "drop_ref": -0.016085281377747986,
+            "drop_live": 0.014448051366546779,
+            "drop_gap": 0.030533332744294765,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "RELEARN",
+          "rule": "X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.",
+          "evidence": {
+            "mmd2_x": 0.003354902599920803,
+            "auuc_gap": -0.02715272071589812,
+            "overlap_ess": 0.7561079624841507,
+            "loco_spearman": -0.9999999999999999,
+            "label": "concept_drift_or_tau_change",
+            "hints": [
+              "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+              "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "capex_ticket",
+              "estimated_capex_ticket_usd": 2500.0,
+              "estimated_net_impact_usd": 0.0,
+              "note": "CAPEX ticket (excluded from OPEX scenario total); ROI after holdout AUUC SLA"
+            }
+          }
+        },
+        {
+          "priority": 3,
+          "action": "REALLOCATE",
+          "rule": "Restrict targeting to overlap-support users on LIVE (AUUC_live=0.0226 on support band vs global 0.0112).",
+          "evidence": {
+            "subset": "overlap_support_band",
+            "n_live": 798,
+            "lo": 0.15,
+            "hi": 0.85,
+            "auuc_live": 0.022593077512736006,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "opex",
+              "n_users_capped_est": 798,
+              "n_treatments_avoided_est": 279,
+              "estimated_saved_spend_usd": 1813.5,
+              "estimated_incremental_margin_usd": 0.0,
+              "estimated_net_impact_usd": 1813.5
+            }
+          }
+        },
+        {
+          "priority": 4,
+          "action": "MONITOR",
+          "rule": "Layer-2 diagnostic (PO-risk not reject): largest slice ATE contrast domain_quintile_4 vs domain_quintile_5 (\u0394ATE=0.1675) \u2014 do not REALLOCATE on ATE alone; use Layer-1 AUUC rules first.",
+          "evidence": {
+            "subset_a": "domain_quintile_4",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": 0.048747090236888946,
+            "value_b": -0.11879913255624824,
+            "delta_a_minus_b": 0.1675462227931372,
+            "higher_uplift_subset": "domain_quintile_4",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        }
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "cc12c9b4-fbd",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": 455.0,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 455.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:51.449646+00:00"
+        },
+        {
+          "episode_id": "061eb5f0-c9d",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:51.449702+00:00"
+        },
+        {
+          "episode_id": "5e583754-967",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:51.449720+00:00"
+        },
+        {
+          "episode_id": "c132d7d2-ecc",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": 1813.5,
+            "estimated_incremental_margin_usd": 0.0
+          },
+          "estimated_net_gain_usd": 1813.5,
+          "rule_ids": [
+            "uplift_p3_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:51.449732+00:00"
+        },
+        {
+          "episode_id": "ea2a57e4-a51",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": 0.011201408070680811,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "MONITOR",
+          "kpi_before_after": {
+            "auuc_live": 0.011201408070680811,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p4_MONITOR"
+          ],
+          "generated_at_utc": "2026-10-03T03:12:51.449742+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_opex_net_usd": 2268.5,
+        "estimated_saved_spend_usd_total": 2268.5,
+        "estimated_capex_tickets_usd": 2500.0,
+        "estimated_net_impact_usd_total": 2268.5,
+        "n_rules": 5,
+        "n_opex_rules": 2,
+        "n_capex_tickets": 1
+      }
+    },
+    {
+      "dataset": "synthetic_concept",
+      "gates": {
+        "overlap_ess_batch": 0.9908887303152697,
+        "mmd2_x": 0.001988446153312647,
+        "po_risk_statistic": 0.0019463275290849515,
+        "po_risk_pvalue": 0.030303030303030304,
+        "po_risk_reject": true
+      },
+      "layer1_auuc_ranking": {
+        "auuc_ref": 0.008780355855535982,
+        "auuc_live": -0.0025911722872646314,
+        "auuc_gap": 0.011371528142800614,
+        "loco_top3": [
+          {
+            "feature": "block_1",
+            "auuc_ref": 0.030427875154723904,
+            "auuc_live": -0.07303068662138561,
+            "drop_ref": -0.02164751929918792,
+            "drop_live": 0.07043951433412098,
+            "drop_gap": 0.09208703363330889
+          },
+          {
+            "feature": "block_0",
+            "auuc_ref": 0.006331550817511166,
+            "auuc_live": 0.02706797293230395,
+            "drop_ref": 0.002448805038024816,
+            "drop_live": -0.02965914521956858,
+            "drop_gap": -0.032107950257593394
+          }
+        ],
+        "pairwise_auuc_top3": [
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_3",
+            "auuc_a": 0.051385574647545444,
+            "auuc_b": -0.04077166426096218,
+            "delta": 0.09215723890850763,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_1",
+            "subset_b": "domain_quintile_2",
+            "auuc_a": -0.019408240015601128,
+            "auuc_b": 0.051385574647545444,
+            "delta": -0.07079381466314658,
+            "worse": "domain_quintile_1",
+            "better": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "auuc_a": -0.04077166426096218,
+            "auuc_b": 0.018626406924541178,
+            "delta": -0.05939807118550336,
+            "worse": "domain_quintile_3",
+            "better": "domain_quintile_5"
+          }
+        ],
+        "logo_mmd_top2": [
+          {
+            "group": "block_1",
+            "logo_mmd_drop": 0.0005201162113578316,
+            "mmd_without_group": 0.0024885428756154793,
+            "mmd_full": 0.003008659086973311
+          },
+          {
+            "group": "block_0",
+            "logo_mmd_drop": -0.0006749197589041335,
+            "mmd_without_group": 0.0036835788458774443,
+            "mmd_full": 0.003008659086973311
+          }
+        ]
+      },
+      "layer2_uplift_effect": {
+        "po_risk_mode": true,
+        "slices": [
+          {
+            "subset": "domain_quintile_1",
+            "n_live": 171,
+            "mean_domain_score": 0.7369152046783625,
+            "auuc_live": -0.019408240015601128,
+            "empirical_ate": 0.03893780957622456,
+            "mean_tau_hat": 0.06318361763324835
+          },
+          {
+            "subset": "domain_quintile_2",
+            "n_live": 143,
+            "mean_domain_score": 0.7819930069930069,
+            "auuc_live": 0.051385574647545444,
+            "empirical_ate": 0.07269076305220878,
+            "mean_tau_hat": 0.08911993566275186
+          },
+          {
+            "subset": "domain_quintile_3",
+            "n_live": 200,
+            "mean_domain_score": 0.8063750000000002,
+            "auuc_live": -0.04077166426096218,
+            "empirical_ate": -0.11144457783113249,
+            "mean_tau_hat": 0.06072054454246922
+          },
+          {
+            "subset": "domain_quintile_4",
+            "n_live": 261,
+            "mean_domain_score": 0.8363026819923371,
+            "auuc_live": -0.0005978327567686488,
+            "empirical_ate": -0.08015267175572516,
+            "mean_tau_hat": 0.05654071870633549
+          },
+          {
+            "subset": "domain_quintile_5",
+            "n_live": 225,
+            "mean_domain_score": 0.8821666666666668,
+            "auuc_live": 0.018626406924541178,
+            "empirical_ate": 0.04205607476635509,
+            "mean_tau_hat": 0.053730491045384715
+          }
+        ],
+        "pairwise_empirical_ate_top3": [
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_3",
+            "metric": "empirical_ate",
+            "value_a": 0.07269076305220878,
+            "value_b": -0.11144457783113249,
+            "delta_a_minus_b": 0.18413534088334127,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_3",
+            "subset_b": "domain_quintile_5",
+            "metric": "empirical_ate",
+            "value_a": -0.11144457783113249,
+            "value_b": 0.04205607476635509,
+            "delta_a_minus_b": -0.15350065259748757,
+            "higher_uplift_subset": "domain_quintile_5"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_4",
+            "metric": "empirical_ate",
+            "value_a": 0.07269076305220878,
+            "value_b": -0.08015267175572516,
+            "delta_a_minus_b": 0.15284343480793394,
+            "higher_uplift_subset": "domain_quintile_2"
+          }
+        ],
+        "pairwise_mean_tau_top3": [
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_5",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08911993566275186,
+            "value_b": 0.053730491045384715,
+            "delta_a_minus_b": 0.03538944461736715,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_4",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08911993566275186,
+            "value_b": 0.05654071870633549,
+            "delta_a_minus_b": 0.03257921695641638,
+            "higher_uplift_subset": "domain_quintile_2"
+          },
+          {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_3",
+            "metric": "mean_tau_hat",
+            "value_a": 0.08911993566275186,
+            "value_b": 0.06072054454246922,
+            "delta_a_minus_b": 0.028399391120282648,
+            "higher_uplift_subset": "domain_quintile_2"
+          }
+        ]
+      },
+      "diagnosis": {
+        "mmd2_x": 0.001988446153312647,
+        "auuc_gap": 0.011371528142800614,
+        "overlap_ess": 0.9908887303152697,
+        "loco_spearman": -0.9999999999999999,
+        "label": "concept_drift_or_tau_change",
+        "hints": [
+          "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+          "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+        ]
+      },
+      "subset_insight_regime": "x_stable_gap_large_check_loco_and_po_risk",
+      "strategy": "Regime=x_stable_gap_large_check_loco_and_po_risk; diagnose=concept_drift_or_tau_change; PO-risk p=0.030. Strategy: LOCO\u2013AUUC \u2192 L1 pairwise AUUC; if PO reject add L2 ATE REALLOCATE.",
+      "layer1_narrative": [
+        "Global ranking: AUUC_ref=0.0088, AUUC_live=-0.0026, gap=0.0114.",
+        "Top LOCO (L1 feature): 'block_1' drop_live=0.0704 \u2014 ranking on LIVE leans on this input.",
+        "Top pairwise AUUC (L1 users): domain_quintile_2 vs domain_quintile_3 \u0394=0.0922; cap worse-ranking slice 'domain_quintile_3'.",
+        "Quintile spread: worst=domain_quintile_3 AUUC=-0.0408; best=domain_quintile_2 AUUC=0.0514."
+      ],
+      "layer2_narrative": [
+        "Layer 2 (effect): PO-risk reject \u2014 prioritize pairwise empirical ATE for budget moves.",
+        "Highest observed uplift slice: domain_quintile_2 empirical_ATE=0.0727, mean_tau_hat=0.0891.",
+        "Top pairwise ATE (L2): domain_quintile_2 vs domain_quintile_3 \u0394ATE=0.1841; shift spend toward 'domain_quintile_2'.",
+        "Top pairwise mean \u03c4\u0302 (model level): domain_quintile_2 vs domain_quintile_5 \u0394=0.0354."
+      ],
+      "business_rules": [
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Pause or cap uplift targeting on LIVE until AUUC_live (-0.0026) recovers above 0.000.",
+          "evidence": {
+            "auuc_live_global": -0.0025911722872646314,
+            "diagnosis": "concept_drift_or_tau_change",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Cap uplift in domain quintile 'domain_quintile_3' (AUUC_live=-0.0408, n=200); continue in 'domain_quintile_2' where ranking remains stronger.",
+          "evidence": {
+            "worst": {
+              "subset": "domain_quintile_3",
+              "n_live": 200,
+              "auuc_live": -0.04077166426096218,
+              "mean_domain_score": 0.8063750000000002
+            },
+            "best": {
+              "subset": "domain_quintile_2",
+              "n_live": 143,
+              "auuc_live": 0.051385574647545444,
+              "mean_domain_score": 0.7819930069930069
+            },
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "opex",
+              "n_users_capped_est": 200,
+              "n_treatments_avoided_est": 70,
+              "estimated_saved_spend_usd": 455.0,
+              "estimated_incremental_margin_usd": 1.31,
+              "estimated_net_impact_usd": 456.31
+            }
+          }
+        },
+        {
+          "priority": 1,
+          "action": "REALLOCATE",
+          "rule": "Concept drift (PO-risk): observed uplift differs by slice \u2014 higher empirical ATE in 'domain_quintile_2' vs pairwise partner (\u0394ATE=0.1841 on empirical_ate); shift today's targeting budget toward the high-uplift slice after SRM/overlap checks.",
+          "evidence": {
+            "subset_a": "domain_quintile_2",
+            "subset_b": "domain_quintile_3",
+            "metric": "empirical_ate",
+            "value_a": 0.07269076305220878,
+            "value_b": -0.11144457783113249,
+            "delta_a_minus_b": 0.18413534088334127,
+            "higher_uplift_subset": "domain_quintile_2",
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_1': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=0.0704).",
+          "evidence": {
+            "feature": "block_1",
+            "auuc_ref": 0.030427875154723904,
+            "auuc_live": -0.07303068662138561,
+            "drop_ref": -0.02164751929918792,
+            "drop_live": 0.07043951433412098,
+            "drop_gap": 0.09208703363330889,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "REALLOCATE",
+          "rule": "Uplift ranking on LIVE depends on group 'block_0': do not drop this block from the model without replacement; if trimming segments, keep users where this group's LOCO signal is stable (LOCO AUUC drop_live=-0.0297).",
+          "evidence": {
+            "feature": "block_0",
+            "auuc_ref": 0.006331550817511166,
+            "auuc_live": 0.02706797293230395,
+            "drop_ref": 0.002448805038024816,
+            "drop_live": -0.02965914521956858,
+            "drop_gap": -0.032107950257593394,
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "neutral",
+              "estimated_net_impact_usd": 0.0
+            }
+          }
+        },
+        {
+          "priority": 2,
+          "action": "RELEARN",
+          "rule": "X stable but AUUC gap large: extend labels and schedule prod uplift model relearn after REALLOCATE trial.",
+          "evidence": {
+            "mmd2_x": 0.001988446153312647,
+            "auuc_gap": 0.011371528142800614,
+            "overlap_ess": 0.9908887303152697,
+            "loco_spearman": -0.9999999999999999,
+            "label": "concept_drift_or_tau_change",
+            "hints": [
+              "X stable but AUUC gap: P(Y|T,X) or true CATE may have changed.",
+              "Compare LOCO profiles; if spearman low, retrain tau / refresh labels."
+            ],
+            "economics": {
+              "margin_usd_per_conversion": 48.0,
+              "treatment_cost_usd": 6.5,
+              "currency": "USD",
+              "simulated": true,
+              "econ_bucket": "capex_ticket",
+              "estimated_capex_ticket_usd": 2500.0,
+              "estimated_net_impact_usd": 0.0,
+              "note": "CAPEX ticket (excluded from OPEX scenario total); ROI after holdout AUUC SLA"
+            }
+          }
+        }
+      ],
+      "impact_receipts": [
+        {
+          "episode_id": "acefdb04-1f0",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018685+00:00"
+        },
+        {
+          "episode_id": "b8d1e40c-0d3",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": 455.0,
+            "estimated_incremental_margin_usd": 1.31
+          },
+          "estimated_net_gain_usd": 456.31,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018717+00:00"
+        },
+        {
+          "episode_id": "4b00c400-4ba",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p1_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018735+00:00"
+        },
+        {
+          "episode_id": "b25bb75c-223",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018745+00:00"
+        },
+        {
+          "episode_id": "129a1ad8-80e",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "REALLOCATE",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_REALLOCATE"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018754+00:00"
+        },
+        {
+          "episode_id": "a1d0fb94-97e",
+          "pattern": "uplift_two_batch",
+          "ref_window": "ref_uplift_window",
+          "live_window": "live_uplift_window",
+          "shift_summary": {
+            "mmd2_x": null,
+            "auuc_live_global": -0.0025911722872646314,
+            "po_pvalue": null,
+            "diagnosis": "concept_drift_or_tau_change"
+          },
+          "action": "RELEARN",
+          "kpi_before_after": {
+            "auuc_live": -0.0025911722872646314,
+            "estimated_saved_spend_usd": null,
+            "estimated_incremental_margin_usd": null
+          },
+          "estimated_net_gain_usd": 0.0,
+          "rule_ids": [
+            "uplift_p2_RELEARN"
+          ],
+          "generated_at_utc": "2026-10-03T03:13:19.018769+00:00"
+        }
+      ],
+      "economics_summary": {
+        "simulated": true,
+        "estimated_opex_net_usd": 456.31,
+        "estimated_saved_spend_usd_total": 455.0,
+        "estimated_capex_tickets_usd": 2500.0,
+        "estimated_net_impact_usd_total": 456.31,
+        "n_rules": 6,
+        "n_opex_rules": 1,
+        "n_capex_tickets": 1
+      }
+    }
+  ]
+}

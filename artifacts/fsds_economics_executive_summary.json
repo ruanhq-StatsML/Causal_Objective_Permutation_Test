@@ -1,0 +1,109 @@
+{
+  "generated_at_utc": "2026-10-03T05:07:33.300537+00:00",
+  "headline": {
+    "direct": "Unit-tested OPEX: ~34% agent $/ep, ~39% multi-agent debate $, ~20% early-stop rounds, uplift caps with receipts",
+    "potential": "Cross-silo rollout, revenue unlock, CAPEX timing, compliance narrative"
+  },
+  "direct_economic_benefits": [
+    {
+      "line": "Agent SoT critical-path budget",
+      "metric": "~34% $/episode vs uniform SoT",
+      "unit_savings_usd": 0.012,
+      "evidence": "artifacts/boss_delivery_six_points.json",
+      "type": "direct_opex"
+    },
+    {
+      "line": "Multi-agent FSDS routing (3-role debate)",
+      "metric": "~39.3% $/debate vs uniform swarm",
+      "unit_savings_usd": 0.0081,
+      "success_delta": 0.020000000000000018,
+      "evidence": "artifacts/multi_agent_fsds_economics.json",
+      "type": "direct_opex"
+    },
+    {
+      "line": "Debate early-stop (dispersion gate)",
+      "metric": "~20% fewer debate rounds (macro)",
+      "unit_savings_usd": 0.0088,
+      "evidence": "artifacts/multi_agent_debate_early_stop.json",
+      "type": "direct_opex"
+    },
+    {
+      "line": "Uplift REALLOCATE caps (sim, per monitor window)",
+      "metric": "OPEX net $3271 across 4 scenario(s) in bench",
+      "capex_tickets_usd": 10000.0,
+      "evidence": "artifacts/uplift_two_layer_benchmark.json",
+      "type": "direct_opex"
+    },
+    {
+      "line": "LangGraph node budget (tool_call drift)",
+      "metric": "Same Object-2 as SoT on checkpoint embeddings",
+      "unit_savings_usd": 0.015349999999999999,
+      "evidence": "artifacts/langgraph_fsds_hook.json",
+      "type": "direct_opex"
+    }
+  ],
+  "potential_economic_benefits": [
+    {
+      "line": "Federated legal block monitor",
+      "metric": "Targeted OFS vs global copilot shutdown",
+      "illustrative_usd_per_quarter": 125000.0,
+      "evidence": "artifacts/federated_legal_agent_blocks.json",
+      "type": "potential_revenue_risk"
+    },
+    {
+      "line": "Federated uplink vs centralized matrix (egress)",
+      "metric": "Illustrative egress save ~$0.51/yr (config tenants/windows)",
+      "evidence": "config/fsds_economics_assumptions.json",
+      "type": "direct_infra"
+    },
+    {
+      "line": "Audit impact receipts",
+      "metric": "Finance-defensible cap/realloc (statistic + rule_id)",
+      "illustrative_usd": "Avoid ad-hoc rollback / compliance delay (not quantified)",
+      "type": "potential_risk_avoidance"
+    },
+    {
+      "line": "RELEARN gating (PO-risk + AUUC_ovlp)",
+      "metric": "Defer CAPEX until OPEX adapt fails",
+      "illustrative_capex_deferred": 10000.0,
+      "type": "potential_capex_timing"
+    },
+    {
+      "line": "Human QA sampling on shifted segments only",
+      "metric": "Supervisor FTE on FSDS-localized handoffs",
+      "type": "potential_opex"
+    }
+  ],
+  "stacking_note": "Debate FSDS micro-budget and early-stop macro-rounds are partially stackable; uplift OPEX is per campaign window; federated unlock is scenario sim not additive to token saves.",
+  "scale_scenarios_usd_per_year": [
+    {
+      "scale": "pilot",
+      "direct_compute_sot_usd_per_year": 7200.0,
+      "direct_compute_debate_fsds_usd_per_year": 974.11,
+      "direct_compute_debate_early_stop_usd_per_year": 1060.8,
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 9812.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
+    },
+    {
+      "scale": "mid_market",
+      "direct_compute_sot_usd_per_year": 72000.0,
+      "direct_compute_debate_fsds_usd_per_year": 7792.91,
+      "direct_compute_debate_early_stop_usd_per_year": 8486.4,
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 42520.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
+    },
+    {
+      "scale": "platform",
+      "direct_compute_sot_usd_per_year": 720000.0,
+      "direct_compute_debate_fsds_usd_per_year": 58446.79,
+      "direct_compute_debate_early_stop_usd_per_year": 63648.0,
+      "direct_uplift_opex_per_window_usd": 817.7,
+      "direct_uplift_opex_usd_per_year": 42520.4,
+      "federated_egress_savings_usd_per_year_illustrative": 0.51
+    }
+  ],
+  "assumptions_config": "/workspace/config/fsds_economics_assumptions.json",
+  "reproduce": "cd Python && python3 run_fsds_business_impact_pack.py"
+}

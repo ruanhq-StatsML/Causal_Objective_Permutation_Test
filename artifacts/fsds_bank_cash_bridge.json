@@ -1,0 +1,331 @@
+{
+  "summary": {
+    "period_label": "demo_scaled_50000_episodes",
+    "cash_in_usd": 45408.25,
+    "cash_out_avoided_usd": 4293.4,
+    "cash_out_extra_usd": 11430.81,
+    "net_retained_in_checking_usd": 38270.84,
+    "ledger": [
+      {
+        "gl_account": "6100",
+        "gl_label": "Cloud / LLM API COGS",
+        "direction": "retained",
+        "amount_usd": 256.4,
+        "counterparty": "LLM_provider (OpenAI/Azure/Anthropic/Bedrock)",
+        "settlement_lag_days": 7,
+        "receipt_id": "2470ef09-d99",
+        "rule_ids": [
+          "agent_reallocate",
+          "debate_early_stop"
+        ],
+        "pattern": "multi_agent_debate",
+        "mechanism_zh": "\u540c\u4e00\u8fd0\u8425\u6237\uff1a\u6b21\u6708 API \u53d1\u7968\u501f\u8bb0\u91d1\u989d\u4f4e\u4e8e\u53cd\u4e8b\u5b9e baseline",
+        "mechanism_en": "Operating checking: next API invoice debit lower than baseline",
+        "simulated": true
+      },
+      {
+        "gl_account": "4100",
+        "gl_label": "Product / subscription cash receipts",
+        "direction": "cash_in",
+        "amount_usd": 232.630826,
+        "counterparty": "Customer / Stripe / merchant acquirer",
+        "settlement_lag_days": 14,
+        "receipt_id": "2470ef09-d99",
+        "rule_ids": [
+          "agent_reallocate",
+          "debate_early_stop"
+        ],
+        "pattern": "multi_agent_debate",
+        "mechanism_zh": "\u6210\u529f\u7387\u63d0\u5347 \u2192 \u5ba2\u6237\u4ed8\u6b3e\u5165\u8d26\uff08\u901a\u5e38\u665a\u4e8e API \u8d26\u671f\uff09",
+        "mechanism_en": "Higher success \u2192 customer settlements (lags API billing)",
+        "simulated": true
+      },
+      {
+        "gl_account": "6310",
+        "gl_label": "FSDS monitor sidecar infra",
+        "direction": "cash_out",
+        "amount_usd": 489.021045,
+        "counterparty": "Sidecar host (K8s / observability)",
+        "settlement_lag_days": 30,
+        "receipt_id": "2470ef09-d99",
+        "rule_ids": [
+          "agent_reallocate",
+          "debate_early_stop",
+          "fsds_overhead"
+        ],
+        "pattern": "multi_agent_debate",
+        "mechanism_zh": "\u76d1\u63a7 sidecar \u56fa\u5b9a\u5c0f\u989d OPEX\uff0c\u51b2\u51cf\u90e8\u5206\u7b97\u529b\u8282\u7701",
+        "mechanism_en": "Monitor sidecar OPEX offsets part of compute savings",
+        "simulated": true
+      },
+      {
+        "gl_account": "6100",
+        "gl_label": "Cloud / LLM API COGS",
+        "direction": "retained",
+        "amount_usd": 767.5,
+        "counterparty": "LLM_provider (OpenAI/Azure/Anthropic/Bedrock)",
+        "settlement_lag_days": 7,
+        "receipt_id": "041a8a90-538",
+        "rule_ids": [
+          "agent_reallocate",
+          "reallocate",
+          "segment_budget_branch_1"
+        ],
+        "pattern": "langgraph_checkpoint",
+        "mechanism_zh": "\u540c\u4e00\u8fd0\u8425\u6237\uff1a\u6b21\u6708 API \u53d1\u7968\u501f\u8bb0\u91d1\u989d\u4f4e\u4e8e\u53cd\u4e8b\u5b9e baseline",
+        "mechanism_en": "Operating checking: next API invoice debit lower than baseline",
+        "simulated": true
+      },
+      {
+        "gl_account": "4100",
+        "gl_label": "Product / subscription cash receipts",
+        "direction": "cash_in",
+        "amount_usd": 174.312642,
+        "counterparty": "Customer / Stripe / merchant acquirer",
+        "settlement_lag_days": 14,
+        "receipt_id": "041a8a90-538",
+        "rule_ids": [
+          "agent_reallocate",
+          "reallocate",
+          "segment_budget_branch_1"
+        ],
+        "pattern": "langgraph_checkpoint",
+        "mechanism_zh": "\u6210\u529f\u7387\u63d0\u5347 \u2192 \u5ba2\u6237\u4ed8\u6b3e\u5165\u8d26\uff08\u901a\u5e38\u665a\u4e8e API \u8d26\u671f\uff09",
+        "mechanism_en": "Higher success \u2192 customer settlements (lags API billing)",
+        "simulated": true
+      },
+      {
+        "gl_account": "6310",
+        "gl_label": "FSDS monitor sidecar infra",
+        "direction": "cash_out",
+        "amount_usd": 941.793806,
+        "counterparty": "Sidecar host (K8s / observability)",
+        "settlement_lag_days": 30,
+        "receipt_id": "041a8a90-538",
+        "rule_ids": [
+          "agent_reallocate",
+          "reallocate",
+          "segment_budget_branch_1",
+          "fsds_overhead"
+        ],
+        "pattern": "langgraph_checkpoint",
+        "mechanism_zh": "\u76d1\u63a7 sidecar \u56fa\u5b9a\u5c0f\u989d OPEX\uff0c\u51b2\u51cf\u90e8\u5206\u7b97\u529b\u8282\u7701",
+        "mechanism_en": "Monitor sidecar OPEX offsets part of compute savings",
+        "simulated": true
+      },
+      {
+        "gl_account": "6200",
+        "gl_label": "Marketing & treatment fulfillment",
+        "direction": "retained",
+        "amount_usd": 546.0,
+        "counterparty": "Ad / promo / fulfillment vendor",
+        "settlement_lag_days": 3,
+        "receipt_id": "5b109727-f9d",
+        "rule_ids": [
+          "uplift_p1_REALLOCATE"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u5c01\u9876\u540e\u5c11\u89e6\u8fbe/\u5c11\u53d1\u8d27 \u2192 \u8fd0\u8425\u6237\u5c11\u4e00\u7b14\u5bf9\u4f9b\u5e94\u5546\u7684\u501f\u8bb0",
+        "mechanism_en": "Cap \u2192 fewer treatments billed by vendor",
+        "simulated": true
+      },
+      {
+        "gl_account": "1700",
+        "gl_label": "Capitalized ML retrain (RELEARN)",
+        "direction": "cash_out",
+        "amount_usd": 2500.0,
+        "counterparty": "GPU cloud / labeling vendor",
+        "settlement_lag_days": 45,
+        "receipt_id": "fd6cc1f9-3b0",
+        "rule_ids": [
+          "uplift_p2_RELEARN",
+          "capex_relearn"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u91cd\u8bad\u5de5\u5355\u6279\u51c6\u540e\u624d\u4ece\u8fd0\u8425\u6216 Capex \u6237\u652f\u51fa \u2014 \u4e0d\u662f cap \u7684\u5373\u65f6\u7701\u94b1",
+        "mechanism_en": "RELEARN cash out only when ticket approved \u2014 not instant OPEX save",
+        "simulated": true
+      },
+      {
+        "gl_account": "1700",
+        "gl_label": "Capitalized ML retrain (RELEARN)",
+        "direction": "cash_out",
+        "amount_usd": 2500.0,
+        "counterparty": "GPU cloud / labeling vendor",
+        "settlement_lag_days": 45,
+        "receipt_id": "0b11075f-22c",
+        "rule_ids": [
+          "uplift_p2_RELEARN",
+          "capex_relearn"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u91cd\u8bad\u5de5\u5355\u6279\u51c6\u540e\u624d\u4ece\u8fd0\u8425\u6216 Capex \u6237\u652f\u51fa \u2014 \u4e0d\u662f cap \u7684\u5373\u65f6\u7701\u94b1",
+        "mechanism_en": "RELEARN cash out only when ticket approved \u2014 not instant OPEX save",
+        "simulated": true
+      },
+      {
+        "gl_account": "6200",
+        "gl_label": "Marketing & treatment fulfillment",
+        "direction": "retained",
+        "amount_usd": 455.0,
+        "counterparty": "Ad / promo / fulfillment vendor",
+        "settlement_lag_days": 3,
+        "receipt_id": "cc12c9b4-fbd",
+        "rule_ids": [
+          "uplift_p1_REALLOCATE"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u5c01\u9876\u540e\u5c11\u89e6\u8fbe/\u5c11\u53d1\u8d27 \u2192 \u8fd0\u8425\u6237\u5c11\u4e00\u7b14\u5bf9\u4f9b\u5e94\u5546\u7684\u501f\u8bb0",
+        "mechanism_en": "Cap \u2192 fewer treatments billed by vendor",
+        "simulated": true
+      },
+      {
+        "gl_account": "1700",
+        "gl_label": "Capitalized ML retrain (RELEARN)",
+        "direction": "cash_out",
+        "amount_usd": 2500.0,
+        "counterparty": "GPU cloud / labeling vendor",
+        "settlement_lag_days": 45,
+        "receipt_id": "5e583754-967",
+        "rule_ids": [
+          "uplift_p2_RELEARN",
+          "capex_relearn"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u91cd\u8bad\u5de5\u5355\u6279\u51c6\u540e\u624d\u4ece\u8fd0\u8425\u6216 Capex \u6237\u652f\u51fa \u2014 \u4e0d\u662f cap \u7684\u5373\u65f6\u7701\u94b1",
+        "mechanism_en": "RELEARN cash out only when ticket approved \u2014 not instant OPEX save",
+        "simulated": true
+      },
+      {
+        "gl_account": "6200",
+        "gl_label": "Marketing & treatment fulfillment",
+        "direction": "retained",
+        "amount_usd": 1813.5,
+        "counterparty": "Ad / promo / fulfillment vendor",
+        "settlement_lag_days": 3,
+        "receipt_id": "c132d7d2-ecc",
+        "rule_ids": [
+          "uplift_p3_REALLOCATE"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u5c01\u9876\u540e\u5c11\u89e6\u8fbe/\u5c11\u53d1\u8d27 \u2192 \u8fd0\u8425\u6237\u5c11\u4e00\u7b14\u5bf9\u4f9b\u5e94\u5546\u7684\u501f\u8bb0",
+        "mechanism_en": "Cap \u2192 fewer treatments billed by vendor",
+        "simulated": true
+      },
+      {
+        "gl_account": "6200",
+        "gl_label": "Marketing & treatment fulfillment",
+        "direction": "retained",
+        "amount_usd": 455.0,
+        "counterparty": "Ad / promo / fulfillment vendor",
+        "settlement_lag_days": 3,
+        "receipt_id": "b8d1e40c-0d3",
+        "rule_ids": [
+          "uplift_p1_REALLOCATE"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u5c01\u9876\u540e\u5c11\u89e6\u8fbe/\u5c11\u53d1\u8d27 \u2192 \u8fd0\u8425\u6237\u5c11\u4e00\u7b14\u5bf9\u4f9b\u5e94\u5546\u7684\u501f\u8bb0",
+        "mechanism_en": "Cap \u2192 fewer treatments billed by vendor",
+        "simulated": true
+      },
+      {
+        "gl_account": "4100",
+        "gl_label": "Product / subscription cash receipts",
+        "direction": "cash_in",
+        "amount_usd": 1.31,
+        "counterparty": "Customer (incremental conversion margin)",
+        "settlement_lag_days": 30,
+        "receipt_id": "b8d1e40c-0d3",
+        "rule_ids": [
+          "uplift_p1_REALLOCATE"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u51cf\u5c11\u4f4e\u8d28\u91cf\u8f6c\u5316\u5e26\u6765\u7684\u51c0\u6536\u6b3e\u6539\u5584\uff08\u9700\u4e0e\u8d22\u52a1\u786e\u8ba4\u662f\u5426\u540c\u4e00\u6237\uff09",
+        "mechanism_en": "Net customer receipts from better targeting (confirm with finance)",
+        "simulated": true
+      },
+      {
+        "gl_account": "1700",
+        "gl_label": "Capitalized ML retrain (RELEARN)",
+        "direction": "cash_out",
+        "amount_usd": 2500.0,
+        "counterparty": "GPU cloud / labeling vendor",
+        "settlement_lag_days": 45,
+        "receipt_id": "a1d0fb94-97e",
+        "rule_ids": [
+          "uplift_p2_RELEARN",
+          "capex_relearn"
+        ],
+        "pattern": "uplift_two_batch",
+        "mechanism_zh": "\u91cd\u8bad\u5de5\u5355\u6279\u51c6\u540e\u624d\u4ece\u8fd0\u8425\u6216 Capex \u6237\u652f\u51fa \u2014 \u4e0d\u662f cap \u7684\u5373\u65f6\u7701\u94b1",
+        "mechanism_en": "RELEARN cash out only when ticket approved \u2014 not instant OPEX save",
+        "simulated": true
+      },
+      {
+        "gl_account": "4900",
+        "gl_label": "Contra: avoided campaign shutdown (risk)",
+        "direction": "cash_in",
+        "amount_usd": 15000.0,
+        "counterparty": "Customer (campaign would have stayed live)",
+        "settlement_lag_days": 60,
+        "receipt_id": "fed_legal_agent_block",
+        "rule_ids": [
+          "fed_block_legal_agent_block",
+          "drift_feature_drift"
+        ],
+        "pattern": "cross_silo_sales_copilot",
+        "mechanism_zh": "\u82e5\u5426\u5219\u6574\u7ad9\u5173\u505c\uff1a\u672c\u53ef\u7ee7\u7eed\u4ea7\u751f\u7684\u5ba2\u6237\u5165\u8d26\uff08\u60c5\u666f\uff0c\u9700\u6cd5\u52a1+\u8d22\u52a1\u7b7e\uff09",
+        "mechanism_en": "Revenue preserved vs full shutdown (scenario; legal+finance sign-off)",
+        "simulated": true
+      },
+      {
+        "gl_account": "4900",
+        "gl_label": "Contra: avoided campaign shutdown (risk)",
+        "direction": "cash_in",
+        "amount_usd": 15000.0,
+        "counterparty": "Customer (campaign would have stayed live)",
+        "settlement_lag_days": 60,
+        "receipt_id": "fed_finance_agent_block",
+        "rule_ids": [
+          "fed_block_finance_agent_block",
+          "drift_feature_drift"
+        ],
+        "pattern": "cross_silo_sales_copilot",
+        "mechanism_zh": "\u82e5\u5426\u5219\u6574\u7ad9\u5173\u505c\uff1a\u672c\u53ef\u7ee7\u7eed\u4ea7\u751f\u7684\u5ba2\u6237\u5165\u8d26\uff08\u60c5\u666f\uff0c\u9700\u6cd5\u52a1+\u8d22\u52a1\u7b7e\uff09",
+        "mechanism_en": "Revenue preserved vs full shutdown (scenario; legal+finance sign-off)",
+        "simulated": true
+      },
+      {
+        "gl_account": "4900",
+        "gl_label": "Contra: avoided campaign shutdown (risk)",
+        "direction": "cash_in",
+        "amount_usd": 15000.0,
+        "counterparty": "Customer (campaign would have stayed live)",
+        "settlement_lag_days": 60,
+        "receipt_id": "fed_product_agent_block",
+        "rule_ids": [
+          "fed_block_product_agent_block",
+          "drift_feature_drift"
+        ],
+        "pattern": "cross_silo_sales_copilot",
+        "mechanism_zh": "\u82e5\u5426\u5219\u6574\u7ad9\u5173\u505c\uff1a\u672c\u53ef\u7ee7\u7eed\u4ea7\u751f\u7684\u5ba2\u6237\u5165\u8d26\uff08\u60c5\u666f\uff0c\u9700\u6cd5\u52a1+\u8d22\u52a1\u7b7e\uff09",
+        "mechanism_en": "Revenue preserved vs full shutdown (scenario; legal+finance sign-off)",
+        "simulated": true
+      }
+    ],
+    "notes_zh": [
+      "\u94f6\u884c\u5b58\u6b3e\u4e0a\u5347 = \u5ba2\u6237\u5165\u8d26\u589e\u52a0 + \u5bf9\u4f9b\u5e94\u5546/API \u7684\u501f\u8bb0\u51cf\u5c11 \u2212 \u76d1\u63a7/\u91cd\u8bad\u7b49\u989d\u5916\u652f\u51fa\u3002",
+      "API \u9884\u5145\u503c\uff1a\u8282\u7701\u53ef\u80fd\u4f53\u73b0\u4e3a\u300c\u5c11\u8865\u4e00\u7b14\u5145\u503c\u300d\u800c\u975e\u5f53\u6708\u5bf9\u8d26\u5355\u53ef\u89c1\uff0c\u9700\u5bf9 prepaid \u5b50\u79d1\u76ee\u3002",
+      "receipt \u7684 estimated_net_gain_usd \u5fc5\u987b\u4e0e\u53d1\u7968/Stripe \u5bfc\u51fa\u9010\u6761\u52fe\u5bf9\uff0c\u52fe\u4e0a\u624d\u7b97\u5165\u8d26\u3002"
+    ],
+    "notes_en": [
+      "Higher checking balance = more customer deposits + fewer vendor/API debits \u2212 overhead/CAPEX.",
+      "Prepaid API credits: savings may skip a top-up rather than show on monthly invoice.",
+      "Treat estimated_net_gain_usd as hypothesis until matched to invoice/Stripe exports."
+    ],
+    "generated_at_utc": "2026-10-03T06:29:07.514166+00:00"
+  },
+  "formula_checking_balance_zh": "\u671f\u672b\u8fd0\u8425\u6237\u4f59\u989d \u2212 \u53cd\u4e8b\u5b9e\u4f59\u989d \u2248 \u03a3(cash_in) + \u03a3(retained \u5c11\u4ed8\u4f9b\u5e94\u5546) \u2212 \u03a3(cash_out \u76d1\u63a7/Capex)",
+  "formula_checking_balance_en": "Ending checking \u2212 counterfactual \u2248 \u03a3 cash_in + \u03a3 retained \u2212 \u03a3 extra cash_out",
+  "receipt_count": 25
+}

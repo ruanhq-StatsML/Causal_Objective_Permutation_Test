@@ -1,0 +1,19 @@
+{
+  "package": "FSDS_Online_PFI",
+  "generated_at_utc": "2026-09-29T22:07:05.361792+00:00",
+  "entrypoint": "Python/package_online_pfi_delivery.py",
+  "core_modules": [
+    "Python/fsds_sot/online_pfi.py",
+    "Python/fsds_sot/plot_online_pfi.py",
+    "Python/fsds_sot/attribution.py",
+    "Python/fsds_sot/closed_loop.py"
+  ],
+  "artifacts_in_this_folder": [
+    "07_online_pfi_dashboard.png",
+    "README_DELIVERY.md",
+    "FSDS_online_PFI_delivery.tex",
+    "FSDS_ONLINE_PFI.md",
+    "online_pfi_report.json"
+  ],
+  "logic_summary": "Rolling ref vs live \u2192 RF domain + permutation VIMP (online PFI) + MMD/AUC + onlineRFPerm p-value \u2192 decay reference \u2192 SoT/closed-loop actuators"
+}

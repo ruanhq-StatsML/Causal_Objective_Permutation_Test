@@ -1,0 +1,54 @@
+# fsds_sot — flat module list (alphabetical)
+# Generated for delivery inventory; see PACKAGE_INVENTORY.md for layers & provenance.
+
+Python/fsds_sot/__init__.py
+Python/fsds_sot/agentic_dgp.py
+Python/fsds_sot/applications.py
+Python/fsds_sot/attribution.py
+Python/fsds_sot/budget.py
+Python/fsds_sot/closed_loop.py
+Python/fsds_sot/decompose.py
+Python/fsds_sot/economics.py
+Python/fsds_sot/entropy_alloc.py
+Python/fsds_sot/entropy_reg.py
+Python/fsds_sot/hierarchical_attribution.py
+Python/fsds_sot/incremental_value.py
+Python/fsds_sot/mcts_local.py
+Python/fsds_sot/mcts_search.py
+Python/fsds_sot/modality_attribution.py
+Python/fsds_sot/modality_dataloaders.py
+Python/fsds_sot/online_pfi.py
+Python/fsds_sot/online_pfi_registry.py
+Python/fsds_sot/pareto_poc.py
+Python/fsds_sot/pipeline.py
+Python/fsds_sot/plan_metrics.py
+Python/fsds_sot/plot_online_pfi.py
+Python/fsds_sot/pricing.py
+Python/fsds_sot/qwen_episode_encoder.py.example
+Python/fsds_sot/text_encoder.py
+Python/fsds_sot/text_tokens.py
+Python/fsds_sot/token_perturbation_audit.py
+Python/fsds_sot/viz.py
+
+# Feature store (merchant prototype extract)
+Python/feature_store/__init__.py
+Python/feature_store/merchant_prototype.py
+Python/feature_store/logo_mmd.py
+Python/feature_store/multilevel_localization.py
+Python/feature_store/cross_level.py
+Python/feature_store/LAYERS.md
+
+# Bundled repo-root (not under fsds_sot/)
+Python/DRPerm.py
+Python/model_registry_class.py
+Python/demo_fsds_modality_attribution.py
+Python/demo_fsds_token_perturbation.py
+Python/demo_fsds_feature_store_attribution.py
+
+# Dataset (CSV)
+data/feature_store/users.csv
+data/feature_store/items.csv
+data/feature_store/merchants.csv
+data/feature_store/orders.csv
+data/feature_store/merchant_features.csv
+data/feature_store/user_features.csv

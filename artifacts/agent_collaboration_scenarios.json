@@ -1,0 +1,224 @@
+{
+  "generated_at_utc": "2026-10-03T14:17:58.739111+00:00",
+  "method": "FSDSSoT.fit_plan via fit_agent_plan; uniform_plan baseline; MC n_eval=24, batch=28",
+  "scenarios": [
+    {
+      "scenario_id": "react_observation_drift",
+      "pattern": "react",
+      "playbook": "Budget Observation vs Thought; re-tool if obs shift without tool_ok.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Thought\u2192action\u2192observation chain; collaboration = sequential segments under one topology gate.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.02064,
+        "mean_total_tokens": 1440.0,
+        "mean_checks": 6.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.014158999999999998,
+        "mean_total_tokens": 1310.3333333333333,
+        "mean_checks": 3.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.00648,
+        "cost_reduction_pct": 31.4,
+        "checks_delta": -3.0
+      }
+    },
+    {
+      "scenario_id": "rag_multihop_hop3_drift",
+      "pattern": "rag_per_chunk",
+      "playbook": "Per-chunk L and retrieve k; parallel chunk expand.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Multi-hop retrieve; hops collaborate via parallel chunk budget when decomposable.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.0268,
+        "mean_total_tokens": 1800.0,
+        "mean_checks": 8.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.017158000000000003,
+        "mean_total_tokens": 1739.7083333333333,
+        "mean_checks": 4.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.00964,
+        "cost_reduction_pct": 35.98,
+        "checks_delta": -4.0
+      }
+    },
+    {
+      "scenario_id": "self_consistency_chain_dispersion",
+      "pattern": "self_consistency",
+      "playbook": "Dispersion on chain embeddings \u2192 adaptive sample count N.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "N chain samples; dispersion drives adaptive N (fewer samples when chains agree).",
+      "uniform": {
+        "mean_success": 0.75,
+        "mean_cost_usd": 0.030800000000000004,
+        "mean_total_tokens": 1800.0,
+        "mean_checks": 10.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.019504687500000003,
+        "mean_total_tokens": 1797.3333333333333,
+        "mean_checks": 5.0
+      },
+      "incremental": {
+        "success_delta_pp": -4.17,
+        "cost_save_usd_per_episode": 0.0113,
+        "cost_reduction_pct": 36.67,
+        "checks_delta": -5.0
+      }
+    },
+    {
+      "scenario_id": "multi_agent_debate_con_drift",
+      "pattern": "multi_agent_debate",
+      "playbook": "Down-weight redundant roles; merge by concept dedup.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Three roles (pro/con/judge) share one FSDS plan; shift on con triggers role-level budget split.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.02064,
+        "mean_total_tokens": 1440.0,
+        "mean_checks": 6.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.0128330625,
+        "mean_total_tokens": 1151.25,
+        "mean_checks": 3.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.00781,
+        "cost_reduction_pct": 37.82,
+        "checks_delta": -3.0
+      }
+    },
+    {
+      "scenario_id": "plan_execute_midstep_drift",
+      "pattern": "plan_execute",
+      "playbook": "Re-plan step with high PO-risk; sequential inside coupled steps.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Planner steps collaborate sequentially; mid-plan drift localizes budget to failing step.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.030800000000000004,
+        "mean_total_tokens": 1800.0,
+        "mean_checks": 10.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.01888825,
+        "mean_total_tokens": 1781.125,
+        "mean_checks": 5.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.01191,
+        "cost_reduction_pct": 38.67,
+        "checks_delta": -5.0
+      }
+    },
+    {
+      "scenario_id": "langgraph_tool_call_drift",
+      "pattern": "langgraph_checkpoint",
+      "playbook": "Per-node checkpoint embed; re-run only drifted nodes; receipt on handoff.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "segment/role/hop/node embeddings \u2192 branch budgets",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Checkpoint nodes collaborate via graph trace batch; retry only drifted nodes in prod hook.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.030800000000000004,
+        "mean_total_tokens": 1800.0,
+        "mean_checks": 10.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.019654875000000002,
+        "mean_total_tokens": 1781.8333333333333,
+        "mean_checks": 5.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.01115,
+        "cost_reduction_pct": 36.19,
+        "checks_delta": -5.0
+      }
+    },
+    {
+      "scenario_id": "stacked_multi_agent_fsds_plus_early_stop",
+      "pattern": "multi_agent_debate+early_stop",
+      "playbook": "Micro: per-role FSDS budgets; macro: dispersion early-stop on round tensors.",
+      "X": "trace_features per episode (batch REF/LIVE for covariate attribution)",
+      "Y": "binary task success (MC simulator)",
+      "Z": "round\u00d7role embeddings (R,B,d) for stop; final-round Z for FSDS",
+      "W": "REF vs LIVE trace batches",
+      "collaboration_note": "Agents collaborate across rounds; stop when centroids stabilize; FSDS trims per-role spend on LIVE shift.",
+      "uniform": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.02064,
+        "mean_total_tokens": 1440.0,
+        "mean_checks": 6.0
+      },
+      "fsds": {
+        "mean_success": 0.7083333333333334,
+        "mean_cost_usd": 0.0128330625,
+        "mean_total_tokens": 1151.25,
+        "mean_checks": 3.0
+      },
+      "incremental": {
+        "success_delta_pp": 0.0,
+        "cost_save_usd_per_episode": 0.00781,
+        "cost_reduction_pct": 37.82,
+        "checks_delta": -3.0
+      },
+      "stacked_levers": {
+        "fsds_cost_reduction_pct": 37.82,
+        "early_stop_rounds": 4,
+        "early_stop_max_rounds": 5,
+        "macro_round_cost_save_usd_per_debate": 0.00884,
+        "combined_story_usd_per_debate": 0.04334,
+        "illustrative_combined_save_vs_uniform_full_debate": -0.02242
+      }
+    },
+    {
+      "scenario_id": "self_consistency_adaptive_N",
+      "pattern": "self_consistency",
+      "collaboration_note": "Parallel chains collaborate via vote/dispersion; low dispersion \u2192 fewer paid samples.",
+      "metrics": {
+        "chain_dispersion": 1.0037,
+        "adaptive_n": 12,
+        "n_chains_provided": 8
+      },
+      "incremental": {
+        "cost_reduction_pct": 0,
+        "note": "Illustrative sample-count lever; not MC dollar in this vignette."
+      }
+    }
+  ]
+}

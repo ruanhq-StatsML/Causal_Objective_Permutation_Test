@@ -1,0 +1,208 @@
+% Position note: Treasury cash reconciliation + credit-risk fulfillment via FSDS two-batch monitoring
+% Compile: pdflatex fsds_treasury_credit_risk_po.tex
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{Treasury-Grade Cash Reconciliation and Credit-Risk Fulfillment:\\
+FSDS Two-Batch Monitoring as an OPEX-First Control Layer}
+\author{Position note (repository-aligned; English PO for review)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Finance teams often receive a single ``ROI'' number from ML monitoring while \emph{treasury} must explain \textbf{operating checking balance} movements: fewer vendor debits, more customer settlements, and occasional CAPEX outflows.
+This note separates those flows explicitly, maps \texttt{impact\_receipt} fields to general-ledger lines and settlement lags, and then instantiates the \textbf{same} FSDS uplift two-batch spine on a \textbf{credit-risk fulfillment} scenario (origination vintages, limit-increase treatments, default outcomes).
+The credit use case targets \emph{measurable} effects: reduced marginal exposure spend (OPEX analog), stabilized net interest and fee \emph{cash\_in}, and disciplined model relearn (CAPEX) only after PO-risk and ranking gates fail on held-out LIVE windows---not after every covariate shift alarm.
+\end{abstract}
+
+\section{Why treasury needs a different headline than ``\% cost saved''}
+A lower LLM invoice or capped campaign does \textbf{not} create a mysterious inbound wire labeled ``FSDS savings.''
+The observable effect on the \textbf{operating checking account} is:
+\begin{itemize}[nosep]
+  \item \textbf{Retained cash}: debits to vendors (API, ads, fulfillment, bureaus) are \emph{smaller than counterfactual} for the same volume;
+  \item \textbf{Cash in}: customer/acquirer settlements (interest, fees, repayments) are \emph{higher than counterfactual} when targeting or agent quality improves;
+  \item \textbf{Cash out}: monitor infra and \emph{approved} RELEARN tickets still leave the account on their settlement dates.
+\end{itemize}
+Prepaid API credits blur the picture: savings may appear first as slower prepaid drawdown; checking moves only when the next top-up is \emph{skipped}. Treasury should report \texttt{retained} and \texttt{cash\_in} on separate lines.
+
+\subsection{Counterfactual checking balance (one period)}
+Let $B_t$ be the ending operating balance and $B_t^{\mathrm{cf}}$ the balance that would have obtained under pre-FSDS policy at the same volume mix.
+\begin{equation}
+\label{eq:checking}
+B_t - B_t^{\mathrm{cf}}
+\;\approx\;
+\underbrace{\Delta R_t}_{\text{cash in}}
++
+\underbrace{\Delta V_t}_{\text{retained (avoided outflows)}}
+-
+\underbrace{H_t}_{\text{monitor OPEX}}
+-
+\underbrace{C_t^{\mathrm{relearn}}}_{\text{approved CAPEX}}.
+\end{equation}
+Repository implementation: \texttt{fsds\_sot/bank\_cash\_bridge.py} decomposes each \texttt{impact\_receipt} into \texttt{BankLedgerRow} entries with \texttt{direction}$\in\{\texttt{cash\_in},\texttt{retained},\texttt{cash\_out}\}$, GL account, counterparty, and \texttt{settlement\_lag\_days}.
+Reconciliation script: \texttt{reconcile\_fsds\_bank\_cash.py} $\rightarrow$ \texttt{artifacts/fsds\_bank\_cash\_bridge.json}.
+
+\subsection{Receipt $\rightarrow$ treasury lines (agent and uplift)}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Receipt field & Treasury meaning & GL (illustrative) & Typical lag \\
+\midrule
+\texttt{usd\_per\_episode}: $[\text{baseline},\text{fsds}]$ & Retained API spend & 6100 COGS & 7d (invoice) \\
+\texttt{expected\_value\_usd}: $[\text{baseline},\text{fsds}]$ & Extra customer cash in & 4100 revenue & 14--30d \\
+\texttt{estimated\_saved\_spend\_usd} & Retained treat/exposure spend & 6200 / 5100 & 1--30d \\
+\texttt{estimated\_incremental\_margin\_usd} & Incremental collections & 4100 / 1200 & 30d+ \\
+\texttt{econ\_bucket=capex\_ticket} & Cash out on approval & 1700 CAPEX & 45d \\
+\bottomrule
+\end{tabular}
+\caption{Agent receipts use the first two rows; uplift cap rules use saved spend and margin rows. RELEARN is explicitly \textbf{not} retained savings.}
+\end{table}
+
+\paragraph{Acceptance rule (30-day close).}
+Match vendor invoice CSV (\texttt{baseline\_usd $-$ actual\_usd}) to the sum of \texttt{retained} ledger rows tagged with the same \texttt{rule\_ids}; match Stripe/acquirer exports to \texttt{cash\_in} rows.
+Treat \texttt{estimated\_net\_gain\_usd} as a \textbf{hypothesis} until both matches hold within agreed tolerance (repository notes in \texttt{summarize\_ledger}).
+
+\section{Credit-risk fulfillment: same monitor, different semantics}
+Credit portfolios already run REF vs LIVE implicitly: \textbf{reference} origination window (stable macro, policy v$k$) vs \textbf{live} window (policy v$k{+}1$, rate shock, channel mix shift).
+FSDS does not replace PD/LGD/EAD engines; it governs \textbf{when} to change \emph{fulfillment} (who gets a limit increase, priced offer, or collections treatment) and \textbf{when} to relearn the uplift/ranking layer.
+
+\subsection{Objects $(X,Y,T,W)$}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Credit-risk instantiation \\
+\midrule
+$X$ & Bureau + app attributes, utilization, channel, macro tags (segment features) \\
+$Y$ & Binary default / 90+ DPD / fraud-confirm within performance window \\
+$T$ & \textbf{Treatment}: marketing offer, limit increase, hardship program \emph{arm} ($T\in\{0,1\}$) \\
+$W$ & \textbf{Batch}: REF origination window vs LIVE window (not the treatment label) \\
+$\hat\tau(X)$ & Ranker for incremental profit/risk (uplift or policy value); frozen on LIVE scoring \\
+$\hat e(W\mid X)$ & Propensity of ``being in LIVE vintage'' given $X$ (mix shift) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Fulfillment vs modeling.}
+\textbf{Fulfillment} applies caps/holds to \emph{who receives} $T{=}1$ in LIVE.
+\textbf{Modeling} refreshes $\hat e,\hat\mu,\hat\tau$ on a slower Layer-B cadence (shared nuisance refit in the two-batch formulation).
+Treasury cares about fulfillment first: it moves $\Delta V_t$ (fewer marginal exposures) and $\Delta R_t$ (NIM/fees on retained good accounts) before any CAPEX relearn cash out.
+
+\subsection{Step ledger (code path unchanged)}
+The production path remains \texttt{run\_uplift\_subset\_benchmark.py} $\rightarrow$ localization $\rightarrow$ \texttt{business\_rules\_from\_localization} $\rightarrow$ \texttt{attach\_uplift\_rule\_economics} $\rightarrow$ \texttt{build\_uplift\_rule\_receipt}.
+Credit interpretation of gates:
+\begin{itemize}[nosep]
+  \item \textbf{G1 MMD}: covariate shift in $X$ (e.g., subprime mix drift in LIVE).
+  \item \textbf{G2 overlap ESS}: comparable support for ranking; if low, refresh REF before caps.
+  \item \textbf{G3 DRPerm (PO-risk)}: concept drift in $Y\mid X$; caps may still run, but RELEARN ticket is \emph{eligible} only after trial windows fail.
+  \item \textbf{L1c--L1d quintile AUUC}: which score bands lose ranking quality on LIVE.
+  \item \textbf{R REALLOCATE}: cap limit-increase / offer intensity on worst quintile or LOGO-MMD group.
+\end{itemize}
+
+\section{Treasury mapping for credit (beyond marketing treat cost)}
+Configure \texttt{config/fsds\_economics\_assumptions.json} with \textbf{credit-native} units (replace campaign defaults):
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Config key (uplift block) & Credit meaning & Cash / P\&L channel \\
+\midrule
+\texttt{treatment\_cost\_usd} & Expected loss + acquisition cost per marginal approval & Retained outflow / charge-off \\
+\texttt{margin\_usd\_per\_conversion} & NIM + fees on incremental \emph{good} account (net of EL) & Cash in (lagged) \\
+\texttt{treat\_rate} & Fraction of capped population that would have been treated & Scales $\Delta V_t$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Important accounting distinction.}
+\textbf{Provision expense} (CECL/IFRS 9) is accrual; it is \textbf{not} identical to checking balance in Eq.~\eqref{eq:checking}.
+Treasury PO position:
+\begin{itemize}[nosep]
+  \item \textbf{Retained / cash in} rows tie to \emph{realized} charge-offs, fewer solicitations paid to bureaus/marketing vendors, and interest/fees collected;
+  \item \textbf{Provision release} can be a \emph{leading indicator} agreed with ALCO, but should not be booked as checking \texttt{cash\_in} without treasury policy sign-off.
+\end{itemize}
+
+\subsection{Illustrative fulfillment scenario (structure from repo bench; numbers configurable)}
+Assume LIVE shift concentrates in quintile $Q_3$ with $\mathrm{AUUC}_{\mathrm{live}}<0$, $n_{\mathrm{live}}=240$ (Hillstrom-scale order of magnitude from benchmark JSON).
+With \texttt{treatment\_cost\_usd}${=}400$ (expected loss on a marginal approval), \texttt{treat\_rate}${=}0.35$:
+\[
+\Delta V_t \approx 240 \times 0.35 \times 400 = \$33{,}600 \quad \text{(retained exposure spend in period)}.
+\]
+If global AUUC is negative, the economics helper may add \texttt{estimated\_incremental\_margin\_usd} (smaller, model-based NIM uplift on avoided bad approvals).
+\textbf{Effect hypothesis}: fewer marginal defaults $\Rightarrow$ lower realized charge-offs (retained) and stabilized fee/interest collections (cash in) after 30--90d performance lag---\emph{not} same-day checking.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Lever & Demo / bench order (marketing defaults) & Credit fulfillment (example config) \\
+\midrule
+Cap rule OPEX net (one window) & $\sim\$818$ avg / scenario & scales with $n_{\mathrm{cap}}$, EL per approval \\
+RELEARN CAPEX ticket & \$2{,}500 (excluded from OPEX net) & model + validation sprint \\
+PO-risk reject & synthetic\_concept $p{=}0.03$ & triggers ticket \emph{eligibility}, not auto-cash out \\
+Agent SoT (collections copilot) & $\sim\$0.012$/ep retained API & call-center LLM vendor invoice \\
+\bottomrule
+\end{tabular}
+\caption{Replace illustrative EL/NIM with portfolio-specific estimates; keep the \textbf{receipt and two-ledger} structure.}
+\end{table}
+
+\section{Where credit risk modeling ``shows effect''}
+\begin{enumerate}[nosep]
+  \item \textbf{Ranking still valid, mix shifted (MMD high, PO accept)}: REALLOCATE caps reduce $\Delta V_t$ without relearn---OPEX-first fulfillment.
+  \item \textbf{Ranking fails on deployed support (AUUC$_{\mathrm{ovlp}}$)}: narrow $[\ell,u]$ on $\hat e(W\mid X)$ before caps; treasury sees smaller but \emph{safer} treat spend.
+  \item \textbf{Concept drift (PO reject)}: continue caps; open CAPEX ticket only after 1--2 LIVE trial windows (formulation trial Steps A/B).
+  \item \textbf{Multi-entity / federated}: block-level receipts (legal/finance/product silos) avoid global offer shutdown---strategic \texttt{cash\_in} preservation vs wrongful full-book freeze (demo \texttt{federated\_legal\_agent\_blocks.json}).
+\end{enumerate}
+
+\paragraph{Collections and agent fulfillment (T0 treasury).}
+Collections copilots fit the \textbf{agent SoT} track: $\Delta V_t$ on vendor API invoices; $\Delta R_t$ if success rate on negotiated promises improves (\texttt{net\_economic\_gain\_usd} decomposition in \texttt{economics.py}).
+Early-stop on multi-agent ``negotiation debate'' reduces round OPEX the same way as product copilots.
+
+\section{Two-ledger discipline (unchanged)}
+\begin{itemize}[nosep]
+  \item \texttt{econ\_bucket=opex}: REALLOCATE / REFRESH caps $\rightarrow$ count toward \texttt{estimated\_opex\_net\_usd}.
+  \item \texttt{econ\_bucket=capex\_ticket}: RELEARN $\rightarrow$ \texttt{estimated\_capex\_ticket\_usd}; cash out only on approval.
+\end{itemize}
+Credit model validators co-sign PO-risk and AUUC$_{\mathrm{ovlp}}$ logs on the same \texttt{impact\_receipt} JSON as treasury uses for cash reconciliation---one audit artifact, two readers (risk and finance).
+
+\section{30-day proof plan (credit + treasury joint)}
+\begin{longtable}{@{}p{0.08\textwidth}p{0.42\textwidth}p{0.42\textwidth}@{}}
+\toprule
+Day & Risk / fulfillment & Treasury evidence \\
+\midrule
+\endhead
+D0 & Wire REF/LIVE windows; emit cap rules with \texttt{rule\_id} & --- \\
+D7 & Compare realized approval counts on capped segments & Marketing/bureau vendor invoices $\downarrow$ \\
+D30 & Vintage performance vs holdout & Charge-offs / collections cash vs counterfactual \\
+D30 & Close & Eq.~\eqref{eq:checking} vs \texttt{fsds\_bank\_cash\_bridge.json} \\
+\bottomrule
+\end{longtable}
+
+\section{Closing position}
+FSDS is a \textbf{governance and treasury-auditable control layer}: fulfillment caps produce \emph{retained} cash and disciplined exposure; successful targeting produces \emph{cash in} on a longer lag; relearn remains a \textbf{ticketed CAPEX outflow}.
+Credit-risk modeling \emph{shows effect} when PO-risk and AUUC gates justify \emph{which} segment to cap---not when a single global PD alert fires.
+Production must replace simulated \texttt{margin} and \texttt{treatment\_cost} with portfolio EL/NIM; the step structure (trial LIVE windows, separate OPEX/CAPEX buckets, receipt-first reconciliation) should remain.
+
+\paragraph{Reproduce (repository).}
+\begin{verbatim}
+cd Python
+python3 run_fsds_business_impact_pack.py
+python3 reconcile_fsds_bank_cash.py --episodes 10000
+python3 run_uplift_subset_benchmark.py --n-perm 32
+\end{verbatim}
+
+\paragraph{Companion documents.}
+\texttt{docs/FSDS\_BANK\_CASH\_RECONCILIATION\_ZH.md};
+\texttt{fsds\_concrete\_pipeline\_justification.tex};
+\texttt{fsds\_opex\_capex\_cost\_share\_po.tex}.
+
+\end{document}

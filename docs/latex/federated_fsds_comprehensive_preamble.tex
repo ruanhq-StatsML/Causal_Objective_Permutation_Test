@@ -1,0 +1,66 @@
+% Static methodology — included by federated_fsds_comprehensive_standalone.tex
+% Empirical tables: \input{federated_fsds_protocol_results.tex}
+
+\section{Communication-efficient cross-block monitoring}
+
+\paragraph{Practical takeaway.}
+Federated feature monitoring should treat \textbf{communication cost as a first-class constraint}.
+Each client $k$ owns columns $F_k$ only; the server never receives raw rows $X$.
+Instead, clients upload a \textbf{fixed-size summary per feature}---PO-risk distance proxy $d_f$, covariate-shift proxy $\Delta P_f$ (MMD-LOCO), and local rank---plus $O(1)$ block diagnostics (MMD$^2_k$, domain AUC$_k$, ESS$_k$).
+Total uplink per round is $\sum_k O(|F_k|)$ scalars, versus $O(n\sum_k |F_k|)=O(np)$ if centralizing data.
+This matches vertical federated learning while preserving the batch FSDS contract (REF vs LIVE, batch label $W$).
+
+\paragraph{Communication envelope (per client $k$, one REF/LIVE window).}
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Message field} & \textbf{Size} & \textbf{Role} \\
+\midrule
+Block MMD$^2$, domain AUC, ESS & 3 floats & Gate / LOGO block score \\
+Per $f\in F_k$: $(d_f, \Delta P_f, \text{rank}_k(f))$ & $3|F_k|$ floats & Global merge + FDR \\
+Optional PO-risk $p$-value (block or global) & 0--1 float & Concept axis \\
+\midrule
+\textbf{Total uplink} & $3|F_k|+O(1)$ & No $n\times p$ matrix \\
+\bottomrule
+\end{tabular}
+\end{center}
+Let $B_k=3|F_k|+3$ be the float count for node $k$.
+The \textbf{efficiency ratio} against naive centralization is
+$\mathrm{Eff}= \frac{n(p+p)}{ \sum_k B_k } \approx \frac{2np}{\sum_k 3|F_k|}$ (same order as $2n/3$ when blocks partition columns evenly).
+
+\paragraph{Privacy posture.}
+Phase~2 supports plain upload (prototype) or a \texttt{secure\_aggregation} hook (masked sums / Shamir shares on \emph{aggregates only}).
+Raw features never leave the client; only attribution statistics cross the wire.
+
+\paragraph{Cost and deployment.}
+Each REF/LIVE monitoring window uploads $O(p)$ attribution scalars ($\sum_k B_k$ with $B_k=3|F_k|{+}3$) instead of centralizing an $(n_{\mathrm{ref}}{+}n_{\mathrm{live}}){\times}p$ feature matrix, so uplink scales as $O(p)$ rather than $O(np)$.
+At representative tabular scales ($n{\sim}10^3$, $p{\sim}10^2$) this is on the order of $10^3$ fewer floats per round---consistent with measured efficiency ratios from about $48{\times}$ to $1410{\times}$ in our benchmarks (Spambase at $n{\approx}4600$).
+Deployment-wise, vertically partitioned clients run the same two-batch FSDS contract locally; the server only merges ranks and emits OFS actions (\textsc{keep}, \textsc{recalibrate}, \textsc{candidate\_retire}, \textsc{alert\_recalibrate\_and\_review}), which map directly to monitor/recalibrate/review tickets without moving raw \emph{X} across trust boundaries.
+The main operational savings are recurring bandwidth and federation coordination cost, reduced data-governance latency (no central pool of sensitive columns), and actionable drift labels per feature rather than a single global alarm.
+
+\section{Explicit client--server protocol (three phases)}
+
+\paragraph{Phase 1 --- Local attribution.}
+On $F_k$ only, compute batch FSDS between REF and LIVE: domain RF VIMP $\Rightarrow d_f$ proxy; MMD-LOCO $\Rightarrow \Delta P_f$; rank within block.
+
+\paragraph{Phase 2 --- Upload.}
+Client sends \texttt{LocalAttributionPayload} (JSON or typed struct). Secure path: identical schema with masked values.
+
+\paragraph{Phase 3 --- Global merge.}
+Server (i) z-score or rank-combine $\{d_f\}$ across nodes; (ii) assign drift type per feature from $(d_f,\Delta P_f)$;
+(iii) BH-FDR at level $\alpha$ on $p$-values derived from $d_f$; (iv) OFS actions:
+\textsc{keep}, \textsc{recalibrate} (covariate + significant),
+\textsc{candidate\_retire} (concept + significant),
+\textsc{alert\_recalibrate\_and\_review} (compound + significant).
+
+\section{Drift type and OFS/FDR closed loop}
+
+\paragraph{Typing (feature level).}
+High $\Delta P_f$, low $d_f$ $\Rightarrow$ covariate; high $d_f$, low $\Delta P_f$ $\Rightarrow$ concept; both high $\Rightarrow$ compound; else stable.
+
+\paragraph{Closed loop per window.}
+Drift diagnosis $\rightarrow$ $p$-values $\rightarrow$ FDR significant set $\rightarrow$ OFS actions $\rightarrow$ next window monitoring (online FDR extensions: SAFFRON/ADDIS on the merged $p$-stream).
+
+\paragraph{Implementation.}
+\texttt{Python/fsds\_sot/federated\_protocol.py}, \texttt{drift\_ofs\_fdr\_loop.py}; demo \texttt{demo\_federated\_protocol\_datasets.py}.

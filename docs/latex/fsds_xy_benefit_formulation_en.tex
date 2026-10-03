@@ -1,0 +1,307 @@
+% Full English formulation: where FSDS applies, X/Y/T/W/Z, step-level positive benefit
+% Compile: pdflatex fsds_xy_benefit_formulation_en.tex
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs,longtable,tabularx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black}
+
+\definecolor{rowbenefit}{RGB}{235,248,235}
+\definecolor{rowgate}{RGB}{248,248,248}
+
+\newcommand{\direct}{\textbf{\small B1/B2/B3/B4}}
+\newcommand{\indirect}{\textbf{\small G}}
+
+\title{Formulation: FSDS Application Domains,\\[0.25em]
+Observables $(X,Y,T,W,Z)$, and Step-Level Positive Benefit}
+\author{Repository-grounded formulation (benchmark JSON, 2026-10-03)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We formulate \emph{where} Full-Spectrum Distribution Shift (FSDS) monitoring is deployed in this repository, \emph{what} each random object means ($X$, $Y$, treatment $T$, batch $W$, agent segments $Z$), and \emph{which} pipeline steps yield auditable positive benefit versus gating-only steps.
+Monitoring statistics (MMD$^2$, domain AUC, PO-risk $p$, AUUC gaps) do not by themselves increment treasury balance; positive benefit attaches to \textbf{executed policies}---budget vectors, REALLOCATE caps, debate early-stop, federated block actions---logged as \texttt{impact\_receipt} JSON with \texttt{rule\_ids}.
+All cited magnitudes are reproducible from checked-in artifacts via \texttt{run\_fsds\_business\_impact\_pack.py}.
+\end{abstract}
+
+\tableofcontents
+
+\section{Scope and audit questions}
+FSDS answers three questions that product, risk, and finance can joint-audit:
+\begin{enumerate}[label=\textbf{Q\arabic*.}]
+  \item \textbf{Domain:} In which production surfaces does the same REF/LIVE spine run (uplift, agent traces, federated blocks)?
+  \item \textbf{Objects:} What exactly is fed to each test ($X$, $Y$, and when applicable $T$, $W$, $Z$)?
+  \item \textbf{Benefit:} Which code step first produces \emph{positive} incremental value (OPEX, outcome quality, communication, or signed strategic preservation), with a measured delta or explicit counterfactual?
+\end{enumerate}
+
+\paragraph{Companion documents.}
+Step ledger with Hillstrom numbers: \texttt{fsds\_concrete\_pipeline\_justification.tex}.
+Treasury cash mapping: \texttt{fsds\_treasury\_credit\_risk\_po.tex}.
+Chinese prose mirror: \texttt{docs/FSDS\_WHERE\_X\_Y\_POSITIVE\_BENEFIT\_ZH.md}.
+
+\section{Shared notation and benefit taxonomy}
+
+\subsection{Random objects (repository conventions)}
+\begin{center}
+\begin{tabular}{@{}p{0.12\textwidth}p{0.82\textwidth}@{}}
+\toprule
+Symbol & Definition \\
+\midrule
+$X$ & Covariates for \textbf{batch monitoring} and VIMP: user features, \texttt{trace\_features} $\in\mathbb{R}^p$, or federated block columns $X_k$. \\
+$Y$ & \textbf{Outcome} used in ranking/concept tests: conversion, task success, default/DPD. \\
+$T$ & \textbf{Treatment arm} within a window ($T\in\{0,1\}$ in uplift); \emph{not} the batch label. \\
+$W$ & \textbf{Batch / window}: $W=0$ REF, $W=1$ LIVE (the shift FSDS targets). \\
+$Z$ & Agent \textbf{segment embeddings} $(B\times d)$ for SoT Object~2 (budget), parallel to but distinct from $X$. \\
+$\hat\tau(X)$ & Uplift/CATE ranker fit on REF train; \textbf{frozen} on LIVE scoring. \\
+$\hat e(W\mid X)$ & Batch propensity (GBM in uplift bench; RF in agent attribution). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Common misreadings.}
+$T$ is \textbf{not} $W$. Agent tracks often have \textbf{no} uplift-style $T$; the action is a budget/topology policy. $Y$ enters AUUC/DRPerm and MC evaluation but \textbf{not} the RF that predicts $W$ from $X$ in agent batch attribution.
+
+\subsection{Benefit classes}
+\begin{center}
+\begin{tabular}{@{}clp{0.55\textwidth}@{}}
+\toprule
+Tag & Name & Interpretation \\
+\midrule
+B1 & Direct OPEX & Fewer billed tokens, treatments, or uplink bytes (measurable vs uniform/baseline). \\
+B2 & Outcome quality & Higher success/conversion; may appear as lagged \texttt{cash\_in} in treasury bridge. \\
+B3 & Communication & Federated payload $\ll$ centralized feature matrix (Eff $\times$ on Spambase bench). \\
+B4 & Strategic & Avoided wrongful global shutdown; \$ requires legal/finance sign-off (sim \$125k/q in legal demo). \\
+G & Gate / localize & Prevents bad cap or relearn; benefit = \emph{avoided negative decision}, not a standalone ROI line. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Agent net gain (Track B--D economics)}
+When success rates are available, a single ROI definition is used (\texttt{fsds\_sot/economics.py}):
+\begin{equation}
+\label{eq:netgain}
+\mathrm{net\_gain}
+= (p - p_0)\, v_{\mathrm{succ}}
++ (C^{\mathrm{base}}_{\mathrm{var}} - C^{\mathrm{fsds}}_{\mathrm{var}})
+- h_{\mathrm{fsds}},
+\end{equation}
+where $C_{\mathrm{var}}$ aggregates token generation and checker calls from \texttt{BranchBudget} lists, and $h_{\mathrm{fsds}}$ is monitor overhead (default $\sim\$0.0005$/episode in sim).
+
+\section{Track A --- Two-batch uplift (primary production path)}
+
+\subsection{Where FSDS is used}
+\begin{itemize}[nosep]
+  \item \textbf{Marketing:} REF window trains $\hat\tau$; LIVE window scores with frozen $\hat\tau$; fulfillment caps bad ranking slices before full relearn.
+  \item \textbf{Credit fulfillment:} Same code path; $Y$ = default/DPD, $T$ = limit increase/offer, $W$ = origination policy windows (see Section~\ref{sec:credit}).
+  \item \textbf{Code path:} \texttt{run\_uplift\_subset\_benchmark.py} $\rightarrow$ \texttt{run\_uplift\_subset\_localization} in \texttt{loco\_auuc/subset\_localization.py}.
+\end{itemize}
+
+\subsection{Object table}
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Object & Hillstrom bench & Synthetic DGP & Credit mapping \\
+\midrule
+$X$ & \texttt{block\_0}, \ldots & Shift-injected feature subsets & Bureau + channel + macro tags \\
+$Y$ & Conversion $\{0,1\}$ & Same & 90+ DPD / default $\{0,1\}$ \\
+$T$ & Email treatment vs control & Same & Limit increase vs holdout \\
+$W$ & Row in REF pool vs LIVE pool & Same & Old vs new policy window \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Pipeline steps: gates (G), localization (L), rules (R)}
+\begin{longtable}{@{}p{0.04\textwidth}p{0.18\textwidth}p{0.24\textwidth}p{0.10\textwidth}p{0.36\textwidth}@{}}
+\toprule
+Step & Inputs & Function & Benefit & Justification \\
+\midrule
+\endhead
+G0 & $T$ on LIVE & \texttt{check\_srm} ($\chi^2$) & \indirect & Invalid randomization $\Rightarrow$ no cap (avoid false OPEX). \\
+G1 & $X_{\mathrm{ref}}, X_{\mathrm{live}}$ & \texttt{\_rbf\_mmd2} & \indirect & Hillstrom $\widehat{\mathrm{MMD}}^2=0.00162$; explains mix, does not dollar-trigger alone. \\
+G2 & $X,W$ stacked & GBM $\hat e(W\mid X)$, ESS$_{\mathrm{ovlp}}$ & \indirect & Hillstrom ESS $\approx 0.990$; low ESS $\Rightarrow$ \texttt{REFRESH\_REF} before cap. \\
+G3 & $X,Y,W$ & \texttt{DRPerm} & \indirect & PO $p=0.727$ (accept) vs synthetic\_concept $p=0.030$ (reject); splits mix vs concept; RELEARN \emph{eligibility}. \\
+L1a & REF train, LOCO & \texttt{loco\_auuc\_monitor} & \indirect & Feature groups driving LIVE AUUC drop. \\
+L1b & $X$ groups & \texttt{logo\_mmd\_groups} & \indirect & Covariate shift localization to blocks. \\
+L1c & LIVE $\hat\tau$ & \texttt{auuc\_live\_by\_domain\_quintile} & \indirect & Identifies \emph{which} population lost ranking. \\
+L1d & Quintile pairs & \texttt{pairwise\_auuc\_compare} & \indirect & Q3 vs Q4: $\Delta\mathrm{AUUC}=-0.126$; worst = \texttt{domain\_quintile\_3}. \\
+L1e & LIVE $\hat e$ & \texttt{auuc\_live\_on\_overlap\_support} & \indirect & Narrow-support REALLOCATE when AUUC$_{\mathrm{ovlp}} >$ global. \\
+L2 & LIVE slices & \texttt{pairwise\_slice\_uplift\_compare} & \indirect & REALLOCATE from ATE slices \textbf{only if} PO reject; else MONITOR. \\
+R & \texttt{loc} dict & \texttt{business\_rules\_from\_localization} + \texttt{attach\_uplift\_rule\_economics} & \direct\ B1 & REALLOCATE cap Q3: sim \textbf{\$546/window}; 4-scenario OPEX net \textbf{\$3{,}271}; RELEARN \$2{,}500$\times$4 = CAPEX (excluded from OPEX net). \\
+\bottomrule
+\caption{Track A: direct benefit concentrates at step \textbf{R} (\texttt{econ\_bucket=opex}). Artifact: \texttt{uplift\_two\_layer\_benchmark.json}.}
+\end{longtable}
+
+\paragraph{Decision justify vs naive ``retrain on alert.''}
+On Hillstrom, small MMD$^2$ and PO accept $\Rightarrow$ cap/narrow (OPEX) \textbf{before} relearn $\hat\tau$.
+On synthetic\_concept with PO reject, caps still emit first; RELEARN ticket becomes eligible after trial LIVE windows (Steps A/B in \texttt{uplift\_fsds\_two\_batch\_formulation.tex}).
+
+\paragraph{OPEX tag formula (sim; override in prod).}
+For cap rule with $n_{\mathrm{cap}}$ LIVE users, treat rate $\rho$, treatment unit cost $c_T$:
+\begin{equation}
+\label{eq:uplift_opex}
+\widehat{\Delta V}_{\mathrm{OPEX}} \approx n_{\mathrm{cap}}\,\rho\, c_T,
+\end{equation}
+plus optional \texttt{estimated\_incremental\_margin\_usd} when global AUUC $<0$ (see \texttt{attach\_uplift\_rule\_economics}).
+
+\section{Track B --- Agent Skeleton-of-Thought (SoT)}
+
+\subsection{Where FSDS is used}
+Single episode with $B$ branches (plan, retrieve, reason, \ldots): when LIVE \texttt{trace\_features} shift relative to REF, FSDS sets topology (parallel gate) and per-branch token limits $L_b$, model tier, and check counts.
+Patterns: ReAct, plan-execute, RAG multihop (\texttt{fsds\_sot/applications.py}).
+Code: \texttt{FSDSSoT.fit\_plan} (\texttt{pipeline.py}); evidence \texttt{boss\_delivery\_six\_points.json}.
+
+\subsection{Objects}
+\begin{itemize}[nosep]
+  \item $X$: \texttt{trace\_features} = mean branch embedding $\oplus$ scalars (tool counts, failures, latency).
+  \item $Y$: episode success $\in\{0,1\}$ (simulator / MC; \textbf{not} RF batch label for $W$).
+  \item $W$: REF trace batch vs LIVE trace batch in \texttt{covariate\_attribution}.
+  \item $Z$: $(B\times d)$ branch skeleton embeddings $\rightarrow$ \texttt{allocate\_branch\_budgets}.
+  \item $T$: \emph{none} (policy is budget/topology, not a treatment arm).
+\end{itemize}
+
+\subsection{Steps and positive benefit}
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Step & Function & Benefit & Measured delta (artifact) \\
+\midrule
+1 & \texttt{covariate\_attribution} & \indirect & MMD$^2$, domain AUC, VIMP, overlap \\
+2 & \texttt{evaluate\_decomposability}($Z$) & \indirect & Parallel topology gate \\
+\rowcolor{rowbenefit}
+3 & \texttt{allocate\_branch\_budgets}($\kappa,s_b,q_b,\mathrm{need}$) & B1 & Non-critical branch tokens e.g.\ plan $L=397$ vs uniform $520$ \\
+\rowcolor{rowbenefit}
+4 & \texttt{estimate\_economics} vs uniform & B1, B2 & \$0.0356 $\rightarrow$ \$0.0236/ep ($-33.6\%$); $\sim\$0.012$/ep save \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Mechanism justify.}
+Savings are \textbf{enumerated} \texttt{BranchBudget} rows (tokens, tier, checks), not a black-box efficiency claim.
+If one branch saturates latency cap $C_{\mathrm{lat}}$, critical-path span may match uniform; savings accrue on \textbf{non-critical} branches (boss six-point pack).
+
+\section{Track C --- Multi-agent debate (three roles)}
+
+\subsection{Where FSDS is used}
+Pro / con / judge multi-round debate; LIVE injects drift on \textbf{con} role embeddings.
+Production: review swarms, red-team, adversarial risk debate.
+
+\subsection{Objects}
+$X$ from \texttt{build\_multi\_agent\_trace}; $Z\in\mathbb{R}^{3\times d}$ role utterance embeddings; $Y$ MC success; $W$ REF vs LIVE trace batches.
+
+\subsection{Steps and positive benefit}
+\begin{enumerate}[nosep]
+  \item \texttt{fit\_agent\_plan}($Z,X_{\mathrm{ref}},X_{\mathrm{live}}$): \textbf{B1} mean cost \$0.02064 $\rightarrow$ \$0.01252/debate ($-39.3\%$); \textbf{B2} success $0.66\rightarrow 0.68$ (\texttt{multi\_agent\_fsds\_economics.json}).
+  \item \texttt{debate\_early\_stop\_round}: \textbf{B1} $\sim$20\% round-cost reduction (\texttt{multi\_agent\_debate\_early\_stop.json}).
+\end{enumerate}
+
+\paragraph{Role split.}
+$X,W$ govern \emph{when} to reallocate; $Z$ governs \emph{which role} receives token/tier cuts.
+Micro (role budget) and macro (early-stop) savings are partially stackable; receipts record both levers.
+
+\section{Track D --- LangGraph checkpoints}
+
+\subsection{Where FSDS is used}
+Each executed graph node commits a checkpoint embedding; REF vs LIVE windows on trace features.
+Policy hook: re-execute only nodes with high shift (\texttt{demo\_fsds\_langgraph\_hook.py}, \texttt{FSDS\_LANGGRAPH\_INTEGRATION.md}).
+
+\subsection{Objects}
+$X$: stacked \texttt{trace\_features} from five nodes per episode; $Z$: node state embeddings; LIVE shift on \texttt{tool\_call}; $Y$: node/episode success scalars; $W$: REF vs LIVE.
+
+\subsection{Positive benefit}
+\texttt{fit\_agent\_plan} + \texttt{suggest\_intervention(..., attach\_impact\_receipt=True)}:
+\textbf{B1} $\sim\$0.01535$/episode net in hook JSON; incremental value = \textbf{conditional edge} (partial replay), not full-graph relearn (CAPEX).
+
+\section{Track E --- Federated vertical blocks}
+
+\subsection{Where FSDS is used}
+Silos (legal, finance, product) hold disjoint $X_k$; server never receives row-level $X$.
+Production: cross-border, BU compliance, joint monitoring without centralizing PII.
+
+\subsection{Objects}
+$X_k$ local columns only (demo slices $0{:}5$, $5{:}10$, $10{:}15$); optional global $Y$ for PO typing; $W$ via REF vs LIVE row indices.
+
+\subsection{Steps and positive benefit}
+\begin{enumerate}[nosep]
+  \item Local \texttt{covariate\_attribution}($X_{k,\mathrm{ref}},X_{k,\mathrm{live}}$): \indirect\ legal MMD$^2=0.041$ vs finance $0.0037$ $\Rightarrow$ targeted OFS, not global kill-switch.
+  \item Upload \texttt{LocalAttributionPayload}: \textbf{B3} Spambase protocol bench \textbf{1410$\times$} fewer uplink scalars vs centralized $(n_{\mathrm{ref}}+n_{\mathrm{live}})\times p$ matrix.
+  \item Server FDR merge: \textbf{B4} narrative sim \$125k/quarter unlock if monitored rollout replaces hard ban (\texttt{federated\_legal\_agent\_blocks.json})---strategic, not token-derived.
+\end{enumerate}
+
+\section{Credit risk fulfillment (Track A semantics)}
+\label{sec:credit}
+No separate executable path: credit uses Track A with relabeled objects and config (\texttt{fsds\_treasury\_credit\_risk\_po.tex}).
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Object & Credit instantiation \\
+\midrule
+$X$ & Borrower covariates, utilization, channel, macro tags \\
+$Y$ & Default / 90+ DPD within performance window \\
+$T$ & Limit increase, priced offer, hardship program arm \\
+$W$ & REF origination window vs LIVE (policy v$k$ vs v$k{+}1$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Positive benefit step.}
+Still \textbf{R / REALLOCATE} with \texttt{econ\_bucket=opex}: retained exposure spend
+($\widehat{\Delta V} \approx n_{\mathrm{cap}}\rho c_T$ with $c_T$ = expected loss per marginal approval).
+PO reject gates \textbf{CAPEX} relearn eligibility, not immediate checking inflow.
+Provision expense (CECL/IFRS 9) is accrual---treasury must not treat provision release as \texttt{cash\_in} without policy.
+
+\section{Master summary: which steps pay}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Track & Direct B1/B3/B4 \$ & Direct B2 quality & Gate / localize only \\
+\midrule
+A Uplift & Step \textbf{R} REALLOCATE & --- & G0--G3, L1--L2 \\
+B SoT & Steps 3--4 budgets & MC success & Steps 1--2 \\
+C Multi-agent & \texttt{fit\_agent\_plan} + early-stop & +2pp success & Attribution \\
+D LangGraph & Node-level skip/retry & --- & Attribution \\
+E Federated & Uplink Eff; strategic sim & --- & Local MMD/VIMP \\
+F Credit & Same as A (step R) & --- & Same gates as A \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Closed loop and finance audit join}
+
+Positive benefit is \textbf{bookable for reconciliation} only after policy execution, via:
+\begin{itemize}[nosep]
+  \item Agent: \texttt{suggest\_intervention(..., attach\_impact\_receipt=True)} (\texttt{closed\_loop.py}).
+  \item Uplift / federated: \texttt{impact\_receipts[]} from \texttt{build\_uplift\_rule\_receipt} / \texttt{build\_federated\_block\_receipt}.
+\end{itemize}
+Each receipt carries \texttt{shift\_summary} (MMD$^2$, overlap, PO $p$, AUUC), \texttt{rule\_ids}, and \texttt{estimated\_net\_gain\_usd}.
+Treasury decomposition (retained vs cash in): \texttt{bank\_cash\_bridge.py}, \texttt{reconcile\_fsds\_bank\_cash.py}.
+
+\section{Reproduce cited magnitudes}
+\begin{verbatim}
+cd Python
+python3 run_fsds_business_impact_pack.py
+python3 reconcile_fsds_bank_cash.py --episodes 10000
+\end{verbatim}
+
+Primary artifacts:
+\texttt{uplift\_two\_layer\_benchmark.json},
+\texttt{boss\_delivery\_six\_points.json},
+\texttt{multi\_agent\_fsds\_economics.json},
+\texttt{multi\_agent\_debate\_early\_stop.json},
+\texttt{langgraph\_fsds\_hook.json},
+\texttt{federated\_legal\_agent\_blocks.json}.
+
+\section*{Document status}
+This formulation is aligned with \texttt{fsds\_concrete\_pipeline\_justification.tex} and the Chinese application guide \texttt{FSDS\_WHERE\_X\_Y\_POSITIVE\_BENEFIT\_ZH.md}.
+Compact colored ledger: \texttt{fsds\_application\_xy\_benefit\_ledger.tex}.
+
+\end{document}

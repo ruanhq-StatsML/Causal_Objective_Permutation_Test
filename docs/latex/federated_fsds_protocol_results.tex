@@ -1,0 +1,68 @@
+% Auto-generated — demo_federated_protocol_datasets.py
+\section{Empirical validation across tabular benchmarks}
+
+\paragraph{Summary (communication + localization).}
+Each run simulates vertical FL: REF/LIVE split, covariate injection on a contiguous feature block, then the three-phase protocol with BH-FDR ($\alpha{=}0.05$). \textbf{Eff} is the ratio of raw centralized matrix elements $(n_{\mathrm{ref}}+n_{\mathrm{live}})\times p$ to total uplink scalars $\sum_k(3|F_k|+3)$. \textbf{Top-1 hit} indicates whether the highest global attribution score falls inside the injected shift block.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrrrrl@{}}
+\toprule
+Dataset & $p$ & nodes & FDR sig & Eff & uplink KiB & top-1 & hit \\
+\midrule
+WDBC\_breast\_cancer & 30 & 5 & 1 & 163$\times$ & 0.82 & \texttt{f10} & yes \\
+UCI\_wine & 13 & 3 & 1 & 48$\times$ & 0.38 & \texttt{f7} & yes \\
+UCI\_diabetes & 10 & 3 & 1 & 113$\times$ & 0.30 & \texttt{f6} & yes \\
+UCI\_ionosphere & 34 & 5 & 1 & 102$\times$ & 0.91 & \texttt{f12} & yes \\
+UCI\_heart\_statlog & 13 & 3 & 2 & 73$\times$ & 0.38 & \texttt{f8} & yes \\
+UCI\_spambase & 57 & 5 & 0 & 1410$\times$ & 1.45 & \texttt{f23} & yes \\
+UCI\_sonar & 60 & 5 & 0 & 64$\times$ & 1.52 & \texttt{f25} & yes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subparagraph{WDBC\_breast\_cancer.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=341+228$, shift columns $[10,\,16)$. Communication: 105 floats uplink (0.82 KiB) vs 17070 raw matrix floats (0.130 MiB if centralized)---\textbf{163$\times$} fewer scalars over the wire. FDR significant: 1; actions: \textsc{keep}=29, \textsc{candidate\\_retire}=1.
+Top global scores: \texttt{f10} (3.78), \texttt{f14} (1.76), \texttt{f18} (0.58), \texttt{f26} (0.57), \texttt{f4} (0.50).
+\begin{itemize}\itemsep1pt
+\item \texttt{f10}: type=concept, action=\textsc{candidate\_retire}.
+\end{itemize}
+
+\subparagraph{UCI\_wine.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=106+72$, shift columns $[4,\,8)$. Communication: 48 floats uplink (0.38 KiB) vs 2314 raw matrix floats (0.018 MiB if centralized)---\textbf{48$\times$} fewer scalars over the wire. FDR significant: 1; actions: \textsc{keep}=12, \textsc{candidate\\_retire}=1.
+Top global scores: \texttt{f7} (2.86), \texttt{f1} (0.59), \texttt{f2} (0.54), \texttt{f0} (0.33), \texttt{f12} (0.04).
+\begin{itemize}\itemsep1pt
+\item \texttt{f7}: type=concept, action=\textsc{candidate\_retire}.
+\end{itemize}
+
+\subparagraph{UCI\_diabetes.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=265+177$, shift columns $[3,\,7)$. Communication: 39 floats uplink (0.30 KiB) vs 4420 raw matrix floats (0.034 MiB if centralized)---\textbf{113$\times$} fewer scalars over the wire. FDR significant: 1; actions: \textsc{keep}=9, \textsc{alert\\_recalibrate\\_and\\_review}=1.
+Top global scores: \texttt{f6} (2.55), \texttt{f2} (0.66), \texttt{f0} (0.56), \texttt{f1} (0.25), \texttt{f3} (-0.67).
+\begin{itemize}\itemsep1pt
+\item \texttt{f6}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
+\end{itemize}
+
+\subparagraph{UCI\_ionosphere.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=210+141$, shift columns $[12,\,20)$. Communication: 117 floats uplink (0.91 KiB) vs 11934 raw matrix floats (0.091 MiB if centralized)---\textbf{102$\times$} fewer scalars over the wire. FDR significant: 1; actions: \textsc{keep}=33, \textsc{alert\\_recalibrate\\_and\\_review}=1.
+Top global scores: \texttt{f12} (4.87), \texttt{f5} (1.16), \texttt{f4} (0.84), \texttt{f2} (0.76), \texttt{f15} (0.62).
+\begin{itemize}\itemsep1pt
+\item \texttt{f12}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
+\end{itemize}
+
+\subparagraph{UCI\_heart\_statlog.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=162+108$, shift columns $[4,\,9)$. Communication: 48 floats uplink (0.38 KiB) vs 3510 raw matrix floats (0.027 MiB if centralized)---\textbf{73$\times$} fewer scalars over the wire. FDR significant: 2; actions: \textsc{keep}=11, \textsc{alert\\_recalibrate\\_and\\_review}=2.
+Top global scores: \texttt{f8} (2.68), \texttt{f5} (1.27), \texttt{f0} (0.57), \texttt{f3} (0.40), \texttt{f6} (0.19).
+\begin{itemize}\itemsep1pt
+\item \texttt{f8}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
+\item \texttt{f5}: type=compound, action=\textsc{alert\_recalibrate\_and\_review}.
+\end{itemize}
+
+\subparagraph{UCI\_spambase.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=2760+1841$, shift columns $[22,\,30)$. Communication: 186 floats uplink (1.45 KiB) vs 262257 raw matrix floats (2.001 MiB if centralized)---\textbf{1410$\times$} fewer scalars over the wire. FDR significant: 0; actions: \textsc{keep}=57.
+Top global scores: \texttt{f23} (4.15), \texttt{f54} (2.38), \texttt{f56} (2.16), \texttt{f49} (1.70), \texttt{f18} (1.68).
+
+\subparagraph{UCI\_sonar.}
+$n_{\mathrm{ref}}+n_{\mathrm{live}}=124+84$, shift columns $[18,\,26)$. Communication: 195 floats uplink (1.52 KiB) vs 12480 raw matrix floats (0.095 MiB if centralized)---\textbf{64$\times$} fewer scalars over the wire. FDR significant: 0; actions: \textsc{keep}=60.
+Top global scores: \texttt{f25} (6.52), \texttt{f24} (1.96), \texttt{f3} (1.36), \texttt{f42} (1.35), \texttt{f39} (1.21).
+
+\paragraph{Monitoring metrics (targets).} Drift-type accuracy under injection, FDR $\approx \alpha$, top-$k$ hit rate in shifted blocks, action precision, one-window closed-loop latency. Secure aggregation is orthogonal to Eff and left to production.

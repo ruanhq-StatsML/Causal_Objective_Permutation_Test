@@ -1,0 +1,214 @@
+{
+  "generated_at_utc": "2026-10-03T02:18:49.057241+00:00",
+  "narrative": "Multi-agent sales copilot: Legal reviews clauses, Finance checks margin, Product personalizes. Federated FSDS detects regulatory drift on legal block only; finance/product stay stable \u2014 OFS targets legal features, not global model shutdown.",
+  "global": {
+    "mmd2": 0.004682731623740651,
+    "domain_auc": 0.9999238095238094,
+    "po_pvalue_global": 0.5675675675675675
+  },
+  "block_rank": [
+    [
+      "legal_agent_block",
+      0.5395778443959341
+    ],
+    [
+      "product_agent_block",
+      0.5134119796581478
+    ],
+    [
+      "finance_agent_block",
+      0.5036981387425825
+    ]
+  ],
+  "blocks": [
+    {
+      "block_id": "legal_agent_block",
+      "n_ref": 600,
+      "n_live": 350,
+      "mmd2": 0.04113498725307712,
+      "domain_auc": 0.9984428571428571,
+      "overlap_ess": 0.7669543849564262,
+      "top_features": [
+        {
+          "feature": "legal_agent_block_x3",
+          "vimp": 0.15973684210526312
+        },
+        {
+          "feature": "legal_agent_block_x0",
+          "vimp": 0.14618421052631575
+        },
+        {
+          "feature": "legal_agent_block_x4",
+          "vimp": 0.13947368421052625
+        },
+        {
+          "feature": "legal_agent_block_x2",
+          "vimp": 0.1246052631578947
+        },
+        {
+          "feature": "legal_agent_block_x1",
+          "vimp": 0.10236842105263154
+        }
+      ],
+      "po_risk_pvalue": 0.5675675675675675,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    },
+    {
+      "block_id": "finance_agent_block",
+      "n_ref": 600,
+      "n_live": 350,
+      "mmd2": 0.0036981387425825407,
+      "domain_auc": 1.0,
+      "overlap_ess": 0.8930051178480459,
+      "top_features": [
+        {
+          "feature": "finance_agent_block_x2",
+          "vimp": 0.18236842105263157
+        },
+        {
+          "feature": "finance_agent_block_x0",
+          "vimp": 0.16447368421052627
+        },
+        {
+          "feature": "finance_agent_block_x3",
+          "vimp": 0.15368421052631576
+        },
+        {
+          "feature": "finance_agent_block_x1",
+          "vimp": 0.14855263157894735
+        },
+        {
+          "feature": "finance_agent_block_x4",
+          "vimp": 0.14855263157894735
+        }
+      ],
+      "po_risk_pvalue": null,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    },
+    {
+      "block_id": "product_agent_block",
+      "n_ref": 600,
+      "n_live": 350,
+      "mmd2": 0.013507217753385758,
+      "domain_auc": 0.999904761904762,
+      "overlap_ess": 0.770835059391447,
+      "top_features": [
+        {
+          "feature": "product_agent_block_x3",
+          "vimp": 0.2332894736842105
+        },
+        {
+          "feature": "product_agent_block_x4",
+          "vimp": 0.18999999999999995
+        },
+        {
+          "feature": "product_agent_block_x2",
+          "vimp": 0.1784210526315789
+        },
+        {
+          "feature": "product_agent_block_x0",
+          "vimp": 0.16815789473684206
+        },
+        {
+          "feature": "product_agent_block_x1",
+          "vimp": 0.14434210526315785
+        }
+      ],
+      "po_risk_pvalue": null,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    }
+  ],
+  "server_actions": [
+    "[legal_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'legal_agent_block_x3', 'vimp': 0.15973684210526312}, {'feature': 'legal_agent_block_x0', 'vimp': 0.14618421052631575}].",
+    "[finance_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'finance_agent_block_x2', 'vimp': 0.18236842105263157}, {'feature': 'finance_agent_block_x0', 'vimp': 0.16447368421052627}].",
+    "[product_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'product_agent_block_x3', 'vimp': 0.2332894736842105}, {'feature': 'product_agent_block_x4', 'vimp': 0.18999999999999995}]."
+  ],
+  "impact_receipts": [
+    {
+      "episode_id": "fed_legal_agent_block",
+      "pattern": "cross_silo_sales_copilot",
+      "ref_window": "ref_federated",
+      "live_window": "live_federated",
+      "shift_summary": {
+        "block_mmd2": 0.04113498725307712,
+        "block_domain_auc": 0.9984428571428571,
+        "overlap_ess": 0.7669543849564262,
+        "drift_type": "feature_drift",
+        "global_mmd2": 0.004682731623740651
+      },
+      "action": "[legal_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'legal_agent_block_x3', 'vimp': 0.1597",
+      "kpi_before_after": {
+        "po_risk_pvalue": 0.5675675675675675
+      },
+      "estimated_net_gain_usd": 15000.0,
+      "rule_ids": [
+        "fed_block_legal_agent_block",
+        "drift_feature_drift"
+      ],
+      "generated_at_utc": "2026-10-03T02:18:49.057161+00:00",
+      "simulated": true
+    },
+    {
+      "episode_id": "fed_finance_agent_block",
+      "pattern": "cross_silo_sales_copilot",
+      "ref_window": "ref_federated",
+      "live_window": "live_federated",
+      "shift_summary": {
+        "block_mmd2": 0.0036981387425825407,
+        "block_domain_auc": 1.0,
+        "overlap_ess": 0.8930051178480459,
+        "drift_type": "feature_drift",
+        "global_mmd2": 0.004682731623740651
+      },
+      "action": "[finance_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'finance_agent_block_x2', 'vimp': 0.",
+      "kpi_before_after": {
+        "po_risk_pvalue": null
+      },
+      "estimated_net_gain_usd": 15000.0,
+      "rule_ids": [
+        "fed_block_finance_agent_block",
+        "drift_feature_drift"
+      ],
+      "generated_at_utc": "2026-10-03T02:18:49.057211+00:00",
+      "simulated": true
+    },
+    {
+      "episode_id": "fed_product_agent_block",
+      "pattern": "cross_silo_sales_copilot",
+      "ref_window": "ref_federated",
+      "live_window": "live_federated",
+      "shift_summary": {
+        "block_mmd2": 0.013507217753385758,
+        "block_domain_auc": 0.999904761904762,
+        "overlap_ess": 0.770835059391447,
+        "drift_type": "feature_drift",
+        "global_mmd2": 0.004682731623740651
+      },
+      "action": "[product_agent_block] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'product_agent_block_x3', 'vimp': 0.",
+      "kpi_before_after": {
+        "po_risk_pvalue": null
+      },
+      "estimated_net_gain_usd": 15000.0,
+      "rule_ids": [
+        "fed_block_product_agent_block",
+        "drift_feature_drift"
+      ],
+      "generated_at_utc": "2026-10-03T02:18:49.057235+00:00",
+      "simulated": true
+    }
+  ],
+  "business_impact_sim": {
+    "revenue_unlock_usd_quarter": 125000.0,
+    "compliance_rationale": "Actions tied to block-level MMD/AUC envelopes, not discretionary agent mute",
+    "uplink_bytes_order": "O(|F_k|) per silo per round"
+  }
+}

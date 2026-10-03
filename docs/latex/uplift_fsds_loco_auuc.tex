@@ -1,0 +1,31 @@
+% Full section (plain language). Figure: uplift_fsds_monitor_flow_en.png
+
+\section{Uplift model monitoring: embedded FSDS + LOCO--AUUC}
+
+\paragraph{What this is.}
+A \textbf{straightforward use case}: monitor an uplift model with the \textbf{same batch FSDS pipeline} as elsewhere.
+REF = calibration batch; LIVE = current deployment batch.
+The only special piece is the ranking metric---\textbf{AUUC instead of MSE}---plus LOCO that \textbf{retrains} the meta-learner on REF after each feature-group drop.
+
+\paragraph{Three steps.}
+\begin{enumerate}\itemsep4pt
+  \item \textbf{FSDS on $X$.} MMD$^2$, domain RF AUC$(X)$, SRM on $T$, optional ESS overlap before LOCO.
+  \item \textbf{LOCO--AUUC.} Meta-learner on REF $\rightarrow$ AUUC on REF holdout and LIVE; LOCO drops localize feature groups.
+  \item \textbf{PO-risk (optional).} Same REF/LIVE stack; tests $Y\mid X$ / concept drift when AUUC falls but $X$ is flat.
+\end{enumerate}
+
+\paragraph{Why AUUC matters.}
+$\mathrm{AUUC}_{\mathrm{live}}$ drops when \textbf{covariate shift} hurts ranking on LIVE (often with MMD/domain AUC up, ESS still OK)
+and when \textbf{concept drift} changes the treatment effect surface (often with flat MMD, PO-risk significant, LOCO Spearman flipping).
+FSDS on $X$ and PO-risk tell you \emph{which} case you face; AUUC tells you ranking broke; LOCO tells you \emph{where} to act.
+
+\paragraph{Formal two-batch specification.}
+Full LaTeX formulation (FSDS isomorphism, Layer~1/2, PO-risk, policy map):
+\verb|docs/latex/uplift_fsds_two_batch_formulation.tex|;
+standalone PDF source: \verb|uplift_fsds_two_batch_standalone.tex|.
+
+\input{uplift_fsds_two_batch_formulation.tex}
+
+\input{uplift_fsds_subset_insights.tex}
+
+\input{uplift_fsds_benchmark_results.tex}

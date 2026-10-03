@@ -1,0 +1,373 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{array}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true, linkcolor=blue!45!black, citecolor=blue!45!black}
+
+\newcommand{\Dold}{\mathcal{D}_{\mathrm{old}}}
+\newcommand{\Dnew}{\mathcal{D}_{\mathrm{new}}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\z}{\mathbf{z}}
+\newcommand{\VIMP}{\mathrm{VIMP}}
+\newcommand{\MMD}{\mathrm{MMD}}
+\newcommand{\CS}{\textsc{cs}}
+\newcommand{\CD}{\textsc{cd}}
+
+\title{\bf FSDS-SoT: A Complete Write-Up\\[0.4em]
+\large Actionable Topology, Critical-Path Budgeting, and Incremental Value}
+\author{Prototype documentation}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We document a production-oriented landing of Feature Selection for Distribution
+Shift (FSDS) on Skeleton-of-Thought (SoT). Two objects carry essentially all
+actionable value: \textbf{(1)~grouping granularity}---a suggested parallel width
+$K$, merge rules, and ranked execution order within each cluster from branch
+embeddings; and \textbf{(2)~a critical-path budget executor}---per-branch
+expansion tokens $L_b$, model tier, and check budget from shift and quality.
+Batch covariate monitoring, merge at assembly time, and overlap-based fallback
+close the loop but do not replace these two. We provide summary tables, dashboard
+semantics, incremental-value categories beyond cost reduction, and pointers to
+the reference implementation (\texttt{Python/fsds\_sot/}) and agentic demo.
+Meta-learners are used for distance estimation only, not causal identification.
+\end{abstract}
+
+\section{Scope and two core objects}
+\label{sec:scope}
+
+SoT generates a skeleton $\{s_1,\ldots,s_B\}$ and expands branches, often in
+parallel. FSDS does not replace the LLM; it schedules \emph{when} to parallelise,
+\emph{how many} independent groups to run, and \emph{how much} compute each
+branch receives. Business rules (minimum/maximum width, latency SLA, compliance)
+clip data-driven suggestions:
+\begin{equation}
+  K_{\mathrm{final}} = \mathrm{clip}\big(K_{\mathrm{FSDS}},\, K_{\min}^{\mathrm{biz}},\, K_{\max}^{\mathrm{biz}}\big).
+\end{equation}
+
+\paragraph{Object~1 (topology).} Embedding coupling $\Rightarrow$ suggested $K$,
+cluster membership, merge pairs, sequential order inside clusters, parallel gate,
+straggler flags.
+
+\paragraph{Object~2 (resources).} Shift $s_b$ and quality $q_b$ $\Rightarrow$
+$L_b$, tier, checks, optional zero-sum reclaim under a total token budget.
+
+\section{Procedure stack (five steps)}
+\label{sec:procedures}
+
+\begin{enumerate}[leftmargin=*]
+  \item[\textbf{(0)}] \textbf{Batch covariate monitoring} --- $\Dold$ vs.\
+  $\Dnew$ on trace features $\phi(\mathcal{S})$; RF-domain $\VIMP$, $\MMD$-LOCO
+  (no outcome $Y$ required).
+  \item[\textbf{(1)}] \textbf{Grouping granularity} --- Object~1 on
+  $\{\z_b\}_{b=1}^B$.
+  \item[\textbf{(2)}] \textbf{Critical-path budget executor} --- Object~2 after
+  topology is fixed.
+  \item[\textbf{(3)}] \textbf{Merge / aggregation} --- deduplicate and reconcile
+  parallel expansions (GoT-style at merge time).
+  \item[\textbf{(4)}] \textbf{Confidence and fallback} --- overlap, bootstrap
+  CI, stability; abstain or covariate-only when unreliable.
+\end{enumerate}
+
+\section{Actionable outputs at a glance (tables)}
+\label{sec:action-tables}
+
+Table~\ref{tab:obj1-topology} summarises the primary topology object: suggested
+parallel width $K$, merge rules, and execution order inside each cluster.
+Table~\ref{tab:obj2-budget} gives the budget executor outputs.
+Table~\ref{tab:incremental-value} lists incremental value beyond cost reduction.
+Table~\ref{tab:dashboard-panels} maps the four-panel dashboard to decisions.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~1 --- grouping granularity (embedding topology). $K$ is a
+\emph{suggestion}; $K_{\mathrm{final}}=\mathrm{clip}(K_{\mathrm{FSDS}},K_{\min}^{\mathrm{biz}},K_{\max}^{\mathrm{biz}})$.}
+\label{tab:obj1-topology}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & How it is computed & Actionable insight \\
+\midrule
+Suggested size $K$ &
+Coupling graph on $\{\z_b\}$; connected components / spectral clusters &
+How many \emph{parallel groups} to run; clip by business min/max width \\
+Cluster membership &
+Cluster labels per skeleton point $b$ &
+Which branches share a parallel slot vs.\ must not race \\
+Merge pairs &
+High coupling + concept-redundant ($C_{ij}\le\varepsilon_c$) &
+Collapse duplicate skeleton points before expand (no double-counting) \\
+Sequential order &
+Topological / dependency order \emph{within} a cluster &
+Ranked expand sequence when intra-cluster coupling is high \\
+Parallel vs.\ sequential &
+$P=1-\overline{H}_{ij}$, redundancy $R$, balance $\mathrm{Bal}$ &
+Allow SoT parallel only if gate passes; else CoT or cluster-internal chain \\
+Straggler flag &
+Imbalanced predicted shift or length across $b$ &
+Split or cap a branch before it dominates critical path \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~2 --- critical-path budget executor (after topology is fixed).}
+\label{tab:obj2-budget}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & Driver & Actionable insight \\
+\midrule
+Expansion tokens $L_b$ &
+Normalized shift $s_b$, quality $q_b$; clip to $C_{\mathrm{lat}}$ &
+Set \texttt{max\_new\_tokens} per branch; longest $L_b$ sets span \\
+Model tier &
+High $s_b$ and risk $s_b(1-q_b)$ &
+Route branch to small / medium / large model \\
+Check budget &
+Risk $\propto s_b(1-q_b)$; minimum $1$ if low shift but low $q_b$ &
+Targeted verify / tool-validity calls (not uniform on every branch) \\
+Zero-sum reclaim &
+Low-shift, high-$q_b$ branches &
+Reallocate saved tokens to drifting branches under fixed total budget \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Incremental value of FSDS-SoT vs.\ uniform SoT (justify with A/B or
+frontier: success $\times$ cost $\times$ span).}
+\label{tab:incremental-value}
+\begin{tabular}{@{}llp{0.42\linewidth}@{}}
+\toprule
+Category & Primary object & What improves (beyond lower token bill) \\
+\midrule
+Latency / SLA & Object~2 &
+Shorter critical path (span); fewer straggler timeouts under parallel decode \\
+Reliability under drift & Object~2 (+ $Y$) &
+Higher success / tool-validity when retrieve--act branches shift \\
+Observability & Batch $\VIMP$ + Object~1 &
+Localised drift tickets; faster MTTR vs.\ aggregate accuracy alone \\
+Safety / compliance & Object~2 &
+Directed checks on high-risk cells; minimum guardrail on LoS$\cdot$LoQ \\
+Capacity & Object~1 + Object~2 &
+Fewer bad parallel merges; more effective QPS per GPU slot \\
+Strategy safety & Object~1 &
+Fallback to sequential when decomposability fails (avoid SoT tail risk) \\
+Learning loop (slow) & Batch monitoring &
+Targeted retrain / AGOD on persistent drift slices \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Dashboard panels: embedding-only vs.\ mixed signals.}
+\label{tab:dashboard-panels}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Panel & Data source & Suggestion type & Typical action \\
+\midrule
+1 Coupling heatmap & Branch embedding & $K$, merge, sequentialise &
+Re-plan groups before expand \\
+2 PCA clusters & Branch embedding & Same partition as Panel~1 &
+Visual audit of cluster assignment \\
+3 Budget bars & Embedding shift + quality & $L_b$, tier, checks &
+Deploy per-branch scheduler limits \\
+4 Batch VIMP & Trace features $\Dold$ vs.\ $\Dnew$ & Default policy drift &
+Adjust templates, caps, monitoring cadence \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Decomposability and suggested $K$}
+\label{sec:decomposability}
+
+On branch embeddings, form $H_{ij}=\widehat{\mathrm{HSIC}}_{\mathrm{norm}}(\z_i,\z_j)$,
+threshold at $\delta$, and count connected components $K$. Decomposability degree
+$\mathcal{D}=K/B$. Gate on redundancy $R$, parallelizability $P=1-\overline{H}_{ij}$,
+and balance $\mathrm{Bal}$ before allowing full parallel SoT.
+
+\section{Critical-path budget (formulas)}
+\label{sec:budget-formulas}
+
+Parallel latency is governed by span, not total tokens:
+\begin{equation}
+  T_{\infty} = t_{\mathrm{skel}} + \max_{c\in\Pi}\sum_{b\in\mathrm{chain}(c)} L_b\, t_{\mathrm{tok}} + t_{\mathrm{merge}}.
+\end{equation}
+Allocate
+\begin{equation}
+  L_b = \mathrm{clip}(\kappa\, s_b\, q_b,\, L_{\min},\, C_{\mathrm{lat}}),
+  \qquad
+  \mathrm{risk}_b \propto s_b(1-q_b),
+\end{equation}
+with check budget clipped to $[1,5]$ and tier from joint high shift and risk.
+LoS$\cdot$LoQ (low shift, low quality): retain at least one check; do not upscale
+the model without evidence of new content.
+
+\section{Incremental value: how to justify}
+\label{sec:justify}
+
+\paragraph{Counterfactual.} Compare FSDS-SoT to uniform SoT at fixed model and
+skeleton template; attribute lift to Objects~1--2 via ablation (disable gate or
+disable budget executor).
+
+\paragraph{Evidence ladder.} (i)~Mechanism demo on agentic traces
+(\texttt{demo\_fsds\_sot\_agentic\_incremental.py}); (ii)~batch $\VIMP$ aligned
+with retrieve/act drift; (iii)~production A/B on success, span, cost.
+
+\paragraph{Agentic demo (sketch).} Skeleton branches
+\texttt{plan, retrieve, reason, act, verify}; live batch injects embedding drift
+on tool branches. Typical demo direction: large cost/check savings with span and
+success validated on real $Y$ in deployment.
+
+\section{SoT usage: efficiency beyond compute cost and utilization}
+\label{sec:sot-efficiency}
+
+Cost and GPU utilisation answer ``how much we pay'' and ``how full the cluster
+is.'' \emph{Efficiency} answers ``how much useful reasoning we get per unit of
+wall-clock and per unit of generation''---the operational reason to adopt SoT in
+the first place, amplified when FSDS schedules topology and budgets. We separate
+four efficiency notions that SoT practitioners already care about; FSDS makes
+each one measurable and steerable.
+
+\paragraph{Latency efficiency (span).} Under parallel decode, user-visible latency
+is dominated by the critical path $T_\infty$ (Section~\ref{sec:budget-formulas}),
+not by total tokens $T_1$. Uniform SoT often assigns every branch the same
+expansion cap, so a single straggler branch fixes $T_\infty$ even when other
+branches finish early---parallelism does not help the SLA. FSDS shortens or caps
+branches with low shift, splits or reorders high-coupling pairs (Object~1), and
+concentrates length on branches that actually carry new information (Object~2).
+With $P$ parallel slots, wall-clock satisfies Brent's bound
+$T_P \le T_\infty + (T_1-T_\infty)/P$; reducing $T_\infty$ is the direct lever on
+p99 and timeout rate \emph{without} requiring higher utilisation.
+
+\paragraph{Parallel efficiency ($K$ vs.\ $P$).} SoT's benefit assumes the skeleton
+decomposes into $K$ weakly coupled clusters that can run concurrently. When
+$K_{\mathrm{final}}>P$, execution proceeds in waves; idle slots and merge
+contention are pure efficiency losses. Object~1 estimates $K$, flags merge pairs,
+and enforces cluster-internal order so that each wave runs \emph{meaningful}
+parallel work rather than racing branches that must later be reconciled. This is
+efficiency of \emph{parallel form}: fewer false starts, fewer merge retries, better
+slot occupancy in each wave.
+
+\paragraph{Generation efficiency (quality per token).} Efficiency is not only
+``fewer tokens'' but ``more outcome per token.'' Aligning $L_b$ and tier with
+shift~$\times$~quality puts capacity on branches whose embeddings indicate new
+content or low verifier confidence, and makes terse expansions on stable,
+high-quality branches---raising success or tool-validity per generated token
+rather than uniformly inflating or deflating all branches. Targeted checks
+(Object~2) add verification only on high-risk cells, improving \emph{verification
+efficiency} (fewer verify calls per successful episode).
+
+\paragraph{Workflow efficiency (time-to-action).} Before expansion, the dashboard
+turns embedding topology into explicit decisions: suggested $K$, merge list,
+ranked order within clusters, and per-branch $(L_b,\mathrm{tier},\mathrm{checks})$.
+Operators and schedulers skip trial-and-error uniform caps and post-hoc firefighting;
+batch $\VIMP$ (Panel~4) separates ``change default skeleton policy'' from
+``change this episode's branch budget,'' reducing mean time to diagnose drift.
+That is efficiency of the \emph{control loop}, not of the GPU kernel.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Efficiency dimensions for FSDS-scheduled SoT (orthogonal to raw cost and
+utilisation).}
+\label{tab:sot-efficiency}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.34\linewidth}p{0.34\linewidth}@{}}
+\toprule
+Efficiency notion & What SoT alone assumes & What FSDS adds \\
+\midrule
+Latency (span) &
+Equal branch lengths; critical path = longest branch &
+Cap/straggler control; shift-weighted $L_b$; cluster ordering \\
+Parallel form &
+All skeleton points expand in parallel &
+Suggested $K$, merge, sequentialise; gate when $\mathcal{D}$ is low \\
+Quality / token &
+Same model and length everywhere &
+Tier routing; risk-based checks; terse stable branches \\
+Control loop &
+Manual tuning of width and caps &
+Tables~\ref{tab:obj1-topology}--\ref{tab:dashboard-panels}; drift-local actions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Usage takeaway.} Use FSDS-SoT when SoT is already in the stack but
+episodes show uneven branch shift, tool-branch drift, straggler timeouts, or
+unexplained merge/rework: Object~1 fixes \emph{how many groups and in what order};
+Object~2 fixes \emph{how much generation and verification each group receives}.
+Efficiency gains appear as shorter critical paths, higher valid parallel width,
+better outcome per token, and faster operational response---complementary to,
+not redundant with, compute-cost savings already documented elsewhere.
+
+\paragraph{In one paragraph (SoT usage).}
+Skeleton-of-Thought wins when branches are weakly coupled and expansion budgets
+match where the answer actually lives; it loses when every branch gets the same
+length, the longest branch sets the SLA, or parallel runs race and must be merged
+again. FSDS-SoT reads branch embeddings once, suggests how many parallel groups
+$K$ to run (merge and order within each group), then assigns each group its own
+expansion cap, model tier, and check count from shift and quality---so wall-clock
+tracks the critical path, parallel slots run meaningful work, and each generated
+token is more likely to move the task forward. That is the everyday usage case:
+SoT for speed, FSDS for \emph{where} to parallelise and \emph{how much} to spend
+on each skeleton point.
+
+\section{ToT vs.\ SoT (one row each)}
+\label{sec:tot-sot}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+ & SoT & ToT \\
+\midrule
+Width & Suggested $K$ / branches & Branching factor per node \\
+Depth & Per-branch $L_b$ (tokens) & Search depth / prune policy \\
+Extra & --- & Re-calibrate value head if $\CD$ on value features \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Implementation and artifacts}
+\label{sec:impl}
+
+\begin{itemize}[leftmargin=*]
+  \item Code: \texttt{Python/fsds\_sot/} (pipeline, budget, viz, agentic DGP).
+  \item Demos: \texttt{demo\_fsds\_sot.py}, \texttt{demo\_fsds\_sot\_viz.py},
+  \texttt{demo\_fsds\_sot\_agentic\_incremental.py}.
+  \item Docs: \texttt{docs/FSDS\_SoT\_LANDING.md},
+  \texttt{docs/FSDS\_SoT\_AGENTIC\_INCREMENTAL\_VALUE.md}.
+  \item Extended manuscript: \texttt{FSDS\_SoT\_ToT\_manuscript.tex} with appendix
+  \texttt{FSDS\_SoT\_ToT\_supplement.tex}.
+  \item Agent applications \& closed loop: \texttt{FSDS\_agent\_reasoning\_applications.tex};
+  demo \texttt{demo\_fsds\_closed\_loop.py}.
+\end{itemize}
+
+\input{FSDS_agent_reasoning_applications.tex}
+\input{FSDS_boss_delivery_6points.tex}
+\input{FSDS_online_PFI_delivery.tex}
+
+\section*{Acknowledgement of scope}
+FSDS attributes nonstationarity in features and embeddings used for scheduling;
+it is not next-token gradient interpretability. Tables~\ref{tab:obj1-topology}--\ref{tab:dashboard-panels}
+are normative for operations; empirical numbers in demos are illustrative until
+replaced by production A/B.
+
+\end{document}

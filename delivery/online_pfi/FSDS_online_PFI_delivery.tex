@@ -1,0 +1,38 @@
+% Online PFI delivery section — \input from FSDS_SoT_complete_writeup.tex
+\section{Online PFI: streaming covariate attribution}
+\label{sec:online-pfi}
+
+\paragraph{Logic stack.}
+Each agent episode yields trace features $\X=\phi(\mathcal{S})$.
+On window $t=1,2,\ldots$, compare live batch $\Dnew$ to reference $\Dold$
+(optional exponential decay after each step).
+The covariate plane fits a domain RF $W\sim \X$ and computes
+\textbf{online permutation feature importance} $\VIMP_t$ (same estimator as
+batch Panel~4, repeated over time).
+Parallel signals: $\MMD^2$, domain AUC, overlap ESS, and an
+\textbf{onlineRFPerm} classifier two-sample $p$-value from label permutations.
+
+\begin{algorithm}[t]
+\caption{Online PFI stream (implementation: \texttt{online\_pfi.py})}
+\label{alg:online-pfi}
+\begin{algorithmic}[1]
+\STATE Input: $\X_{\mathrm{ref}}$, live windows $\{\X^{(t)}\}$, decay $\alpha$
+\FOR{$t=0,1,\ldots$}
+  \STATE $\VIMP_t, \mathrm{AUC}_t, \MMD^2_t \leftarrow \textsc{CovariateAttribution}(\X_{\mathrm{ref}}, \X^{(t)})$
+  \STATE $p_t \leftarrow \textsc{RFPermPvalue}(\X_{\mathrm{ref}} \cup \X^{(t)})$
+  \IF{$p_t < \alpha_{\mathrm{trig}}$}
+    \STATE emit drift signal; route to closed-loop ladder \S\ref{sec:closed-loop}
+  \ENDIF
+  \STATE $\X_{\mathrm{ref}} \leftarrow \alpha \X_{\mathrm{ref}} + (1-\alpha)\X^{(t)}$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Visualization.}
+Four-panel dashboard: AUC and $\MMD^2$ vs.\ window; $p$-value stream;
+heatmap of top-$k$ $\VIMP$ over time
+(\texttt{plot\_online\_pfi.py}, artifact \texttt{07\_online\_pfi\_dashboard.png}).
+
+\paragraph{Delivery package.}
+Run \texttt{package\_online\_pfi\_delivery.py}; outputs under
+\texttt{delivery/online\_pfi/}. See \texttt{docs/FSDS\_ONLINE\_PFI\_DELIVERY\_PACKAGE.md}.

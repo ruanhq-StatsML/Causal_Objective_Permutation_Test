@@ -1,0 +1,977 @@
+{
+  "generated_at_utc": "2026-10-01T18:31:56.322029+00:00",
+  "datasets": {
+    "hillstrom": {
+      "learners": {
+        "sklearn_xlearner": {
+          "auuc_ref_full": -0.044869266398657785,
+          "auuc_live_full": 0.015405895194048363,
+          "auuc_gap": -0.06027516159270615,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0019017644993665423,
+          "overlap_ess": 0.9815986055685719,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": 0.015405895194048363,
+            "auuc_gain_integral": 0.038299379972235086,
+            "raw_area": 45.9592559666821,
+            "gain_at_10pct": 10.714285714285714,
+            "gain_at_50pct": 42.49420574077376,
+            "gain_at_100pct": 82.48351850356089,
+            "sklift_uplift_auc": 0.015405895194048363,
+            "sklift_qini_auc": 0.026174202642167774,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.06276294372759758,
+              "auuc_live": 0.018676528182577815,
+              "drop_ref": 0.017893677328939796,
+              "drop_live": -0.0032706329885294518,
+              "drop_gap": -0.021164310317469247
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.041916337567475495,
+              "auuc_live": 0.032099391166390275,
+              "drop_ref": -0.08678560396613327,
+              "drop_live": -0.01669349597234191,
+              "drop_gap": 0.07009210799379137
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 2.76656998800172,
+            "single_fit_wall_sec": 0.41016253500129096,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.4610949980002867
+          }
+        },
+        "tarnet": {
+          "auuc_ref_full": -0.022703008256459205,
+          "auuc_live_full": -0.01308384678976059,
+          "auuc_gap": -0.009619161466698615,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0019017644993665423,
+          "overlap_ess": 0.9815986055685719,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": -0.01308384678976059,
+            "auuc_gain_integral": 0.03104176816612112,
+            "raw_area": 37.250121799345344,
+            "gain_at_10pct": 11.674208144796378,
+            "gain_at_50pct": 36.0,
+            "gain_at_100pct": 82.48351850356089,
+            "sklift_uplift_auc": -0.01308384678976059,
+            "sklift_qini_auc": -0.027196447849303033,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.0352553338147153,
+              "auuc_live": 0.022858151736069674,
+              "drop_ref": 0.012552325558256097,
+              "drop_live": -0.035941998525830264,
+              "drop_gap": -0.04849432408408636
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.032517966321725995,
+              "auuc_live": 0.038089676053073056,
+              "drop_ref": -0.0552209745781852,
+              "drop_live": -0.05117352284283365,
+              "drop_gap": 0.004047451735351551
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 7.583964136996656,
+            "single_fit_wall_sec": 0.8150147650012514,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 1.263994022832776
+          }
+        },
+        "dragonnet": {
+          "auuc_ref_full": -0.01048544275513384,
+          "auuc_live_full": 0.046287970661447644,
+          "auuc_gap": -0.056773413416581486,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0019017644993665423,
+          "overlap_ess": 0.9815986055685719,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": 0.046287970661447644,
+            "auuc_gain_integral": 0.04614583801906488,
+            "raw_area": 55.37500562287786,
+            "gain_at_10pct": 6.377622377622383,
+            "gain_at_50pct": 67.22741363792932,
+            "gain_at_100pct": 82.48351850356089,
+            "sklift_uplift_auc": 0.046287970661447644,
+            "sklift_qini_auc": 0.07394034521121783,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.06232201749176972,
+              "auuc_live": 0.021313212609711994,
+              "drop_ref": 0.05183657473663588,
+              "drop_live": 0.02497475805173565,
+              "drop_gap": -0.02686181668490023
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.04608847100439434,
+              "auuc_live": 0.032099391166390275,
+              "drop_ref": -0.05657391375952818,
+              "drop_live": 0.01418857949505737,
+              "drop_gap": 0.07076249325458556
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 7.7643134639947675,
+            "single_fit_wall_sec": 1.0366998999961652,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 1.294052243999128
+          }
+        },
+        "registry_rf_x": {
+          "auuc_ref_full": -0.04510206903606113,
+          "auuc_live_full": 0.0017352250877567836,
+          "auuc_gap": -0.04683729412381791,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0019017644993665423,
+          "overlap_ess": 0.9815986055685719,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": 0.0017352250877567836,
+            "auuc_gain_integral": 0.034809225734744514,
+            "raw_area": 41.77107088169342,
+            "gain_at_10pct": 13.43358395989975,
+            "gain_at_50pct": 48.45383759733038,
+            "gain_at_100pct": 82.48351850356089,
+            "sklift_uplift_auc": 0.0017352250877567836,
+            "sklift_qini_auc": -0.0012654545909785604,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.02524416451928514,
+              "auuc_live": 0.005264302926043002,
+              "drop_ref": -0.01985790451677599,
+              "drop_live": -0.0035290778382862185,
+              "drop_gap": 0.01632882667848977
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.041916337567475495,
+              "auuc_live": 0.032099391166390275,
+              "drop_ref": -0.08701840660353663,
+              "drop_live": -0.03036416607863349,
+              "drop_gap": 0.05665424052490314
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 1.8247236610041,
+            "single_fit_wall_sec": 0.20933839998906478,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.30412061016735
+          }
+        },
+        "registry_logistic_x": {
+          "auuc_ref_full": -0.00044817097487565125,
+          "auuc_live_full": 0.048594237042257356,
+          "auuc_gap": -0.049042408017133006,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0019017644993665423,
+          "overlap_ess": 0.9815986055685719,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": 0.048594237042257356,
+            "auuc_gain_integral": 0.04673765417820993,
+            "raw_area": 56.08518501385191,
+            "gain_at_10pct": 7.767857142857142,
+            "gain_at_50pct": 63.66636663666367,
+            "gain_at_100pct": 82.48351850356089,
+            "sklift_uplift_auc": 0.048594237042257356,
+            "sklift_qini_auc": 0.07891824393261787,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.061194114144981555,
+              "auuc_live": 0.020376594437886374,
+              "drop_ref": 0.060745943170105905,
+              "drop_live": 0.02821764260437098,
+              "drop_gap": -0.03252830056573493
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.05245356493724458,
+              "auuc_live": 0.03211266767338391,
+              "drop_ref": -0.05290173591212023,
+              "drop_live": 0.016481569368873447,
+              "drop_gap": 0.06938330528099368
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 0.49636351999652106,
+            "single_fit_wall_sec": 0.014758132994757034,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.0827272533327535
+          }
+        }
+      },
+      "online_pfi": {
+        "domain_auc": 0.9381264583333333,
+        "mmd2": 0.001356808659419977,
+        "overlap_ess": 0.690245726033742,
+        "c2st_pvalue": 0.5294117647058824,
+        "top_vimp_features": [
+          "x1",
+          "x0",
+          "x4",
+          "x3",
+          "x2"
+        ]
+      }
+    },
+    "hillstrom_covariate_drift": {
+      "learners": {
+        "sklearn_xlearner": {
+          "auuc_ref_full": 0.014413545656307088,
+          "auuc_live_full": -0.018124682914907805,
+          "auuc_gap": 0.0325382285712149,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.004260417758318688,
+          "overlap_ess": 0.9999999999999998,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": -0.018124682914907805,
+            "auuc_gain_integral": 0.04213903401543865,
+            "raw_area": 50.56684081852638,
+            "gain_at_10pct": 13.103639899972212,
+            "gain_at_50pct": 41.296851909901044,
+            "gain_at_100pct": 112.4602806141597,
+            "sklift_uplift_auc": -0.018124682914907805,
+            "sklift_qini_auc": -0.03741592411954666,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.0092784178621696,
+              "auuc_live": -0.011608441697231846,
+              "drop_ref": 0.005135127794137488,
+              "drop_live": -0.00651624121767596,
+              "drop_gap": -0.011651369011813448
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.01565250587984875,
+              "auuc_live": -0.007642203845410489,
+              "drop_ref": -0.0012389602235416616,
+              "drop_live": -0.010482479069497317,
+              "drop_gap": -0.009243518845955655
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 3.0234580990072573,
+            "single_fit_wall_sec": 0.440802683995571,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.5039096831678762
+          }
+        },
+        "tarnet": {
+          "auuc_ref_full": -0.024148598232222818,
+          "auuc_live_full": 0.028353992142266863,
+          "auuc_gap": -0.05250259037448968,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.004260417758318688,
+          "overlap_ess": 0.9999999999999998,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": 0.028353992142266863,
+            "auuc_gain_integral": 0.05422881609288422,
+            "raw_area": 65.07457931146106,
+            "gain_at_10pct": 10.285714285714288,
+            "gain_at_50pct": 70.59411771241902,
+            "gain_at_100pct": 112.4602806141597,
+            "sklift_uplift_auc": 0.028353992142266863,
+            "sklift_qini_auc": 0.051444295293912985,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.04044284992060816,
+              "auuc_live": -0.028384064240445678,
+              "drop_ref": 0.016294251688385344,
+              "drop_live": 0.05673805638271254,
+              "drop_gap": 0.04044380469432719
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.019842447074902358,
+              "auuc_live": -0.007642203845410489,
+              "drop_ref": -0.00430615115732046,
+              "drop_live": 0.03599619598767735,
+              "drop_gap": 0.04030234714499781
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 5.910713290999411,
+            "single_fit_wall_sec": 0.7475696409965167,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.9851188818332351
+          }
+        },
+        "dragonnet": {
+          "auuc_ref_full": 0.014719631032472072,
+          "auuc_live_full": -0.016367714588924727,
+          "auuc_gap": 0.031087345621396797,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.004260417758318688,
+          "overlap_ess": 0.9999999999999998,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": -0.016367714588924727,
+            "auuc_gain_integral": 0.04259503071018551,
+            "raw_area": 51.11403685222261,
+            "gain_at_10pct": 3.107769423558897,
+            "gain_at_50pct": 46.9950213371266,
+            "gain_at_100pct": 112.4602806141597,
+            "sklift_uplift_auc": -0.016367714588924727,
+            "sklift_qini_auc": -0.024718171924985197,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.010890662150041133,
+              "auuc_live": -0.02343847241756463,
+              "drop_ref": 0.025610293182513205,
+              "drop_live": 0.007070757828639904,
+              "drop_gap": -0.0185395353538733
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.014443881670083245,
+              "auuc_live": -0.007642203845410489,
+              "drop_ref": 0.00027574936238882776,
+              "drop_live": -0.008725510743514239,
+              "drop_gap": -0.009001260105903066
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 7.024958013993455,
+            "single_fit_wall_sec": 0.9209491910005454,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 1.170826335665576
+          }
+        },
+        "registry_rf_x": {
+          "auuc_ref_full": -0.0341486247081071,
+          "auuc_live_full": -0.009299389434681487,
+          "auuc_gap": -0.024849235273425616,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.004260417758318688,
+          "overlap_ess": 0.9999999999999998,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": -0.009299389434681487,
+            "auuc_gain_integral": 0.04441698621670042,
+            "raw_area": 53.30038346004051,
+            "gain_at_10pct": 5.999999999999998,
+            "gain_at_50pct": 48.482142857142854,
+            "gain_at_100pct": 112.4602806141597,
+            "sklift_uplift_auc": -0.009299389434681487,
+            "sklift_qini_auc": -0.020688463381848925,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.023197365868572992,
+              "auuc_live": -0.03587991433068364,
+              "drop_ref": -0.01095125883953411,
+              "drop_live": 0.026580524896002152,
+              "drop_gap": 0.03753178373553626
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.01565250587984875,
+              "auuc_live": -0.007642203845410489,
+              "drop_ref": -0.04980113058795585,
+              "drop_live": -0.0016571855892709977,
+              "drop_gap": 0.04814394499868485
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 1.745870468992507,
+            "single_fit_wall_sec": 0.20373300900973845,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.2909784114987512
+          }
+        },
+        "registry_logistic_x": {
+          "auuc_ref_full": 0.015168753079152685,
+          "auuc_live_full": -0.023601277805020852,
+          "auuc_gap": 0.03877003088417354,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.004260417758318688,
+          "overlap_ess": 0.9999999999999998,
+          "integral_check": {
+            "n": 1200,
+            "auuc_primary": -0.023601277805020852,
+            "auuc_gain_integral": 0.04071564218563357,
+            "raw_area": 48.85877062276028,
+            "gain_at_10pct": 3.107769423558897,
+            "gain_at_50pct": 44.86130867709816,
+            "gain_at_100pct": 112.4602806141597,
+            "sklift_uplift_auc": -0.023601277805020852,
+            "sklift_qini_auc": -0.03911591397600833,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.007283733019495764,
+              "auuc_live": -0.03815909217014552,
+              "drop_ref": 0.022452486098648448,
+              "drop_live": 0.014557814365124669,
+              "drop_gap": -0.007894671733523779
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.01565250587984875,
+              "auuc_live": -0.007642203845410489,
+              "drop_ref": -0.0004837528006960655,
+              "drop_live": -0.015959073959610364,
+              "drop_gap": -0.015475321158914299
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 0.42515754300984554,
+            "single_fit_wall_sec": 0.014084176000324078,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.07085959050164092
+          }
+        }
+      },
+      "online_pfi": {
+        "domain_auc": 1.0,
+        "mmd2": 0.0038906959632579326,
+        "overlap_ess": 0.9999999999999993,
+        "c2st_pvalue": 0.058823529411764705,
+        "top_vimp_features": [
+          "x2",
+          "x0",
+          "x1",
+          "x3",
+          "x4"
+        ]
+      }
+    },
+    "synthetic_covariate": {
+      "learners": {
+        "sklearn_xlearner": {
+          "auuc_ref_full": -0.01595131264521731,
+          "auuc_live_full": 0.011201408070680811,
+          "auuc_gap": -0.02715272071589812,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": -0.9999999999999999,
+          "mmd2_x": 0.003926006829869006,
+          "overlap_ess": 0.7145687173753303,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.011201408070680811,
+            "auuc_gain_integral": -0.0013752554378847139,
+            "raw_area": -1.375255437884714,
+            "gain_at_10pct": 2.2480931352870326,
+            "gain_at_50pct": 1.5729327170005136,
+            "gain_at_100pct": -9.193095142513041,
+            "sklift_uplift_auc": 0.011201408070680811,
+            "sklift_qini_auc": 0.008594296343726401,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.0001339687325306752,
+              "auuc_live": -0.0032466432958659685,
+              "drop_ref": -0.016085281377747986,
+              "drop_live": 0.014448051366546779,
+              "drop_gap": 0.030533332744294765
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.012541882616425245,
+              "auuc_live": 0.009027389199676729,
+              "drop_ref": -0.003409430028792064,
+              "drop_live": 0.002174018871004083,
+              "drop_gap": 0.005583448899796147
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 6.8111841900099535,
+            "single_fit_wall_sec": 1.1574827769945841,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 1.135197365001659
+          }
+        },
+        "tarnet": {
+          "auuc_ref_full": -0.03918057862031095,
+          "auuc_live_full": 0.010603143095016582,
+          "auuc_gap": -0.04978372171532753,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.003926006829869006,
+          "overlap_ess": 0.7145687173753303,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.010603143095016582,
+            "auuc_gain_integral": -0.001546831933217878,
+            "raw_area": -1.546831933217878,
+            "gain_at_10pct": -2.0000000000000018,
+            "gain_at_50pct": -2.78356005228253,
+            "gain_at_100pct": -9.193095142513041,
+            "sklift_uplift_auc": 0.010603143095016582,
+            "sklift_qini_auc": 0.008494255384152093,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.031402768221103106,
+              "auuc_live": -0.03466108829279773,
+              "drop_ref": -0.0077778103992078435,
+              "drop_live": 0.04526423138781431,
+              "drop_gap": 0.053042041787022154
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.0005079344934252027,
+              "auuc_live": 0.0212791395846697,
+              "drop_ref": -0.039688513113736154,
+              "drop_live": -0.010675996489653118,
+              "drop_gap": 0.029012516624083037
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 4.561289953999221,
+            "single_fit_wall_sec": 0.631212938009412,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.7602149923332036
+          }
+        },
+        "dragonnet": {
+          "auuc_ref_full": -0.05658207393478229,
+          "auuc_live_full": 0.02971922627972849,
+          "auuc_gap": -0.08630130021451078,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.003926006829869006,
+          "overlap_ess": 0.7145687173753303,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.02971922627972849,
+            "auuc_gain_integral": 0.003951410759852326,
+            "raw_area": 3.951410759852326,
+            "gain_at_10pct": 16.907813145928063,
+            "gain_at_50pct": 8.974358974358971,
+            "gain_at_100pct": -9.193095142513041,
+            "sklift_uplift_auc": 0.02971922627972849,
+            "sklift_qini_auc": 0.02334934924691124,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.07335331127369249,
+              "auuc_live": -0.018799537153407528,
+              "drop_ref": 0.0167712373389102,
+              "drop_live": 0.04851876343313602,
+              "drop_gap": 0.03174752609422582
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.029078155170179167,
+              "auuc_live": 0.03654189177272415,
+              "drop_ref": -0.027503918764603123,
+              "drop_live": -0.00682266549299566,
+              "drop_gap": 0.020681253271607462
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 5.2728640109999105,
+            "single_fit_wall_sec": 0.6542691900103819,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.8788106684999851
+          }
+        },
+        "registry_rf_x": {
+          "auuc_ref_full": -0.027735684869596447,
+          "auuc_live_full": 0.03856901385124106,
+          "auuc_gap": -0.06630469872083751,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.003926006829869006,
+          "overlap_ess": 0.7145687173753303,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.03856901385124106,
+            "auuc_gain_integral": 0.006497320747596645,
+            "raw_area": 6.497320747596645,
+            "gain_at_10pct": 8.866995073891632,
+            "gain_at_50pct": 4.964333911702312,
+            "gain_at_100pct": -9.193095142513041,
+            "sklift_uplift_auc": 0.03856901385124106,
+            "sklift_qini_auc": 0.030796207795176646,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.022023430784557957,
+              "auuc_live": 0.007132013829586934,
+              "drop_ref": -0.00571225408503849,
+              "drop_live": 0.03143700002165413,
+              "drop_gap": 0.03714925410669262
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.014091278057897798,
+              "auuc_live": 0.030610733105131162,
+              "drop_ref": -0.013644406811698649,
+              "drop_live": 0.007958280746109901,
+              "drop_gap": 0.02160268755780855
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 2.600855409007636,
+            "single_fit_wall_sec": 0.3167885379953077,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.43347590150127263
+          }
+        },
+        "registry_logistic_x": {
+          "auuc_ref_full": -0.05148929223336776,
+          "auuc_live_full": 0.023126919698623127,
+          "auuc_gap": -0.07461621193199089,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.003926006829869006,
+          "overlap_ess": 0.7145687173753303,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.023126919698623127,
+            "auuc_gain_integral": 0.002055306149631698,
+            "raw_area": 2.055306149631698,
+            "gain_at_10pct": 0.20202020202020332,
+            "gain_at_50pct": 10.633167767758106,
+            "gain_at_100pct": -9.193095142513041,
+            "sklift_uplift_auc": 0.023126919698623127,
+            "sklift_qini_auc": 0.017752035085619483,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.04624559729974904,
+              "auuc_live": 0.0010598294650085798,
+              "drop_ref": -0.005243694933618724,
+              "drop_live": 0.02206709023361455,
+              "drop_gap": 0.027310785167233273
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.03131008728641132,
+              "auuc_live": 0.017739019719321823,
+              "drop_ref": -0.020179204946956443,
+              "drop_live": 0.005387899979301305,
+              "drop_gap": 0.025567104926257748
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 0.6421545439952752,
+            "single_fit_wall_sec": 0.006877132997033186,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.10702575733254586
+          }
+        }
+      },
+      "online_pfi": {
+        "domain_auc": 0.999947,
+        "mmd2": 0.0028863474622108512,
+        "overlap_ess": 0.7533290439122431,
+        "c2st_pvalue": 0.058823529411764705,
+        "top_vimp_features": [
+          "f0",
+          "f1",
+          "f2",
+          "f4",
+          "f3"
+        ]
+      }
+    },
+    "synthetic_concept": {
+      "learners": {
+        "sklearn_xlearner": {
+          "auuc_ref_full": 0.008780355855535982,
+          "auuc_live_full": -0.0025911722872646314,
+          "auuc_gap": 0.011371528142800614,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": -0.9999999999999999,
+          "mmd2_x": 0.0024206274060746876,
+          "overlap_ess": 0.9092039647471064,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": -0.0025911722872646314,
+            "auuc_gain_integral": -0.009881387097427996,
+            "raw_area": -9.881387097427996,
+            "gain_at_10pct": 4.589371980676338,
+            "gain_at_50pct": -26.47511051316548,
+            "gain_at_100pct": -18.287314925970357,
+            "sklift_uplift_auc": -0.0025911722872646314,
+            "sklift_qini_auc": -0.0017530980193205805,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.030427875154723904,
+              "auuc_live": -0.07303068662138561,
+              "drop_ref": -0.02164751929918792,
+              "drop_live": 0.07043951433412098,
+              "drop_gap": 0.09208703363330889
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.006331550817511166,
+              "auuc_live": 0.02706797293230395,
+              "drop_ref": 0.002448805038024816,
+              "drop_live": -0.02965914521956858,
+              "drop_gap": -0.032107950257593394
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 6.770129189011641,
+            "single_fit_wall_sec": 1.162757612997666,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 1.1283548648352735
+          }
+        },
+        "tarnet": {
+          "auuc_ref_full": -0.05896293426347735,
+          "auuc_live_full": 0.025709727939462756,
+          "auuc_gap": -0.0846726622029401,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": -0.9999999999999999,
+          "mmd2_x": 0.0024206274060746876,
+          "overlap_ess": 0.9092039647471064,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": 0.025709727939462756,
+            "auuc_gain_integral": -0.001819409837496436,
+            "raw_area": -1.819409837496436,
+            "gain_at_10pct": 2.8110789582472098,
+            "gain_at_50pct": -4.977636704660227,
+            "gain_at_100pct": -18.287314925970357,
+            "sklift_uplift_auc": 0.025709727939462756,
+            "sklift_qini_auc": 0.01954124915779093,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": -0.005929321756487301,
+              "auuc_live": 0.01674075951189714,
+              "drop_ref": -0.053033612506990055,
+              "drop_live": 0.008968968427565616,
+              "drop_gap": 0.06200258093455567
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.008230391787462455,
+              "auuc_live": 0.019147580844823965,
+              "drop_ref": -0.0507325424760149,
+              "drop_live": 0.006562147094638791,
+              "drop_gap": 0.05729468957065369
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 4.50430107700231,
+            "single_fit_wall_sec": 0.5423587109980872,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.7507168461670517
+          }
+        },
+        "dragonnet": {
+          "auuc_ref_full": 0.026135767865389983,
+          "auuc_live_full": -0.05536657351852894,
+          "auuc_gap": 0.08150234138391892,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": -0.9999999999999999,
+          "mmd2_x": 0.0024206274060746876,
+          "overlap_ess": 0.9092039647471064,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": -0.05536657351852894,
+            "auuc_gain_integral": -0.024917193612500617,
+            "raw_area": -24.91719361250062,
+            "gain_at_10pct": 7.883153261304521,
+            "gain_at_50pct": -36.11680327868855,
+            "gain_at_100pct": -18.287314925970357,
+            "sklift_uplift_auc": -0.05536657351852894,
+            "sklift_qini_auc": -0.04280819806386574,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.020240171972322887,
+              "auuc_live": -0.04669949417291497,
+              "drop_ref": 0.005895595893067096,
+              "drop_live": -0.00866707934561397,
+              "drop_gap": -0.014562675238681065
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.007317779718018935,
+              "auuc_live": -0.016638071520113113,
+              "drop_ref": 0.03345354758340892,
+              "drop_live": -0.03872850199841582,
+              "drop_gap": -0.07218204958182474
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 5.416476733007585,
+            "single_fit_wall_sec": 0.6591575839993311,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.9027461221679308
+          }
+        },
+        "registry_rf_x": {
+          "auuc_ref_full": -0.08203008045625174,
+          "auuc_live_full": -0.007976819405085909,
+          "auuc_gap": -0.07405326105116583,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": -0.9999999999999999,
+          "mmd2_x": 0.0024206274060746876,
+          "overlap_ess": 0.9092039647471064,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": -0.007976819405085909,
+            "auuc_gain_integral": -0.011416267625719421,
+            "raw_area": -11.41626762571942,
+            "gain_at_10pct": -1.9323671497584516,
+            "gain_at_50pct": -16.489497950819665,
+            "gain_at_100pct": -18.287314925970357,
+            "sklift_uplift_auc": -0.007976819405085909,
+            "sklift_qini_auc": -0.005951892498225717,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.02045250145032007,
+              "auuc_live": -0.055413384555549235,
+              "drop_ref": -0.1024825819065718,
+              "drop_live": 0.04743656515046332,
+              "drop_gap": 0.14991914705703513
+            },
+            {
+              "feature": "block_0",
+              "auuc_ref": -0.009502313318797993,
+              "auuc_live": 0.018654269232572195,
+              "drop_ref": -0.07252776713745374,
+              "drop_live": -0.026631088637658104,
+              "drop_gap": 0.04589667849979563
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 2.5798222569865175,
+            "single_fit_wall_sec": 0.31544504000339657,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.4299703761644196
+          }
+        },
+        "registry_logistic_x": {
+          "auuc_ref_full": 0.06203085070573032,
+          "auuc_live_full": -0.032824804986654556,
+          "auuc_gap": 0.09485565569238488,
+          "diagnosis": "concept_drift_or_tau_change",
+          "loco_spearman_proxy": 0.9999999999999999,
+          "mmd2_x": 0.0024206274060746876,
+          "overlap_ess": 0.9092039647471064,
+          "integral_check": {
+            "n": 1000,
+            "auuc_primary": -0.032824804986654556,
+            "auuc_gain_integral": -0.018495003307066604,
+            "raw_area": -18.495003307066604,
+            "gain_at_10pct": -10.5050505050505,
+            "gain_at_50pct": -26.580839378072373,
+            "gain_at_100pct": -18.287314925970357,
+            "sklift_uplift_auc": -0.032824804986654556,
+            "sklift_qini_auc": -0.02522826924049228,
+            "delta_vs_sklift_uplift": 0.0
+          },
+          "loco_top_live": [
+            {
+              "feature": "block_0",
+              "auuc_ref": 0.02067267433966886,
+              "auuc_live": -0.05385446205875916,
+              "drop_ref": 0.041358176366061455,
+              "drop_live": 0.021029657072104607,
+              "drop_gap": -0.020328519293956848
+            },
+            {
+              "feature": "block_1",
+              "auuc_ref": 0.038534633495238446,
+              "auuc_live": 0.006729643038667798,
+              "drop_ref": 0.023496217210491874,
+              "drop_live": -0.039554448025322354,
+              "drop_gap": -0.06305066523581423
+            }
+          ],
+          "timing": {
+            "loco_monitor_wall_sec": 0.5880361450108467,
+            "single_fit_wall_sec": 0.006792002997826785,
+            "n_retrains_loco": 6,
+            "implied_sec_per_retrain": 0.09800602416847444
+          }
+        }
+      },
+      "online_pfi": {
+        "domain_auc": 1.0,
+        "mmd2": 0.0014822731310961575,
+        "overlap_ess": 0.8928756797856761,
+        "c2st_pvalue": 0.9411764705882353,
+        "top_vimp_features": [
+          "f2",
+          "f1",
+          "f5",
+          "f3",
+          "f9"
+        ]
+      }
+    }
+  },
+  "notes": {
+    "auuc": "Normalized trapezoid of cumulative (rate_T-rate_C)*(n_T+n_C)",
+    "loco": "Group LOCO; retrain on REF after each block drop"
+  }
+}

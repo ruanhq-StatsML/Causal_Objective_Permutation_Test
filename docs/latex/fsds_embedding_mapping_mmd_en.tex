@@ -1,0 +1,161 @@
+% Production mapping tables (ReAct + patterns) and MMD / budget computation
+% Compile: pdflatex fsds_embedding_mapping_mmd_en.tex
+% Chinese: fsds_embedding_mapping_mmd_zh.tex (ctex)
+\documentclass[11pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,longtable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{FSDS Embedding Mapping Tables and Computation Logic\\[0.25em]
+\large Encoder-agnostic: last-layer vs pooled vectors only fix $d$ and row semantics}
+\author{Repository contract (\texttt{fsds\_sot/applications.py}, \texttt{attribution.py})}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The \emph{type} of neural representation (final hidden state, mean-pooled layer, or external sentence embedding) is intentionally unspecified: production must only keep dimension $d$ fixed and map each logical segment to one row of $Z$.
+This note gives intuitive \textbf{parameter mapping tables} for ReAct and other agent patterns, plus the exact \textbf{MMD}$^2$, overlap ESS, and within-episode \textbf{shift/budget} formulas implemented in code.
+When LIVE drift is injected on the correct segment, batch MMD$^2$ on $X$ rises and argmax shift score on $Z$ aligns with that segment---the acceptance test used in demos.
+\end{abstract}
+
+\section{Two-layer contract (recap)}
+\begin{itemize}[nosep]
+  \item $Z\in\mathbb{R}^{B\times d}$: one row per segment/role/hop/node; L2-normalized per row.
+  \item $X_{\mathrm{ep}}\in\mathbb{R}^{p}$: \texttt{trace\_features} $=$ concat$(\mathrm{mean}(Z),\ \text{scalars})$; batches $X_{\mathrm{ref}}, X_{\mathrm{live}}$ for monitoring.
+  \item Debate early-stop: separate tensor $E\in\mathbb{R}^{R\times B\times d}$ (not substituted for $Z$).
+\end{itemize}
+
+\section{ReAct mapping table (production $\rightarrow$ code)}
+\label{tab:react-map}
+Encoder output may be \textbf{any} $\mathbb{R}^d$ vector; map by \emph{phase}, not by model internals.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.20\textwidth}p{0.12\textwidth}p{0.22\textwidth}p{0.18\textwidth}p{0.20\textwidth}@{}}
+\toprule
+Production log field & $Z$ row $b$ & \texttt{build\_react\_trace} arg & \texttt{trace\_features} part & Budget lever \\
+\midrule
+Planner / reasoner state & 0 & \texttt{thought\_emb} & $\mathrm{mean}(Z)$ & $L_0$, tier$_0$, checks$_0$ \\
+Tool call + args embed & 1 & \texttt{action\_emb} & $\mathrm{mean}(Z)$ & $L_1$, tier$_1$, checks$_1$ \\
+API / retrieval / env reply & 2 & \texttt{observation\_emb} & $\mathrm{mean}(Z)$; min$(q)$ scalar & $L_2$, tier$_2$, checks$_2$ \\
+Optional repeat steps & $3+$ & \texttt{extra\_steps} & $B$ scalar $=|\text{segments}|$ & per-row budget \\
+Per-phase quality & $q_b$ & \texttt{tool\_ok} $\rightarrow$ \texttt{quality} & mean$(q)$ scalar & scales $L_b$ via $q_b$ \\
+Criticality weights & --- & \texttt{need\_weights} in \texttt{fit\_plan} & --- & e.g.\ obs need $=0.88$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Playbook:} shift on observation $\Rightarrow$ raise checks/tier on row~2; do not uniformly inflate row~0 (``Budget Observation vs Thought'').
+
+\section{Other pattern mapping tables}
+
+\subsection{Multi-agent debate}
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Production & $Z$ row & Code & Notes \\
+\midrule
+Proponent utterance & 0 & \texttt{build\_multi\_agent\_trace} col 0 & Often stable \\
+Opponent utterance & 1 & col 1 & LIVE drift target in bench \\
+Judge / arbiter & 2 & col 2 & High \texttt{need}, \texttt{min\_tokens} floor \\
+Round $r$ role embeds & $(R,B,d)$ & \texttt{debate\_early\_stop\_round} & Macro stop; not $Z$ for \texttt{fit\_plan} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{RAG multi-hop}
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Hop event & $Z$ row & Scalar in $X$ \\
+\midrule
+Retrieve pass $h$ & $h$ & $B=H$; min grounding in scalars \\
+Reason / answer hops & $\mathrm{last{-}1}$,\ $\mathrm{last}$ & drift often on reason hop \\
+\bottomrule
+\end{tabular}
+\end{center}
+Code: \texttt{build\_rag\_multihop\_trace(hop\_names, hop\_chunk\_embs)}.
+
+\subsection{LangGraph checkpoints}
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Checkpoint & $Z$ row & Policy hook \\
+\midrule
+Node $k$ state embed & $k$ & Partial replay if $s_k$ high \\
+\texttt{tool\_call} node & index 3 in demo & Conditional edge / retry \\
+\bottomrule
+\end{tabular}
+\end{center}
+Code: \texttt{build\_langgraph\_node\_trace(node\_names, state\_embs, node\_success)}.
+
+\subsection{Plan--execute}
+Each plan step embedding $\rightarrow$ one row of $Z$; \texttt{build\_plan\_execute\_trace(plan\_step\_embs)}; mid-step drift localizes budget to step~$b$.
+
+\subsection{Self-consistency}
+Each sample chain final embed $\rightarrow$ row of $Z$; \texttt{build\_self\_consistency\_trace}; dispersion on $Z$ drives \texttt{adaptive\_sample\_count} (sample lever, parallel to FSDS budget).
+
+\section{Within-episode computation (shift and budget)}
+Let $\tilde{Z}_b = Z_b/\|Z_b\|_2$ (code: \texttt{\_normalize\_rows}). Centroid $c=\frac{1}{B}\sum_b \tilde{Z}_b$,
+\begin{equation}
+\label{eq:shift}
+s_b = \frac{\|\tilde{Z}_b - c\|_2}{\max_{b'} \|\tilde{Z}_{b'} - c\|_2 + \epsilon}.
+\end{equation}
+Normalized weights $\bar{s}_b = s_b/(\sum_{b'} s_{b'} + \epsilon)$. With quality $q_b\in(0,1]$, need $\eta_b$,
+\begin{equation}
+\label{eq:budget}
+L_b = \mathrm{clip}\big(\kappa\,\bar{s}_b\, q_b\, \eta_b,\; L_{\min,b},\; C_{\mathrm{lat}}\big),
+\end{equation}
+check budget $\propto \bar{s}_b(1-q_b)$, tier from $(\bar{s}_b, q_b)$ thresholds (\texttt{budget.py}).
+
+\section{Batch monitoring: MMD$^2$ on $X$ (REF vs LIVE)}
+Stack $X_{\mathrm{ref}}\in\mathbb{R}^{n_0\times p}$, $X_{\mathrm{live}}\in\mathbb{R}^{n_1\times p}$. RBF kernel $k_\sigma(u,v)=\exp(-\|u-v\|^2/(2\sigma^2))$ (implementation: \texttt{rbf\_mmd2}, default $\sigma=1$):
+\begin{equation}
+\label{eq:mmd}
+\widehat{\mathrm{MMD}}^2
+= \frac{1}{n_0^2}\sum_{i,i'} k(X^0_i,X^0_{i'})
++ \frac{1}{n_1^2}\sum_{j,j'} k(X^1_j,X^1_{j'})
+- \frac{2}{n_0 n_1}\sum_{i,j} k(X^0_i,X^1_j).
+\end{equation}
+\textbf{Interpretation:} larger \eqref{eq:mmd} $\Rightarrow$ covariate distribution of traces shifted between windows (``MMD rises'' in acceptance tests).
+
+\paragraph{Domain classifier (same batch stack).}
+$W_i\in\{0,1\}$ REF/LIVE labels; RF predicts $\hat{e}(W=1\mid X)$; report AUC and permutation VIMP on columns of $X$.
+Overlap ESS on IPW weights $1/(\hat{e}(1-\hat{e}))$; gate if ESS fraction $<0.15$ (\texttt{covariate\_attribution}).
+
+\paragraph{LOCO on columns of $X$.}
+For feature column $j$, $\Delta_j = \widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}}, X_{\mathrm{live}}) - \widehat{\mathrm{MMD}}^2(X_{\mathrm{ref}}^{(-j)}, X_{\mathrm{live}}^{(-j)})$; large $\Delta_j$ $\Rightarrow$ column $j$ of \texttt{trace\_features} carries shift (often aligns with drifted segment via $\mathrm{mean}(Z)$ block).
+
+\section{Consistency check when drift is injected}
+\begin{enumerate}
+  \item \textbf{Segment test:} perturb only row $b^\*$ of $Z$ (e.g.\ observation or con) $\Rightarrow$ $b^\*=\arg\max_b s_b$ from \eqref{eq:shift}.
+  \item \textbf{Batch test:} stack LIVE episodes with same perturbation in $Z$ $\Rightarrow$ $\widehat{\mathrm{MMD}}^2$ in \eqref{eq:mmd} increases vs REF (demos: Hillstrom-scale agent suites, legal block MMD${=}0.041$ vs finance $0.004$).
+  \item \textbf{Policy test:} \texttt{fit\_agent\_plan} increases $L_{b^\*}$ or checks$_{b^\*}$ vs uniform plan; log \texttt{impact\_receipt}.
+\end{enumerate}
+
+\section{Code anchors}
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Logic & Location \\
+\midrule
+Row normalize, trace builders & \texttt{fsds\_sot/applications.py} \\
+\eqref{eq:mmd}, LOCO, ESS & \texttt{fsds\_sot/attribution.py} \\
+\eqref{eq:shift}, \eqref{eq:budget} & \texttt{pipeline.py}, \texttt{budget.py} \\
+End-to-end MC & \texttt{demo\_fsds\_agent\_collaboration\_suite.py} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Related PO.}
+\texttt{fsds\_full\_scenarios\_po\_en.tex}; Chinese: \texttt{fsds\_embedding\_mapping\_mmd\_zh.tex}.
+
+\end{document}

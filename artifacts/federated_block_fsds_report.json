@@ -1,0 +1,118 @@
+{
+  "blocks": [
+    {
+      "block_id": "block_A",
+      "n_ref": 800,
+      "n_live": 400,
+      "mmd2": 0.005365971372827544,
+      "domain_auc": 0.9999875,
+      "overlap_ess": 0.8103853731439465,
+      "top_features": [
+        {
+          "feature": "block_A_x0",
+          "vimp": 0.24427083333333327
+        },
+        {
+          "feature": "block_A_x1",
+          "vimp": 0.2036458333333333
+        },
+        {
+          "feature": "block_A_x3",
+          "vimp": 0.20322916666666663
+        },
+        {
+          "feature": "block_A_x2",
+          "vimp": 0.20281249999999995
+        }
+      ],
+      "po_risk_pvalue": null,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    },
+    {
+      "block_id": "block_B",
+      "n_ref": 800,
+      "n_live": 400,
+      "mmd2": 0.11872582603542642,
+      "domain_auc": 0.998446875,
+      "overlap_ess": 0.8176261877864861,
+      "top_features": [
+        {
+          "feature": "block_B_x0",
+          "vimp": 0.15958333333333335
+        },
+        {
+          "feature": "block_B_x3",
+          "vimp": 0.15125000000000002
+        },
+        {
+          "feature": "block_B_x2",
+          "vimp": 0.1290625
+        },
+        {
+          "feature": "block_B_x1",
+          "vimp": 0.12791666666666668
+        }
+      ],
+      "po_risk_pvalue": 0.6585365853658537,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    },
+    {
+      "block_id": "block_C",
+      "n_ref": 800,
+      "n_live": 400,
+      "mmd2": 0.0033008247614443875,
+      "domain_auc": 0.999996875,
+      "overlap_ess": 0.8286238647038624,
+      "top_features": [
+        {
+          "feature": "block_C_x3",
+          "vimp": 0.2282291666666667
+        },
+        {
+          "feature": "block_C_x0",
+          "vimp": 0.2108333333333334
+        },
+        {
+          "feature": "block_C_x2",
+          "vimp": 0.1976041666666667
+        },
+        {
+          "feature": "block_C_x1",
+          "vimp": 0.18281250000000007
+        }
+      ],
+      "po_risk_pvalue": null,
+      "drift_type": "feature_drift",
+      "hints": [
+        "Covariate shift on block: LOGO retire candidate; RefreshRef if ESS low."
+      ]
+    }
+  ],
+  "global_mmd2": 0.005173686577676115,
+  "global_domain_auc": 0.999828125,
+  "merged_rank": [
+    {
+      "block": "block_B",
+      "score": 0.6171727010354264
+    },
+    {
+      "block": "block_A",
+      "score": 0.5053534713728276
+    },
+    {
+      "block": "block_C",
+      "score": 0.5032976997614445
+    }
+  ],
+  "server_actions": [
+    "[block_A] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'block_A_x0', 'vimp': 0.24427083333333327}, {'feature': 'block_A_x1', 'vimp': 0.2036458333333333}].",
+    "[block_B] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'block_B_x0', 'vimp': 0.15958333333333335}, {'feature': 'block_B_x3', 'vimp': 0.15125000000000002}].",
+    "[block_C] OFS candidate: covariate drift \u2014 review top VIMP [{'feature': 'block_C_x3', 'vimp': 0.2282291666666667}, {'feature': 'block_C_x0', 'vimp': 0.2108333333333334}]."
+  ]
+}

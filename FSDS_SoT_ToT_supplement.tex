@@ -1,0 +1,237 @@
+% Supplement: FSDS-SoT landing (decomposability, budget executor, dashboard, procedures)
+% Compile standalone or \input after main manuscript macros are loaded.
+
+\section{FSDS-SoT Landing: Procedures and Dashboard}
+\label{sec:sot-landing}
+
+We view production SoT control as five procedures. Procedures~(1)--(2) below
+are the primary actionable pair discussed in the prototype; (0), (3)--(4) close
+the loop.
+
+\begin{enumerate}[leftmargin=*]
+  \item[\textbf{(0)}] \textbf{Batch covariate monitoring:} $\Dold$ vs.\ $\Dnew$ on
+  trace features $\phi(\mathcal{S})$; RF-domain $\VIMP$ and $\MMD$-LOCO (no $Y$).
+  \item[\textbf{(1)}] \textbf{Grouping granularity:} decomposability on skeleton-point
+  embeddings $\{\z_b\}_{b=1}^B$; suggested cluster count $K$ and within-cluster order.
+  \item[\textbf{(2)}] \textbf{Critical-path budget executor:} per-branch expansion
+  tokens $L_b$, model tier, and check budget from shift and quality.
+  \item[\textbf{(3)}] \textbf{Merge / aggregation:} deduplicate and reconcile parallel
+  expansions (GoT-style logic at merge time).
+  \item[\textbf{(4)}] \textbf{Confidence and fallback:} overlap, bootstrap CI, stability;
+  abstain or covariate-only reporting when unreliable.
+\end{enumerate}
+
+\subsection{Actionable outputs at a glance (tables)}
+\label{sec:action-tables}
+
+Table~\ref{tab:obj1-topology} summarises the primary topology object: suggested
+parallel width $K$, merge rules, and execution order inside each cluster.
+Table~\ref{tab:obj2-budget} gives the budget executor outputs.
+Table~\ref{tab:incremental-value} lists incremental value beyond cost reduction.
+Table~\ref{tab:dashboard-panels} maps the four-panel dashboard to decisions.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~1 --- grouping granularity (embedding topology). $K$ is a
+\emph{suggestion}; $K_{\mathrm{final}}=\mathrm{clip}(K_{\mathrm{FSDS}},K_{\min}^{\mathrm{biz}},K_{\max}^{\mathrm{biz}})$.}
+\label{tab:obj1-topology}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & How it is computed & Actionable insight \\
+\midrule
+Suggested size $K$ &
+Coupling graph on $\{\z_b\}$; connected components / spectral clusters &
+How many \emph{parallel groups} to run; clip by business min/max width \\
+Cluster membership &
+Cluster labels per skeleton point $b$ &
+Which branches share a parallel slot vs.\ must not race \\
+Merge pairs &
+High coupling + concept-redundant ($C_{ij}\le\varepsilon_c$) &
+Collapse duplicate skeleton points before expand (no double-counting) \\
+Sequential order &
+Topological / dependency order \emph{within} a cluster &
+Ranked expand sequence when intra-cluster coupling is high \\
+Parallel vs.\ sequential &
+$P=1-\overline{H}_{ij}$, redundancy $R$, balance $\mathrm{Bal}$ &
+Allow SoT parallel only if gate passes; else CoT or cluster-internal chain \\
+Straggler flag &
+Imbalanced predicted shift or length across $b$ &
+Split or cap a branch before it dominates critical path \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Object~2 --- critical-path budget executor (after topology is fixed).}
+\label{tab:obj2-budget}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.30\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Output & Driver & Actionable insight \\
+\midrule
+Expansion tokens $L_b$ &
+Normalized shift $s_b$, quality $q_b$; clip to $C_{\mathrm{lat}}$ &
+Set \texttt{max\_new\_tokens} per branch; longest $L_b$ sets span \\
+Model tier &
+High $s_b$ and risk $s_b(1-q_b)$ &
+Route branch to small / medium / large model \\
+Check budget &
+Risk $\propto s_b(1-q_b)$; minimum $1$ if low shift but low $q_b$ &
+Targeted verify / tool-validity calls (not uniform on every branch) \\
+Zero-sum reclaim &
+Low-shift, high-$q_b$ branches &
+Reallocate saved tokens to drifting branches under fixed total budget \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Incremental value of FSDS-SoT vs.\ uniform SoT (justify with A/B or
+frontier: success $\times$ cost $\times$ span).}
+\label{tab:incremental-value}
+\begin{tabular}{@{}llp{0.42\linewidth}@{}}
+\toprule
+Category & Primary object & What improves (beyond lower token bill) \\
+\midrule
+Latency / SLA &
+Object~2 &
+Shorter critical path (span); fewer straggler timeouts under parallel decode \\
+Reliability under drift &
+Object~2 (+ $Y$) &
+Higher success / tool-validity when retrieve--act branches shift \\
+Observability &
+Batch $\VIMP$ + Object~1 &
+Localised drift tickets; faster MTTR vs.\ aggregate accuracy alone \\
+Safety / compliance &
+Object~2 &
+Directed checks on high-risk cells; minimum guardrail on LoS$\cdot$LoQ \\
+Capacity &
+Object~1 + Object~2 &
+Fewer bad parallel merges; more effective QPS per GPU slot \\
+Strategy safety &
+Object~1 &
+Fallback to sequential when decomposability fails (avoid SoT tail risk) \\
+Learning loop (slow) &
+Batch monitoring &
+Targeted retrain / AGOD on persistent drift slices \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Dashboard panels: embedding-only vs.\ mixed signals.}
+\label{tab:dashboard-panels}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Panel & Data source & Suggestion type & Typical action \\
+\midrule
+1 Coupling heatmap & Branch embedding & $K$, merge, sequentialise &
+Re-plan groups before expand \\
+2 PCA clusters & Branch embedding & Same partition as Panel~1 &
+Visual audit of cluster assignment \\
+3 Budget bars &
+Embedding shift + quality &
+$L_b$, tier, checks &
+Deploy per-branch scheduler limits \\
+4 Batch VIMP &
+Trace features $\Dold$ vs.\ $\Dnew$ &
+Default policy drift &
+Adjust templates, caps, monitoring cadence \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Suggested cluster count $K$ (not a business mandate)}
+\label{sec:k-suggested}
+
+On branch embeddings $\z_b$, form coupling $H_{ij}=\widehat{\mathrm{HSIC}}_{\mathrm{norm}}(\z_i,\z_j)$,
+threshold at $\delta$ to obtain a graph, and let $K$ be the number of connected
+components (or spectral clusters). The \emph{decomposability degree}
+\begin{equation}
+  \mathcal{D} = K/B \in (0,1]
+\end{equation}
+is a \emph{data-driven suggestion} for parallel width. Business constraints
+$K_{\min}^{\mathrm{biz}}, K_{\max}^{\mathrm{biz}}$ (SLA, product shape, compliance)
+clip the suggestion:
+\begin{equation}
+  K_{\mathrm{final}} = \mathrm{clip}(K_{\mathrm{FSDS}},\, K_{\min}^{\mathrm{biz}},\, K_{\max}^{\mathrm{biz}}).
+\end{equation}
+Redundancy rate $R$, parallelizability $P=1-\overline{H}_{ij}$, and balance
+$\mathrm{Bal}$ gate whether parallel SoT is allowed at all; if not, fall back to
+sequential CoT or cluster-internal ordering.
+
+\subsection{Critical-path budget executor}
+\label{sec:budget-exec}
+
+Parallel SoT latency is governed by the span
+\begin{equation}
+  T_{\infty} = t_{\mathrm{skel}} + \max_{c\in\Pi}\sum_{b\in\mathrm{chain}(c)} L_b\, t_{\mathrm{tok}} + t_{\mathrm{merge}},
+\end{equation}
+not by total token count. Given normalized shift $s_b$ (from embedding distance
+to skeleton reference) and branch quality $q_b$ (verifier/PRM, external to pure
+embedding geometry), allocate
+\begin{equation}
+  L_b = \mathrm{clip}(\kappa\, s_b\, q_b,\, L_{\min},\, C_{\mathrm{lat}}),
+  \qquad
+  \mathrm{risk}_b \propto s_b(1-q_b),
+\end{equation}
+with check budget $\lceil \beta_0 + \beta_1\,\mathrm{risk}_b\rceil$ clipped to
+$[1,5]$, and model tier (small/medium/large) from joint high shift and high risk.
+A \emph{minimum check} of $1$ is retained when quality is low even if shift is
+low (LoS$\cdot$LoQ): attribution reads ``no new content, but not trusted''---do
+not upscale the model; spend a cheap guardrail check instead.
+
+\subsection{Topology $\to$ resources visualization}
+\label{sec:viz-logic}
+
+The operational dashboard separates embedding-only topology from resource actions:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Panel 1 (coupling heatmap):} embedding-only; actionable insight =
+  suggested $K$, merge pairs, sequentialize high-$H_{ij}$ blocks.
+  \item \textbf{Panel 2 (PCA-2, cluster colors):} same partition as Panel~1.
+  \item \textbf{Panel 3 (budget executor):} shift (blue) and quality (green) on
+  $[0,1]$; risk $= s(1-q)$ (red); expansion tokens $L_b$ (purple, right axis);
+  tier$\cdot$checks annotation. Quadrants HiS$\cdot$HiQ, HiS$\cdot$LoQ,
+  LoS$\cdot$HiQ, LoS$\cdot$LoQ guide interpretation.
+  \item \textbf{Panel 4 (batch $\VIMP$):} trace-level covariate drift across
+  $\Dold$ vs.\ $\Dnew$; actionable insight = re-plan defaults and monitoring
+  alerts, not per-request decode limits.
+\end{itemize}
+Embedding geometry drives Panels~1--2 and the shift component of Panel~3; quality
+is typically non-embedding; Panel~4 is batch monitoring.
+
+\subsection{ToT width and depth vs.\ SoT branches}
+\label{sec:tot-vs-sot}
+
+For ToT, \emph{width} is branching factor per node and \emph{depth} is search
+horizon; FSDS adjusts where to expand or prune. For SoT, width is the suggested
+$K$ and depth is per-branch $L_b$; the same budget executor applies after
+topology is fixed. Tree search and branch count both answer ``how many groups,''
+but ToT additionally requires value-head re-calibration when $\CD$ concentrates
+on node value features.
+
+\subsection{Intervention stack (beyond structure and content)}
+\label{sec:intervention-stack}
+
+The separation principle ($\CS$ $\to$ structure; $\CD$ $\to$ content or scoring)
+extends to a four-layer stack ordered by latency-to-effect: (i)~inference-time
+(budget reallocation, routing, retrieval, checks, cache); (ii)~configuration
+(prompt/template, rollback); (iii)~learning/data (AGOD, targeted retraining);
+(iv)~human/monitoring. Budget reallocation uses water-filling at fixed total
+budget (zero-sum across branches) or raised budget under elevated batch risk.
+
+\subsection{Economic justification (sketch)}
+\label{sec:econ}
+
+Uniform SoT sets $L_b=L_{\mathrm{uniform}}$ and a single model tier, so critical-path
+latency and cost scale with the longest branch. FSDS-SoT shortens low-shift
+branches, routes large tiers only to high shift$\times$risk cells, and targets
+checks, improving span (p99 under parallel decoding), tokens per request, and
+net savings relative to ms-level FSDS overhead (implementation:
+\texttt{fsds\_sot/economics.py}).

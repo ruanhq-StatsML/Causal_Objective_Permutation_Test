@@ -1,0 +1,286 @@
+{
+  "baseline": {
+    "mmd2": 0.0029922657822363252,
+    "po_risk_observed": 0.004167326624636949,
+    "delta_tau_mean": -0.014065378957948106,
+    "domain_separable": true
+  },
+  "global_perturbations": [
+    {
+      "label": "live_mask_frac0.3",
+      "op": "mask",
+      "mmd2": 0.06266667386333125,
+      "po_risk_observed": 6.327508676043195e-05,
+      "delta_mmd": -0.05967440808109492,
+      "delta_po_risk": 0.004104051537876517
+    },
+    {
+      "label": "live_replace_frac0.3",
+      "op": "replace",
+      "mmd2": 0.08680193650578216,
+      "po_risk_observed": 7.780767241808442e-05,
+      "delta_mmd": -0.08380967072354584,
+      "delta_po_risk": 0.004089518952218864
+    },
+    {
+      "label": "live_shuffle_frac0.3",
+      "op": "shuffle",
+      "mmd2": 0.0029922657822363252,
+      "po_risk_observed": 0.004167326624636949,
+      "delta_mmd": 0.0,
+      "delta_po_risk": 0.0
+    },
+    {
+      "label": "live_drop_frac0.3",
+      "op": "drop",
+      "mmd2": 0.003210618401405796,
+      "po_risk_observed": 0.0003481012395512285,
+      "delta_mmd": -0.00021835261916947069,
+      "delta_po_risk": 0.00381922538508572
+    }
+  ],
+  "token_position_loco": [
+    {
+      "label": "mask_pos12_TC_3",
+      "op": "mask",
+      "mmd2": 0.002000078398713079,
+      "po_risk_observed": 0.004962636896892427,
+      "delta_mmd": 0.0009921873835232464,
+      "delta_po_risk": -0.0007953102722554782
+    },
+    {
+      "label": "mask_pos8_Q_0.21",
+      "op": "mask",
+      "mmd2": 0.0023692623239415234,
+      "po_risk_observed": 0.005017166511434843,
+      "delta_mmd": 0.0006230034582948019,
+      "delta_po_risk": -0.0008498398867978945
+    },
+    {
+      "label": "mask_pos14_LAT_2.98",
+      "op": "mask",
+      "mmd2": 0.002553739671518729,
+      "po_risk_observed": 0.004498527674946165,
+      "delta_mmd": 0.0004385261107175964,
+      "delta_po_risk": -0.0003312010503092166
+    },
+    {
+      "label": "mask_pos4_Q_0.30",
+      "op": "mask",
+      "mmd2": 0.002576924322022167,
+      "po_risk_observed": 0.004489766393808912,
+      "delta_mmd": 0.0004153414602141581,
+      "delta_po_risk": -0.000322439769171963
+    },
+    {
+      "label": "mask_pos13_TF_5",
+      "op": "mask",
+      "mmd2": 0.002763456873525083,
+      "po_risk_observed": 0.004862406874258753,
+      "delta_mmd": 0.00022880890871124215,
+      "delta_po_risk": -0.000695080249621804
+    },
+    {
+      "label": "mask_pos2_Q_0.68",
+      "op": "mask",
+      "mmd2": 0.0029329275309568636,
+      "po_risk_observed": 0.005005425801795893,
+      "delta_mmd": 5.9338251279461574e-05,
+      "delta_po_risk": -0.0008380991771589439
+    },
+    {
+      "label": "mask_pos6_Q_0.55",
+      "op": "mask",
+      "mmd2": 0.002947852074343338,
+      "po_risk_observed": 0.003288926573099713,
+      "delta_mmd": 4.4413707892987375e-05,
+      "delta_po_risk": 0.000878400051537236
+    },
+    {
+      "label": "mask_pos5_BR_reason",
+      "op": "mask",
+      "mmd2": 0.0029922657822363252,
+      "po_risk_observed": 0.003299029217255143,
+      "delta_mmd": 0.0,
+      "delta_po_risk": 0.0008682974073818059
+    },
+    {
+      "label": "mask_pos10_Q_0.59",
+      "op": "mask",
+      "mmd2": 0.0030477009761120666,
+      "po_risk_observed": 0.004462607476167006,
+      "delta_mmd": -5.543519387574136e-05,
+      "delta_po_risk": -0.0002952808515300576
+    },
+    {
+      "label": "mask_pos3_BR_retrieve",
+      "op": "mask",
+      "mmd2": 0.004580166218874249,
+      "po_risk_observed": 0.0032124135383363238,
+      "delta_mmd": -0.0015879004366379235,
+      "delta_po_risk": 0.000954913086300625
+    },
+    {
+      "label": "mask_pos11_NBR_5",
+      "op": "mask",
+      "mmd2": 0.004580166218874249,
+      "po_risk_observed": 0.00248557169740943,
+      "delta_mmd": -0.0015879004366379235,
+      "delta_po_risk": 0.0016817549272275189
+    },
+    {
+      "label": "mask_pos0_EP_START",
+      "op": "mask",
+      "mmd2": 0.004885471318487156,
+      "po_risk_observed": 0.003335783443112865,
+      "delta_mmd": -0.0018932055362508304,
+      "delta_po_risk": 0.0008315431815240837
+    },
+    {
+      "label": "mask_pos7_BR_act",
+      "op": "mask",
+      "mmd2": 0.005847931214391311,
+      "po_risk_observed": 0.0030128914030678115,
+      "delta_mmd": -0.0028556654321549857,
+      "delta_po_risk": 0.0011544352215691373
+    },
+    {
+      "label": "mask_pos15_EP_END",
+      "op": "mask",
+      "mmd2": 0.005862251959970699,
+      "po_risk_observed": 0.002784924734499194,
+      "delta_mmd": -0.002869986177734374,
+      "delta_po_risk": 0.0013824018901377549
+    },
+    {
+      "label": "mask_pos1_BR_plan",
+      "op": "mask",
+      "mmd2": 0.007518477709140603,
+      "po_risk_observed": 0.0013886448443698783,
+      "delta_mmd": -0.004526211926904278,
+      "delta_po_risk": 0.0027786817802670704
+    },
+    {
+      "label": "mask_pos9_BR_verify",
+      "op": "mask",
+      "mmd2": 0.00994702304867201,
+      "po_risk_observed": 0.0005006457811120559,
+      "delta_mmd": -0.006954757266435685,
+      "delta_po_risk": 0.003666680843524893
+    }
+  ],
+  "prefix_group_perturbations": [
+    {
+      "label": "mask_prefix_TC_",
+      "op": "mask_prefix",
+      "mmd2": 0.002000078398713079,
+      "po_risk_observed": 0.004142091183161872,
+      "delta_mmd": 0.0009921873835232464,
+      "delta_po_risk": 2.523544147507717e-05
+    },
+    {
+      "label": "mask_prefix_TF_",
+      "op": "mask_prefix",
+      "mmd2": 0.002763456873525083,
+      "po_risk_observed": 0.005285573112222069,
+      "delta_mmd": 0.00022880890871124215,
+      "delta_po_risk": -0.0011182464875851205
+    },
+    {
+      "label": "mask_prefix_BR_retrieve",
+      "op": "mask_prefix",
+      "mmd2": 0.004580166218874249,
+      "po_risk_observed": 0.002770750108352522,
+      "delta_mmd": -0.0015879004366379235,
+      "delta_po_risk": 0.0013965765162844267
+    },
+    {
+      "label": "mask_prefix_BR_act",
+      "op": "mask_prefix",
+      "mmd2": 0.005847931214391311,
+      "po_risk_observed": 0.002878957543497071,
+      "delta_mmd": -0.0028556654321549857,
+      "delta_po_risk": 0.001288369081139878
+    },
+    {
+      "label": "mask_prefix_Q_",
+      "op": "mask_prefix",
+      "mmd2": 0.07744226217475547,
+      "po_risk_observed": 0.00021435200148494922,
+      "delta_mmd": -0.07444999639251915,
+      "delta_po_risk": 0.003952974623151999
+    }
+  ],
+  "summary": {
+    "baseline_mmd2": 0.0029922657822363252,
+    "baseline_po_risk": 0.004167326624636949,
+    "top_token_masks_by_delta_mmd": [
+      {
+        "label": "mask_pos12_TC_3",
+        "op": "mask",
+        "mmd2": 0.002000078398713079,
+        "po_risk_observed": 0.004962636896892427,
+        "delta_mmd": 0.0009921873835232464,
+        "delta_po_risk": -0.0007953102722554782
+      },
+      {
+        "label": "mask_pos8_Q_0.21",
+        "op": "mask",
+        "mmd2": 0.0023692623239415234,
+        "po_risk_observed": 0.005017166511434843,
+        "delta_mmd": 0.0006230034582948019,
+        "delta_po_risk": -0.0008498398867978945
+      },
+      {
+        "label": "mask_pos14_LAT_2.98",
+        "op": "mask",
+        "mmd2": 0.002553739671518729,
+        "po_risk_observed": 0.004498527674946165,
+        "delta_mmd": 0.0004385261107175964,
+        "delta_po_risk": -0.0003312010503092166
+      },
+      {
+        "label": "mask_pos4_Q_0.30",
+        "op": "mask",
+        "mmd2": 0.002576924322022167,
+        "po_risk_observed": 0.004489766393808912,
+        "delta_mmd": 0.0004153414602141581,
+        "delta_po_risk": -0.000322439769171963
+      },
+      {
+        "label": "mask_pos13_TF_5",
+        "op": "mask",
+        "mmd2": 0.002763456873525083,
+        "po_risk_observed": 0.004862406874258753,
+        "delta_mmd": 0.00022880890871124215,
+        "delta_po_risk": -0.000695080249621804
+      }
+    ],
+    "top_prefix_masks_by_delta_mmd": [
+      {
+        "label": "mask_prefix_TC_",
+        "op": "mask_prefix",
+        "mmd2": 0.002000078398713079,
+        "po_risk_observed": 0.004142091183161872,
+        "delta_mmd": 0.0009921873835232464,
+        "delta_po_risk": 2.523544147507717e-05
+      },
+      {
+        "label": "mask_prefix_TF_",
+        "op": "mask_prefix",
+        "mmd2": 0.002763456873525083,
+        "po_risk_observed": 0.005285573112222069,
+        "delta_mmd": 0.00022880890871124215,
+        "delta_po_risk": -0.0011182464875851205
+      },
+      {
+        "label": "mask_prefix_BR_retrieve",
+        "op": "mask_prefix",
+        "mmd2": 0.004580166218874249,
+        "po_risk_observed": 0.002770750108352522,
+        "delta_mmd": -0.0015879004366379235,
+        "delta_po_risk": 0.0013965765162844267
+      }
+    ]
+  }
+}

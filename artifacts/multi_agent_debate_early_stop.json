@@ -1,0 +1,78 @@
+{
+  "generated_at_utc": "2026-10-03T02:33:12.516203+00:00",
+  "pattern": "multi_agent_debate_early_stop",
+  "mechanism": "debate_inter_round_dispersion <= target \u2192 stop before max_rounds",
+  "dispersion_series": [
+    1.0,
+    0.5792230703471868,
+    0.41979174251807194,
+    0.3266763826683453,
+    0.2659376806921574
+  ],
+  "stop_round": 4,
+  "cost": {
+    "full_debate_usd": 0.0442,
+    "early_stop_usd": 0.03536,
+    "savings_pct": 19.999999999999996
+  },
+  "fsds_segment_budget": [
+    {
+      "role": "pro",
+      "L": 374
+    },
+    {
+      "role": "con",
+      "L": 282
+    },
+    {
+      "role": "judge",
+      "L": 420
+    }
+  ],
+  "impact_receipt": {
+    "episode_id": "2470ef09-d99",
+    "pattern": "multi_agent_debate",
+    "ref_window": "ref_debate",
+    "live_window": "live_debate",
+    "shift_summary": {
+      "mmd2": 0.0296486716984512,
+      "domain_auc": 1.0,
+      "overlap_ok": true,
+      "overlap_ess": 0.9016560089019261
+    },
+    "action": "debate_early_stop",
+    "kpi_before_after": {
+      "expected_value_usd": [
+        0.3093749999999064,
+        0.31402761652615346
+      ],
+      "usd_per_episode": [
+        0.01956,
+        0.014432
+      ],
+      "cost_savings_pct": 28.773006134969325,
+      "latency_reduction_pct": 0.0
+    },
+    "estimated_net_gain_usd": 0.009780616526247055,
+    "rule_ids": [
+      "agent_reallocate",
+      "debate_early_stop"
+    ],
+    "generated_at_utc": "2026-10-03T02:33:12.516184+00:00",
+    "debate": {
+      "dispersion_by_round": [
+        1.0,
+        0.5792230703471868,
+        0.41979174251807194,
+        0.3266763826683453,
+        0.2659376806921574
+      ],
+      "stop_round": 4,
+      "rounds_avoided": 1,
+      "usd_per_debate_full": 0.0442,
+      "usd_per_debate_early_stop": 0.0354,
+      "debate_cost_savings_pct": 20.0
+    }
+  },
+  "combined_story_usd": 0.0186
+}

@@ -1,0 +1,593 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\hypersetup{colorlinks=true, linkcolor=blue!45!black, citecolor=blue!45!black,
+  urlcolor=blue!45!black}
+
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+\newcommand{\Dold}{\mathcal{D}_{\mathrm{old}}}
+\newcommand{\Dnew}{\mathcal{D}_{\mathrm{new}}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\z}{\mathbf{z}}
+\newcommand{\POrisk}{\mathrm{PO\text{-}risk}}
+\newcommand{\Rrisk}{\mathrm{R\text{-}risk}}
+\newcommand{\VIMP}{\mathrm{VIMP}}
+\newcommand{\MMD}{\mathrm{MMD}}
+\newcommand{\HSIC}{\mathrm{HSIC}}
+\newcommand{\CS}{\textsc{cs}}
+\newcommand{\CD}{\textsc{cd}}
+\newcommand{\Exp}{\mathbb{E}}
+
+\title{\bf Feature Selection for Distribution Shift in Structured Reasoning:\\
+Monitoring and Steering Skeleton-of-Thought and Tree-of-Thoughts}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Structured reasoning frameworks such as Skeleton-of-Thought (SoT) and
+Tree-of-Thoughts (ToT) substantially improve the quality of large-language-model
+reasoning, but their behaviour is acutely sensitive to task distribution, prompt
+template, model version, and domain. When the workload drifts, these systems
+degrade silently: accuracy, latency, and cost move without an obvious cause, and
+existing observability tools treat a reasoning trace as an opaque token stream
+that offers no purchase on \emph{where} or \emph{why} the drift occurred. We
+adapt Feature Selection for Distribution Shift (FSDS)---an assumption-less,
+data-generating-process-agnostic procedure originally developed for tabular and
+multi-modal feature attribution---to structured reasoning. We represent a trace
+as a graph- or tree-structured feature object with node-, edge-, and
+trace-level covariates, and cast the comparison of a reference batch against a
+live batch as a two-sample problem in which the batch label plays the role of a
+treatment indicator. FSDS then distinguishes covariate shift in $P(\X)$ from
+concept drift in $P(Y\mid\X)$, ranks the features that drive the shift through
+out-of-bag variable importance, MMD/HSIC leave-one-covariate-out, and
+meta-learner risk (CFPerm, PermuCATE, DRPerm, and PO-risk LOCO), and converts
+the top-ranked features into concrete interventions: re-plan the skeleton,
+re-expand a node, adjust the branching or pruning budget, re-calibrate the value
+model, route to a stronger model, or fall back to a cheaper policy. The
+procedure is model-agnostic, robust to missing modalities and missing reasoning
+branches, and equipped with an automatic fallback under poor overlap, making it
+suitable for continuous production monitoring. We emphasise throughout that the
+meta-learners are used strictly for distance estimation, not for causal
+identification.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Chain-of-Thought prompting \cite{wei2022cot} established that eliciting
+intermediate reasoning steps improves the performance of large language models
+(LLMs) on multi-step tasks. Subsequent frameworks structure this computation
+explicitly: Skeleton-of-Thought (SoT) \cite{ning2024sot} first generates a
+skeleton of reasoning points and then expands them, frequently in parallel, to
+reduce latency; Tree-of-Thoughts (ToT) \cite{yao2023tot} searches over a tree of
+intermediate thoughts with expansion, evaluation, pruning, and backtracking to
+improve deliberate problem solving. These paradigms are effective, but their
+behaviour is highly non-stationary in deployment. The distribution of incoming
+tasks changes, prompt templates are revised, the underlying model is upgraded,
+and the retrieval corpus evolves. Any of these can shift both the inputs the
+reasoner sees and the mapping from a reasoning trace to a correct answer.
+
+The resulting failures are difficult to diagnose. Aggregate metrics such as
+end-to-end accuracy or mean latency reveal \emph{that} something changed, but not
+\emph{which} part of the reasoning process is responsible, nor whether the change
+is a shift in the workload (which may warrant re-planning or re-routing) or a
+degradation in the mapping from reasoning to outcome (which may warrant
+re-calibration or re-expansion). Treating the trace as an opaque sequence
+forecloses this distinction.
+
+We argue that a reasoning trace is naturally a \emph{structured feature object}
+and that the machinery of feature-level distribution-shift attribution applies
+directly to it. Feature Selection for Distribution Shift (FSDS) was developed to
+identify, without assumptions on the data-generating process, the subset of
+features that drive a shift between two batches of data, and to separate
+covariate shift ($P(\X)$) from concept drift ($P(Y\mid\X)$)
+\cite{fsds2026}. Its estimators---out-of-bag (OOB) variable importance from a
+random-forest domain classifier, maximum-mean-discrepancy and
+Hilbert--Schmidt-independence-criterion leave-one-covariate-out (MMD/HSIC-LOCO),
+and meta-learner risk functionals (CFPerm, PermuCATE, DRPerm, PO-risk)---are
+model-agnostic, compatible with arbitrary modalities, robust across model
+complexities, and cheap to run as $O(p)$ post-fit operations. These are exactly
+the properties required to monitor a reasoning system whose feature space mixes
+embeddings, discrete search statistics, and cost counters.
+
+\paragraph{Contributions.} This manuscript drafts a prototype and its evaluation
+protocol. Concretely, we:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item formulate SoT and ToT reasoning traces as structured feature objects and
+  give a node/edge/trace feature taxonomy suitable for FSDS
+  (Sections~\ref{sec:formulation}--\ref{sec:features});
+  \item specialise the FSDS attribution pipeline to the two frameworks, yielding
+  \textsc{FSDS-SoT} and \textsc{FSDS-ToT}, which localise drift to skeleton
+  positions, tree depths, branches, and value bins, and separate covariate shift
+  from concept drift at each level (Sections~\ref{sec:pipeline}--\ref{sec:tot});
+  \item define an attribution-to-intervention policy that maps the dominant drift
+  type at each localised feature group to a concrete control action, with an
+  automatic fallback under poor overlap (Section~\ref{sec:intervention}); and
+  \item describe a reproducible evaluation protocol and a production deployment
+  design, including chronological splitting, parallelised permutation, and a
+  gated mixture over reasoning experts
+  (Sections~\ref{sec:protocol}--\ref{sec:deployment}).
+\end{enumerate}
+We are explicit about scope: the meta-learners are used only as
+distance/deviation estimators, and the placeholder attribution tables are
+illustrative of the output format rather than empirical results.
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Structured reasoning.} Beyond CoT \cite{wei2022cot}, SoT
+\cite{ning2024sot} and ToT \cite{yao2023tot}, a family of frameworks structures
+the reasoning computation in different ways: Graph-of-Thoughts
+\cite{besta2024got} generalises the tree to a directed acyclic graph with
+aggregation; ReAct \cite{yao2023react} interleaves reasoning with tool actions
+and environment feedback; Self-Consistency \cite{wang2023selfconsistency}
+marginalises over independently sampled chains; and Reflexion
+\cite{shinn2023reflexion} adds iterative self-critique with verbal memory. All of
+these produce segmentable intermediate representations, which is precisely what
+our feature map exploits. Our contribution is orthogonal to the choice of
+framework: we monitor and steer it rather than replace it.
+
+\paragraph{Distribution-shift detection.} Two-sample testing via MMD
+\cite{gretton2012mmd} and dependence testing via HSIC \cite{gretton2005hsic} are
+standard tools for detecting covariate shift; model-X knockoffs
+\cite{candes2018knockoffs} provide controlled variable selection. For concept
+drift, meta-learners rooted in causal inference---the R-learner
+\cite{nie2021rlearner}, the doubly-robust DR-learner \cite{kennedy2023drlearner},
+and causal forests \cite{wager2018causalforest}---estimate a deviation between
+conditional distributions. FSDS \cite{fsds2026} combines a random-forest domain
+classifier \cite{breiman2001rf} with these functionals, using them as distance
+estimators equipped with a permute-then-refit procedure, and demonstrates that
+parsimonious random-forest importance is competitive with, and often more robust
+than, more elaborate alternatives. We inherit these estimators wholesale and
+apply them to reasoning-trace features.
+
+\paragraph{LLM observability.} Production monitoring of LLM systems typically
+tracks scalar quality and cost signals or uses univariate drift indices such as
+the population stability index (PSI) or KL divergence per feature. These
+approaches neither localise drift to a component of the reasoning process nor
+separate input shift from mapping degradation. Our prototype provides both.
+
+\section{Problem Formulation}
+\label{sec:formulation}
+
+\paragraph{Traces.} A SoT trace is an ordered set of skeleton points
+$\mathcal{S}=\{s_1,\dots,s_m\}$, where each $s_j$ is expanded into a thought
+$t_j$ and the trace yields a final answer $Y$. A ToT trace is a tree
+$\mathcal{T}=(\mathcal{V},\mathcal{E})$ in which each node $v$ carries a state
+embedding $\z_v$, a value $V(v)$, a depth $d(v)$, a branching factor $b(v)$, and
+a prune indicator, and the answer is obtained by voting or best-path selection.
+
+\paragraph{Feature map.} A trace is summarised by a feature map
+\begin{equation}
+  \X \;=\; \phi(\mathcal{T}\ \text{or}\ \mathcal{S}) \;\in\; \mathbb{R}^p,
+  \label{eq:featuremap}
+\end{equation}
+whose coordinates are grouped by structural level (Section~\ref{sec:features}).
+The outcome $Y$ is a task-appropriate quality signal: exact-match correctness, a
+verifier or process-reward score, a unit-test pass rate, or a business KPI.
+
+\paragraph{Batch-as-treatment.} Given a reference batch and a live batch,
+\begin{equation}
+  \Dold=\{(\X_i^{\mathrm{old}},Y_i^{\mathrm{old}})\}_{i=1}^{n_0}, \qquad
+  \Dnew=\{(\X_i^{\mathrm{new}},Y_i^{\mathrm{new}})\}_{i=1}^{n_1},
+\end{equation}
+we assign a binary batch label $T\in\{0,1\}$ (old $=0$, new $=1$) and treat it as
+a treatment indicator. FSDS then tests, and attributes at the feature level, the
+two hypotheses
+\begin{equation}
+  \CS:\ P(\X_{\mathrm{new}})\neq P(\X_{\mathrm{old}}),
+  \qquad
+  \CD:\ P(Y_{\mathrm{new}}\mid\X_{\mathrm{new}})\neq P(Y_{\mathrm{old}}\mid\X_{\mathrm{old}}).
+\end{equation}
+
+\begin{assumption}[Overlap]
+\label{ass:overlap}
+The propensity $e(\X)=P(T=1\mid\X)$ is bounded away from $0$ and $1$ on the
+support of interest, so that the two batches share common support. When this
+fails, the concept-drift estimators are unreliable and the procedure falls back
+as described in Section~\ref{sec:intervention}.
+\end{assumption}
+
+\begin{remark}[Distance estimation, not causal identification]
+\label{rem:distance}
+Although the concept-drift estimators borrow the R-learner, DR-learner, and
+causal-forest machinery, we use them solely to estimate the deviation between
+conditional distributions across batches. No causal interpretation of the batch
+label or of individual features is claimed or required
+\cite{fsds2026,nie2021rlearner,kennedy2023drlearner}.
+\end{remark}
+
+\section{Reasoning Traces as Feature Objects}
+\label{sec:features}
+
+The feature map $\phi$ in \eqref{eq:featuremap} is organised into six structural
+levels---trace, node, edge, text, quality, and cost---each populated with
+framework-specific covariates (Table~\ref{tab:taxonomy}). Node embeddings enter
+as dense blocks; discrete search statistics (depth, branching, prune flags) enter
+as scalars; text is encoded by a frozen sentence or multi-modal encoder. Because
+FSDS is agnostic to feature type and tolerates missing coordinates, traces with
+absent branches (a pruned subtree) or absent modalities (a text-only query in a
+multi-modal system) are handled without imputation heuristics: the missingness
+pattern is itself a feature.
+
+\begin{table}[t]
+\centering
+\caption{Reasoning feature taxonomy for FSDS. Node embeddings enter as grouped
+dense blocks; the remaining coordinates are scalar or categorical.}
+\label{tab:taxonomy}
+\small
+\begin{tabular}{lll}
+\toprule
+Level & SoT features & ToT features \\
+\midrule
+Trace & skeleton length, parallel width, total tokens & tree depth, total nodes, token cost \\
+Node & node order, node embedding, expansion length & node value, depth, branching, prune flag \\
+Edge & dependency edge, order edge & parent--child edge, backtrack edge \\
+Text & query, skeleton text, thought text & node text, value text, final-answer text \\
+Quality & self-consistency, retrieval hit & value entropy, vote entropy, prune confidence \\
+Cost & latency, FLOPs, API calls & expansion count, evaluation count, search cost \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The FSDS Attribution Pipeline}
+\label{sec:pipeline}
+
+FSDS attributes shift along two complementary planes.
+
+\paragraph{Covariate plane (no outcome required).} A random-forest domain
+classifier is fit to predict the batch label $T$ from $\X$; its OOB permutation
+variable importance ranks the coordinates that distinguish the batches, and its
+AUC summarises the overall magnitude of covariate shift. In parallel, a
+statistical route quantifies each feature's contribution through a
+leave-one-covariate-out drop in the maximum mean discrepancy,
+\begin{equation}
+  \Delta\MMD_j \;=\; \MMD^2(\X^{\mathrm{old}},\X^{\mathrm{new}})
+  \;-\; \MMD^2(\X^{\mathrm{old}}_{-j},\X^{\mathrm{new}}_{-j}),
+  \label{eq:mmdloco}
+\end{equation}
+with an RBF kernel ($\sigma=1$); a large positive $\Delta\MMD_j$ indicates that
+feature $j$ drives the covariate shift, since removing it collapses the
+discrepancy. HSIC-LOCO is defined analogously for dependence-based attribution.
+The covariate plane requires no outcome and is therefore always available, even
+online.
+
+\paragraph{Concept plane (outcome required).} To attribute concept drift we test
+whether $P(Y\mid\X)$ differs across batches using CFPerm/PermuCATE and fit a
+doubly-robust learner with the batch label as treatment. With nuisances
+$m(\X)=\Exp[Y\mid\X]$ and $e(\X)=P(T=1\mid\X)$, the doubly-robust pseudo-outcome
+\begin{equation}
+  \psi_i \;=\; \hat\tau(\X_i)
+  \;+\; \frac{T_i-\hat e(\X_i)}{\hat e(\X_i)\,\bigl(1-\hat e(\X_i)\bigr)}\,
+  \bigl(Y_i-\hat m(\X_i)\bigr),
+  \qquad
+  \POrisk \;=\; \frac{1}{n}\sum_{i=1}^{n}\bigl(\psi_i-\hat\tau(\X_i)\bigr)^2,
+  \label{eq:porisk}
+\end{equation}
+is consistent as a distance functional if either $m$ or $e$ is correctly
+specified. Feature-level concept-drift attribution follows from a
+leave-one-covariate-out increase in this risk,
+\begin{equation}
+  \phi_j^{\mathrm{LOCO}} \;=\; \POrisk(\X_{-j}) - \POrisk(\X),
+  \label{eq:poloco}
+\end{equation}
+where $\X_{-j}$ uses the conditional fit $X_j\sim X_{-j}$ (random forest for
+continuous coordinates, (multinomial) logistic regression for categorical ones).
+Because $\POrisk$ is invariant to covariate shift, \eqref{eq:poloco} isolates the
+contribution of feature $j$ to the change in the conditional mapping. Nuisances
+are cross-fit (or estimated out-of-bag) to avoid overfitting bias, and the
+random forest is the recommended specification for both $m$ and $e$ for
+robustness.
+
+\paragraph{Aggregation and overlap.} Per-coordinate scores are aggregated into
+interpretable drift shares by structural group---skeleton position, node type,
+and text source for SoT; depth, branch, and value bin for ToT. Every share is
+accompanied by a bootstrap confidence interval and a top-$k$ stability
+proportion. The propensity distribution, the domain-classifier AUC, and the
+effective sample size monitor Assumption~\ref{ass:overlap}; when overlap is poor
+the concept plane is suppressed and the procedure degrades to the covariate
+plane or to univariate monitoring (Section~\ref{sec:intervention}).
+
+\section{FSDS-SoT}
+\label{sec:sot}
+
+For SoT we treat each skeleton node as a candidate feature group and localise
+drift to skeleton positions and node types. Covariate shift concentrated on
+skeleton length or node order signals that the \emph{shape} of the decomposition
+has changed---typically a workload shift that warrants re-planning the
+skeleton---whereas concept drift concentrated on a specific node embedding
+signals that the mapping from that reasoning point to the outcome has degraded,
+warranting re-expansion of the node or routing to a stronger model. The full
+procedure is given in Algorithm~\ref{alg:fsds-sot}; its cost is dominated by a
+single domain-classifier fit and the meta-learner nuisances, with the LOCO passes
+reduced to $O(p)$ post-fit operations.
+
+\begin{algorithm}[t]
+\caption{\textsc{FSDS-SoT}}
+\label{alg:fsds-sot}
+\begin{algorithmic}[1]
+\REQUIRE reference traces $\Dold$, live traces $\Dnew$, budget $k$
+\ENSURE top-$k$ drift nodes with covariate/concept shares and actions
+\STATE Extract skeleton features $\X$ and outcomes $Y$ via $\phi$
+\STATE Fit RF domain classifier on $(\X,T)$; compute OOB $\VIMP$ and AUC
+\FOR{each skeleton node $j$}
+    \STATE Compute $\Delta\MMD_j$ by MMD-LOCO \eqref{eq:mmdloco}
+\ENDFOR
+\STATE Run CFPerm/PermuCATE to test the $P(Y\mid\X)$ shift
+\STATE Fit the DR learner; compute $\POrisk$ and $\phi_j^{\mathrm{LOCO}}$ \eqref{eq:porisk}--\eqref{eq:poloco}
+\STATE Aggregate covariate/concept shares by node position and node type
+\IF{$\CS$ dominates at skeleton length or order}
+    \STATE Re-plan the skeleton
+\ENDIF
+\IF{$\CD$ dominates at node $j$}
+    \STATE Re-expand node $j$ or route to a stronger model
+\ENDIF
+\IF{overlap $<0.3$ or $n<50$}
+    \STATE Fall back to RF-domain $\VIMP$ or univariate PSI/KL
+\ENDIF
+\RETURN top-$k$ nodes with shares and actions
+\end{algorithmic}
+\end{algorithm}
+
+\section{FSDS-ToT}
+\label{sec:tot}
+
+For ToT we treat tree nodes and search statistics as features and localise drift
+to depths, branches, and value bins (Algorithm~\ref{alg:fsds-tot}). Two patterns
+are of particular operational interest. Concept drift concentrated on the value
+signal indicates that the value model has become miscalibrated relative to the
+new workload, warranting re-calibration of the value head rather than a change to
+the search budget. Covariate shift concentrated on depth or branching indicates
+that the search is exploring a differently shaped space, warranting an adjustment
+of the branching factor, maximum depth, or prune threshold. As in the SoT case, a
+poor-overlap fallback protects the procedure when the two batches are too easily
+separable or the live batch is too small.
+
+\begin{algorithm}[t]
+\caption{\textsc{FSDS-ToT}}
+\label{alg:fsds-tot}
+\begin{algorithmic}[1]
+\REQUIRE reference traces $\Dold$, live traces $\Dnew$, budget $k$
+\ENSURE top-$k$ drift features with shares and a ToT policy
+\STATE Extract node features: depth, value, branching, prune flag, path entropy, cost
+\STATE Fit RF domain classifier on $(\X,T)$; compute OOB $\VIMP$
+\STATE Run CFPerm/PermuCATE for the $P(Y\mid\X)$ shift
+\STATE Fit the DR learner; compute $\POrisk$ and per-feature $\phi_j^{\mathrm{LOCO}}$
+\STATE Aggregate covariate/concept shares by depth, branch, and value bin
+\IF{$\CD$ dominates at the value signal}
+    \STATE Re-calibrate the value head
+\ENDIF
+\IF{$\CS$ dominates at depth or branching}
+    \STATE Adjust branching factor, maximum depth, and prune threshold
+\ENDIF
+\IF{overlap $<0.3$}
+    \STATE Fall back to SoT/CoT or univariate monitoring
+\ENDIF
+\RETURN top-$k$ features with shares and a ToT policy
+\end{algorithmic}
+\end{algorithm}
+
+\section{From Attribution to Intervention}
+\label{sec:intervention}
+
+The value of localised attribution is that it maps to a small, well-defined set
+of control actions. Table~\ref{tab:drift} illustrates the format of the drift
+attribution output---per feature group, the covariate and concept shares and the
+recommended action---and Table~\ref{tab:policy} summarises the intervention
+policy as a function of the signal and its dominant drift type. Both tables are
+illustrative of the output schema; they are not empirical results.
+
+The governing logic is a separation principle. When covariate shift dominates,
+the workload has moved and the reasoning \emph{structure} should adapt: re-plan
+the skeleton, adjust the search budget, or re-route. When concept drift
+dominates, the mapping from reasoning to outcome has degraded and the reasoning
+\emph{content or scoring} should adapt: re-expand a node, re-calibrate the value
+model, or change the prune threshold. When Assumption~\ref{ass:overlap} is
+violated---diagnosed by an overlap below $0.3$ or a live batch smaller than a
+threshold---no confident attribution is possible, and the procedure abstains,
+falling back to the covariate plane or to univariate monitoring and issuing a
+conservative default.
+
+\begin{table}[t]
+\centering
+\caption{Illustrative drift attribution output (schema, not results).}
+\label{tab:drift}
+\small
+\begin{tabular}{lccc}
+\toprule
+Feature group & $\CS$ share & $\CD$ share & Action \\
+\midrule
+Skeleton length & 0.22 & 0.08 & re-plan skeleton \\
+Node 3 embedding & 0.10 & 0.31 & re-expand node \\
+Tree depth & 0.18 & 0.12 & adjust maximum depth \\
+Branch value & 0.07 & 0.28 & re-calibrate value head \\
+Text source & 0.15 & 0.19 & route / update prompt \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Illustrative intervention policy (schema, not results).}
+\label{tab:policy}
+\small
+\begin{tabular}{lll}
+\toprule
+Signal & Dominant drift & Policy \\
+\midrule
+Skeleton order & $\CS$ & re-plan skeleton \\
+Node value & $\CD$ & re-calibrate value model \\
+Depth / branching & $\CS$ & adjust search budget \\
+Prune flag & $\CD$ & change prune threshold \\
+Missing branch & either & fall back to SoT/CoT \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Experimental Protocol}
+\label{sec:protocol}
+
+We describe the protocol by which the prototype is to be validated; empirical
+results are left to future work.
+
+\paragraph{Research questions.} (RQ1) Does node/trace-level FSDS localise
+injected drift more accurately than univariate PSI/KL baselines? (RQ2) Does the
+covariate-versus-concept separation select the correct intervention more often
+than a drift-agnostic policy? (RQ3) Does attribution-guided intervention improve
+the accuracy--latency--cost frontier relative to fixed and random policies?
+
+\paragraph{Datasets.} GSM8K and MATH (arithmetic and mathematical reasoning),
+StrategyQA and HotpotQA (multi-hop question answering), HumanEval and MBPP (code
+generation), and a multi-modal VQA benchmark. Drift is induced both naturally
+(chronological task batches, model-version changes) and synthetically
+(controlled perturbations to templates, retrieval corpora, and label mappings)
+so that ground-truth drifting features are known.
+
+\paragraph{Baselines.} CoT, SoT, ToT, and Self-Consistency as reasoning
+backbones; univariate PSI/KL, fixed pruning, and random pruning as monitoring and
+intervention baselines.
+
+\paragraph{Metrics.} Task accuracy, end-to-end latency, and token cost for the
+reasoning outcome; drift-detection AUC, top-$k$ recall of injected drifting
+features, and Kendall's $\tau$ ranking stability for attribution quality; and
+intervention lift---the change in the accuracy--latency--cost frontier---for the
+end-to-end loop.
+
+\paragraph{Splits and ablations.} Chronological splits by task batch, with nested
+cross-validation (outer split by time or task, inner split for FSDS
+hyperparameters). Ablations vary the outcome proxy $Y$, the nuisance
+specification, the overlap threshold, and the aggregation granularity.
+
+\section{Production Deployment}
+\label{sec:deployment}
+
+\paragraph{Batching and cadence.} FSDS runs on rolling windows of traces at a
+cadence matched to traffic---every few minutes under high load, hourly or daily
+otherwise---comparing the current window against a decayed reference.
+
+\paragraph{Parallelisation.} The permutation and LOCO passes are embarrassingly
+parallel and are distributed with joblib or multiprocessing; the post-fit ranking
+is $O(p)$ and negligible.
+
+\paragraph{Fallback.} Under poor overlap (below $0.3$) or a small live batch
+($n<50$), the concept plane is suppressed and the system reports the covariate
+plane or univariate PSI/KL, in line with Assumption~\ref{ass:overlap}.
+
+\paragraph{Routing.} A gated mixture over reasoning experts---SoT, ToT, CoT,
+direct answering, and retrieval-augmented generation---consumes the missingness
+mask, quality signals, and drift shares as gate inputs, routing each request to
+the policy best matched to the current regime.
+
+\paragraph{Monitoring.} A dashboard surfaces the top-$k$ drift nodes, the
+covariate and concept shares with confidence intervals, and the recommended
+actions, turning the statistical procedure into an operational diagnostic.
+
+\section{Limitations}
+\label{sec:limitations}
+
+The prototype inherits the assumptions and scope of FSDS. Attribution quality
+depends on the feature map $\phi$; poorly chosen features cannot be recovered by
+the estimators. The concept plane requires an outcome proxy $Y$, and the meaning
+of concept drift is defined by that choice; a miscalibrated proxy biases the
+concept attribution, mitigated but not eliminated by the double robustness of
+\eqref{eq:porisk}. The procedure requires adequate overlap
+(Assumption~\ref{ass:overlap}) and abstains otherwise. Finally, the attribution
+is a distance estimate and not a causal explanation (Remark~\ref{rem:distance}),
+and the tables in this manuscript specify an output format rather than reporting
+measured effects.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have drafted a prototype that applies Feature Selection for Distribution Shift
+to Skeleton-of-Thought and Tree-of-Thoughts reasoning. By representing a
+reasoning trace as a structured feature object, the procedure detects covariate
+shift and concept drift at the node and trace level, ranks the features that
+drive the shift, and converts the top-ranked features into concrete
+interventions---re-planning, re-expansion, budget adjustment, value
+re-calibration, routing, or fallback. The prototype is model-agnostic, robust to
+missing branches and modalities, and designed for continuous production
+monitoring, providing a principled bridge from silent reasoning drift to
+actionable control.
+
+\appendix
+\input{FSDS_SoT_ToT_supplement.tex}
+
+\begin{thebibliography}{99}
+\small
+
+\bibitem{wei2022cot} J.~Wei, X.~Wang, D.~Schuurmans, M.~Bosma, B.~Ichter,
+F.~Xia, E.~Chi, Q.~Le, and D.~Zhou. Chain-of-Thought Prompting Elicits Reasoning
+in Large Language Models. \emph{NeurIPS}, 2022.
+
+\bibitem{ning2024sot} X.~Ning, Z.~Lin, Z.~Zhou, Z.~Wang, H.~Yang, and Y.~Wang.
+Skeleton-of-Thought: Large Language Models Can Do Parallel Decoding.
+\emph{ICLR}, 2024.
+
+\bibitem{yao2023tot} S.~Yao, D.~Yu, J.~Zhao, I.~Shafran, T.~L. Griffiths,
+Y.~Cao, and K.~Narasimhan. Tree of Thoughts: Deliberate Problem Solving with
+Large Language Models. \emph{NeurIPS}, 2023.
+
+\bibitem{besta2024got} M.~Besta et al. Graph of Thoughts: Solving Elaborate
+Problems with Large Language Models. \emph{AAAI}, 2024.
+
+\bibitem{yao2023react} S.~Yao, J.~Zhao, D.~Yu, N.~Du, I.~Shafran,
+K.~Narasimhan, and Y.~Cao. ReAct: Synergizing Reasoning and Acting in Language
+Models. \emph{ICLR}, 2023.
+
+\bibitem{wang2023selfconsistency} X.~Wang, J.~Wei, D.~Schuurmans, Q.~Le,
+E.~Chi, S.~Narang, A.~Chowdhery, and D.~Zhou. Self-Consistency Improves Chain of
+Thought Reasoning in Language Models. \emph{ICLR}, 2023.
+
+\bibitem{shinn2023reflexion} N.~Shinn, F.~Cassano, E.~Berman, A.~Gopinath,
+K.~Narasimhan, and S.~Yao. Reflexion: Language Agents with Verbal Reinforcement
+Learning. \emph{NeurIPS}, 2023.
+
+\bibitem{gretton2012mmd} A.~Gretton, K.~Borgwardt, M.~Rasch, B.~Sch\"olkopf,
+and A.~Smola. A Kernel Two-Sample Test. \emph{JMLR}, 13:723--773, 2012.
+
+\bibitem{gretton2005hsic} A.~Gretton, O.~Bousquet, A.~Smola, and
+B.~Sch\"olkopf. Measuring Statistical Dependence with Hilbert--Schmidt Norms.
+\emph{ALT}, 2005.
+
+\bibitem{candes2018knockoffs} E.~Cand\`es, Y.~Fan, L.~Janson, and J.~Lv.
+Panning for Gold: Model-X Knockoffs for High-Dimensional Controlled Variable
+Selection. \emph{JRSS-B}, 80(3):551--577, 2018.
+
+\bibitem{nie2021rlearner} X.~Nie and S.~Wager. Quasi-Oracle Estimation of
+Heterogeneous Treatment Effects. \emph{Biometrika}, 108(2):299--319, 2021.
+
+\bibitem{kennedy2023drlearner} E.~H. Kennedy. Towards Optimal Doubly Robust
+Estimation of Heterogeneous Causal Effects. \emph{Electronic Journal of
+Statistics}, 2023.
+
+\bibitem{wager2018causalforest} S.~Wager and S.~Athey. Estimation and Inference
+of Heterogeneous Treatment Effects using Random Forests. \emph{JASA},
+113(523):1228--1242, 2018.
+
+\bibitem{breiman2001rf} L.~Breiman. Random Forests. \emph{Machine Learning},
+45(1):5--32, 2001.
+
+\bibitem{fsds2026} Feature Selection for Distribution Shift: Meta-Learner
+Objective Functions via Pseudo-Outcome and R-Learners. Companion manuscript,
+2026.
+
+\end{thebibliography}
+
+\end{document}
