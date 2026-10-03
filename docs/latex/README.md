@@ -51,3 +51,12 @@ cd docs/latex && pdflatex fsds_treasury_credit_risk_po.tex
 ```
 
 File: [`fsds_treasury_credit_risk_po.tex`](fsds_treasury_credit_risk_po.tex) — checking-account reconciliation (retained vs cash in), `impact_receipt` GL mapping, and credit origination fulfillment via the same two-batch uplift spine.
+
+## Application X/Y and step-level benefit ledger (English + 中文)
+
+```bash
+cd docs/latex && pdflatex fsds_application_xy_benefit_ledger.tex
+```
+
+- LaTeX: [`fsds_application_xy_benefit_ledger.tex`](fsds_application_xy_benefit_ledger.tex)
+- 中文逐步说明: [`../FSDS_WHERE_X_Y_POSITIVE_BENEFIT_ZH.md`](../FSDS_WHERE_X_Y_POSITIVE_BENEFIT_ZH.md)

@@ -1,0 +1,126 @@
+% Application ledger: where FSDS is used, X/Y/T/W, which steps yield positive benefit
+% Compile: pdflatex fsds_application_xy_benefit_ledger.tex
+\documentclass[11pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable,hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+\definecolor{benefit}{RGB}{230,245,230}
+\definecolor{gate}{RGB}{245,245,245}
+
+\newcommand{\bene}{\cellcolor{benefit}}
+\newcommand{\gate}{\cellcolor{gate}}
+
+\title{Where FSDS Is Applied:\\
+Explicit $X$, $Y$, and Step-Level Positive Benefit (Repository Justification)}
+\author{Aligned with \texttt{fsds\_concrete\_pipeline\_justification.tex} and benchmark JSON}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This ledger answers three audit questions for each product track: \textbf{(1)} where FSDS runs in production, \textbf{(2)} the exact objects $X$, $Y$, $T$, $W$ (and agent $Z$), \textbf{(3)} which pipeline steps produce \emph{positive benefit}---direct OPEX, outcome quality, communication savings, or strategic preservation---versus steps that only \emph{gate} actions.
+Positive benefit is never attributed to monitoring statistics alone; dollars attach to \textbf{rules and budgets} emitted after gates, with \texttt{impact\_receipt} JSON as the audit join key.
+\end{abstract}
+
+\section{Shared notation}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Repository meaning \\
+\midrule
+$X$ & Covariates for batch monitoring (users, \texttt{trace\_features}, federated block columns $X_k$) \\
+$Y$ & Outcome: conversion, task success, default/DPD in credit mapping \\
+$T$ & Treatment arm within a window (campaign, limit increase); \textbf{not} batch \\
+$W$ & Batch: REF ($0$) vs LIVE ($1$) window \\
+$Z$ & Agent segment/role embeddings for SoT budgets $(B\times d)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Benefit types:}
+\begin{enumerate}[nosep]
+  \item[\textbf{B1}] Variable OPEX down (tokens, treatments, uplink bytes billed as \$).
+  \item[\textbf{B2}] Outcome up (success rate, conversion; may lag as \texttt{cash\_in}).
+  \item[\textbf{B3}] Infra/communication down (federated uplink vs centralized matrix).
+  \item[\textbf{B4}] Strategic (avoided wrongful shutdown; requires finance/legal sign-off).
+  \item[\textbf{G}] Gate/localize only---benefit is \emph{avoided bad action}, not a standalone ROI line.
+\end{enumerate}
+
+\section{Track A --- Two-batch uplift (marketing, credit fulfillment)}
+\paragraph{Where used.}
+Same $\hat\tau$ frozen from REF; LIVE window monitored for shift; fulfillment applies caps before full relearn.
+
+\paragraph{Objects.}
+$X\in\mathbb{R}^{n\times p}$ customer covariates; $Y\in\{0,1\}$ conversion/default; $T\in\{0,1\}$ treatment; $W$ implied by REF vs LIVE row pools.
+Path: \texttt{run\_uplift\_subset\_benchmark.py} $\rightarrow$ \texttt{run\_uplift\_subset\_localization}.
+
+\begin{longtable}{@{}p{0.05\textwidth}p{0.20\textwidth}p{0.22\textwidth}p{0.12\textwidth}p{0.33\textwidth}@{}}
+\toprule
+Step & Uses & Function & Benefit & Justification (artifact) \\
+\midrule
+\endhead
+G0 & $T$ LIVE & \texttt{check\_srm} & \gate G & Block cap if randomization broken \\
+G1 & $X$ & \texttt{\_rbf\_mmd2} & \gate G & MMD$^2$ e.g.\ Hillstrom $0.00162$; explains mix \\
+G2 & $X,W$ & overlap ESS & \gate G & ESS $0.990$ Hillstrom; REFRESH if low \\
+G3 & $X,Y,W$ & \texttt{DRPerm} & \gate G & PO $p{=}0.727$ vs $0.030$ reject; relearn eligibility \\
+L1 & $X,\hat\tau$ & LOCO/LOGO/quintile AUUC & \gate G & Localize worst quintile Q3 $\Delta$AUUC $-0.126$ \\
+L2 & slices & pairwise ATE & \gate G & REALLOCATE on ATE only if PO reject \\
+R & \texttt{loc} & \texttt{business\_rules}+economics & \bene B1 & Cap Q3: \textbf{\$546/window} sim; total OPEX net \textbf{\$3271} / 4 scenarios \\
+\bottomrule
+\end{longtable}
+
+\noindent\textbf{Positive benefit concentrates at step R} (\texttt{econ\_bucket=opex}).
+RELEARN tickets (\$2{,}500$\times$4 bench) are CAPEX---zero OPEX net increment (\texttt{summarize\_rule\_economics}).
+
+\section{Track B --- Agent SoT}
+\paragraph{Where used.}
+Multi-branch episodes (plan, retrieve, \ldots); patterns in \texttt{applications.py} (ReAct, RAG, plan-execute).
+
+\paragraph{Objects.}
+$X=$ \texttt{trace\_features}; $Y=$ episode success (MC, not RF batch label); $W=$ REF vs LIVE traces; $Z=$ branch embeddings.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Step & Function & Benefit & Measured \\
+\midrule
+1--2 & attribution, decomposability & \gate G & Shift explain; topology gate \\
+3--4 & \texttt{allocate\_branch\_budgets}, \texttt{estimate\_economics} & \bene B1,B2 & \textbf{33.6\%} \$/ep; \$0.012/ep; plan branch $397$ vs $520$ tokens \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Track C --- Multi-agent debate}
+$X$ trace batches; $Z$ pro/con/judge; LIVE shift on \texttt{con}.
+\begin{itemize}[nosep]
+  \item \texttt{fit\_agent\_plan}: \bene B1 \textbf{39.3\%} \$/debate; \bene B2 success $0.66\rightarrow 0.68$.
+  \item \texttt{debate\_early\_stop\_round}: \bene B1 \textbf{$\sim$20\%} round cost.
+\end{itemize}
+
+\section{Track D --- LangGraph}
+$X$ from five node checkpoints; drift on \texttt{tool\_call}.
+\bene B1 $\sim$\$0.01535/ep in \texttt{langgraph\_fsds\_hook.json}; mechanism = conditional retry, not full graph relearn.
+
+\section{Track E --- Federated blocks}
+$X_k$ local only; server sees payloads not rows.
+\bene B3 Spambase \textbf{1410$\times$} uplink efficiency; \bene B4 legal block MMD targets silo OFS (strategic sim \$125k/q).
+
+\section{Credit risk (Track A semantics, different labels)}
+Same code path; $Y=$ default/DPD; $T=$ limit increase; \texttt{treatment\_cost\_usd} = EL per approval.
+Only step R REALLOCATE yields \bene B1 retained exposure; PO reject gates CAPEX relearn, not instant cash.
+
+\section{Audit join}
+All direct B1/B2 rows should appear on \texttt{impact\_receipt} with \texttt{rule\_ids}; treasury mapping in \texttt{bank\_cash\_bridge.py}.
+
+\paragraph{Reproduce.}
+\texttt{cd Python \&\& python3 run\_fsds\_business\_impact\_pack.py}
+
+\paragraph{Chinese mirror.}
+\texttt{docs/FSDS\_WHERE\_X\_Y\_POSITIVE\_BENEFIT\_ZH.md}
+
+\end{document}
