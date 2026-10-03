@@ -207,6 +207,12 @@
 
 ---
 
-## 英文逐步台账（LaTeX）
+## 英文 formulation（LaTeX，推荐 PDF）
 
-`docs/latex/fsds_application_xy_benefit_ledger.tex` — 与本文同构，便于 PO/PDF。
+**完整版：** `docs/latex/fsds_xy_benefit_formulation_en.tex`（目录 + 全 track 逐步 justify + 信贷 + 收据）
+
+```bash
+cd docs/latex && pdflatex fsds_xy_benefit_formulation_en.tex
+```
+
+**紧凑版：** `docs/latex/fsds_application_xy_benefit_ledger.tex`
